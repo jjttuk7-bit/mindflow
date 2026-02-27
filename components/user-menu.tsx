@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
 import { LogOut, User } from "lucide-react"
 
 export function UserMenu() {
   const [email, setEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
@@ -20,8 +18,7 @@ export function UserMenu() {
   async function handleSignOut() {
     setLoading(true)
     await supabase.auth.signOut()
-    router.push("/login")
-    router.refresh()
+    window.location.href = "/login"
   }
 
   if (!email) return null

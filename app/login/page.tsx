@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -10,7 +9,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -23,7 +21,6 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
         })
         if (error) throw error
       } else {
@@ -33,8 +30,8 @@ export default function LoginPage() {
         })
         if (error) throw error
       }
-      router.push("/")
-      router.refresh()
+      // Full page reload to ensure cookies are properly set for middleware
+      window.location.href = "/"
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An error occurred"
       setError(message)

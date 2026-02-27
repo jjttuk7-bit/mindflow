@@ -25,27 +25,37 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   const isPublicRoute =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname.startsWith("/share") ||
     request.nextUrl.pathname.startsWith("/api/share")
 
-  // Redirect unauthenticated users to /login
-  if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
+  // For public routes, just refresh the session without blocking
+  if (isPublicRoute) {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Redirect logged-in users away from /login
+    if (user && request.nextUrl.pathname.startsWith("/login")) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/"
+      return NextResponse.redirect(url)
+    }
+
+    return supabaseResponse
   }
 
-  // Redirect logged-in users away from /login
-  if (user && request.nextUrl.pathname.startsWith("/login")) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Redirect unauthenticated users to /login (only for page routes, not API)
+  if (!user) {
+    if (request.nextUrl.pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
     const url = request.nextUrl.clone()
-    url.pathname = "/"
+    url.pathname = "/login"
     return NextResponse.redirect(url)
   }
 

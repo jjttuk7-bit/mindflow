@@ -1,7 +1,11 @@
 import { transcribeAudio } from "@/lib/ai"
+import { getUser } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const { user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const formData = await req.formData()
   const audioFile = formData.get("audio") as File | null
 

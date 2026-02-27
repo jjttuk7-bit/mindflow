@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // Search by cosine similarity using pgvector
   const { data, error } = await supabase.rpc("match_items", {
     query_embedding: JSON.stringify(embedding),
-    match_threshold: 0.3,
+    match_threshold: 0.1,
     match_count: limit,
   })
 

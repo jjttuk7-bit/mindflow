@@ -3,7 +3,7 @@ create extension if not exists vector;
 
 -- Add AI columns to items
 alter table items add column if not exists summary text;
-alter table items add column if not exists embedding vector(1536);
+alter table items add column if not exists embedding vector(768);
 
 -- Vector similarity search index
 create index if not exists items_embedding_idx
@@ -12,7 +12,7 @@ create index if not exists items_embedding_idx
 
 -- RPC function for semantic search
 create or replace function match_items(
-  query_embedding vector(1536),
+  query_embedding vector(768),
   match_threshold float default 0.3,
   match_count int default 10
 )

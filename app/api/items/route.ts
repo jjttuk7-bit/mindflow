@@ -1,14 +1,44 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import ogs from "open-graph-scraper"
+
+async function scrapeOg(url: string) {
+  try {
+    const { result } = await ogs({ url, timeout: 8000 })
+    const ogImage =
+      result.ogImage && result.ogImage.length > 0
+        ? result.ogImage[0].url
+        : undefined
+    return {
+      og_title: result.ogTitle || undefined,
+      og_description: result.ogDescription || undefined,
+      og_image: ogImage,
+      og_url: result.ogUrl || url,
+      og_domain: new URL(url).hostname.replace("www.", ""),
+    }
+  } catch {
+    return {
+      og_url: url,
+      og_domain: new URL(url).hostname.replace("www.", ""),
+    }
+  }
+}
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const body = await req.json()
   const { type, content, metadata = {} } = body
 
+  // For links, scrape OG metadata
+  let meta = metadata
+  if (type === "link" && content) {
+    const ogData = await scrapeOg(content)
+    meta = { ...metadata, ...ogData }
+  }
+
   const { data: item, error } = await supabase
     .from("items")
-    .insert({ type, content, metadata })
+    .insert({ type, content, metadata: meta })
     .select()
     .single()
 

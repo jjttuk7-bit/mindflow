@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { Item } from "@/lib/supabase/types"
+import { Item, LinkMeta, ImageMeta } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
+import { LinkCard } from "@/components/link-card"
+import { ImageCard } from "@/components/image-card"
 import { FileText, Link, Image, Mic, Trash2 } from "lucide-react"
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
@@ -41,6 +43,14 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`
 }
 
+function isLinkMeta(meta: unknown): meta is LinkMeta {
+  return !!meta && typeof meta === "object" && "og_url" in meta
+}
+
+function isImageMeta(meta: unknown): meta is ImageMeta {
+  return !!meta && typeof meta === "object" && "image_url" in meta
+}
+
 export function FeedCard({
   item,
   onDelete,
@@ -50,6 +60,29 @@ export function FeedCard({
 }) {
   const [hovered, setHovered] = useState(false)
   const config = typeConfig[item.type] ?? typeConfig.text
+  const meta = item.metadata
+
+  const renderContent = () => {
+    if (item.type === "link" && isLinkMeta(meta)) {
+      return <LinkCard url={item.content} meta={meta} />
+    }
+
+    if (item.type === "image" && isImageMeta(meta)) {
+      return (
+        <ImageCard
+          imageUrl={meta.image_url}
+          caption={item.content !== "Image" ? item.content : undefined}
+        />
+      )
+    }
+
+    // Default: text content
+    return (
+      <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
+        {item.content}
+      </p>
+    )
+  }
 
   return (
     <article
@@ -69,9 +102,7 @@ export function FeedCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-2.5">
-          <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
-            {item.content}
-          </p>
+          {renderContent()}
 
           {/* Tags + Meta */}
           <div className="flex items-center gap-2 flex-wrap">

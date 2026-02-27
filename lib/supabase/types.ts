@@ -25,12 +25,12 @@ export interface LinkMeta {
   og_title?: string
   og_description?: string
   og_image?: string
+  og_url?: string
+  og_domain?: string
 }
 
 export interface ImageMeta {
-  file_url: string
-  file_size: number
-  mime_type: string
+  image_url: string
 }
 
 export interface VoiceMeta {

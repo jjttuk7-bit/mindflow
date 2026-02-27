@@ -9,7 +9,7 @@ export default function Home() {
   const { refetch } = useItems()
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-background">
       <Sidebar />
       <MainFeed onRefetch={refetch} />
       <SearchDialog />

@@ -3,15 +3,29 @@
 import { useState } from "react"
 import { Item } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { FileText, Link, Image, Mic, Trash2 } from "lucide-react"
 
-const typeIcons: Record<string, React.ReactNode> = {
-  text: <FileText className="h-4 w-4 text-blue-500" />,
-  link: <Link className="h-4 w-4 text-green-500" />,
-  image: <Image className="h-4 w-4 text-purple-500" />,
-  voice: <Mic className="h-4 w-4 text-orange-500" />,
+const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
+  text: {
+    icon: <FileText className="h-3.5 w-3.5" />,
+    color: "text-terracotta bg-terracotta/8",
+    label: "Idea",
+  },
+  link: {
+    icon: <Link className="h-3.5 w-3.5" />,
+    color: "text-sage bg-sage/10",
+    label: "Link",
+  },
+  image: {
+    icon: <Image className="h-3.5 w-3.5" />,
+    color: "text-dusty-rose bg-dusty-rose/10",
+    label: "Image",
+  },
+  voice: {
+    icon: <Mic className="h-3.5 w-3.5" />,
+    color: "text-amber-accent bg-amber-accent/10",
+    label: "Voice",
+  },
 }
 
 function timeAgo(dateStr: string) {
@@ -35,47 +49,65 @@ export function FeedCard({
   onDelete: (id: string) => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const config = typeConfig[item.type] ?? typeConfig.text
 
   return (
-    <Card
-      className="p-4 hover:bg-muted/50 transition-colors"
+    <article
+      className={`group relative rounded-xl border bg-card px-5 py-4 transition-all duration-300 ${
+        hovered
+          ? "shadow-[0_2px_16px_-4px_oklch(0.5_0.05_55/0.08)] border-border"
+          : "border-border/40 shadow-none"
+      }`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="flex items-start gap-3">
-        <div className="mt-0.5">{typeIcons[item.type]}</div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm whitespace-pre-wrap break-words">
+      <div className="flex items-start gap-4">
+        {/* Type indicator */}
+        <div className={`mt-0.5 flex items-center justify-center w-8 h-8 rounded-lg ${config.color} shrink-0`}>
+          {config.icon}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 space-y-2.5">
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
             {item.content}
           </p>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
+
+          {/* Tags + Meta */}
+          <div className="flex items-center gap-2 flex-wrap">
             {item.tags && item.tags.length > 0 ? (
               item.tags.map((tag) => (
-                <Badge key={tag.id} variant="secondary" className="text-xs">
-                  #{tag.name}
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0 hover:bg-muted"
+                >
+                  {tag.name}
                 </Badge>
               ))
             ) : (
-              <span className="text-xs text-muted-foreground italic">
-                Analyzing...
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/50 italic">
+                <span className="h-1 w-1 rounded-full bg-amber-accent animate-pulse" />
+                Analyzing
               </span>
             )}
-            <span className="text-xs text-muted-foreground ml-auto">
+            <span className="text-[11px] text-muted-foreground/40 ml-auto tabular-nums">
               {timeAgo(item.created_at)}
             </span>
           </div>
         </div>
-        {hovered && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
-            onClick={() => onDelete(item.id)}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
-        )}
+
+        {/* Delete */}
+        <button
+          onClick={() => onDelete(item.id)}
+          className={`shrink-0 h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200 ${
+            hovered ? "opacity-100" : "opacity-0"
+          }`}
+          aria-label="Delete item"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
-    </Card>
+    </article>
   )
 }

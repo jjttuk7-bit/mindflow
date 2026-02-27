@@ -4,23 +4,24 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useStore } from "@/lib/store"
 import { ContentType } from "@/lib/supabase/types"
-import { FileText, Link, Image, Mic } from "lucide-react"
+import { FileText, Link, Image, Mic, ArrowUp } from "lucide-react"
 
 const typeButtons: {
   type: ContentType
   icon: React.ReactNode
   label: string
 }[] = [
-  { type: "text", icon: <FileText className="h-4 w-4" />, label: "Text" },
-  { type: "link", icon: <Link className="h-4 w-4" />, label: "Link" },
-  { type: "image", icon: <Image className="h-4 w-4" />, label: "Image" },
-  { type: "voice", icon: <Mic className="h-4 w-4" />, label: "Voice" },
+  { type: "text", icon: <FileText className="h-3.5 w-3.5" />, label: "Text" },
+  { type: "link", icon: <Link className="h-3.5 w-3.5" />, label: "Link" },
+  { type: "image", icon: <Image className="h-3.5 w-3.5" />, label: "Image" },
+  { type: "voice", icon: <Mic className="h-3.5 w-3.5" />, label: "Voice" },
 ]
 
 export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [content, setContent] = useState("")
   const [activeType, setActiveType] = useState<ContentType>("text")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const { addItem } = useStore()
 
   async function handleSubmit() {
@@ -51,35 +52,57 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   }
 
   return (
-    <div className="space-y-3">
+    <div
+      className={`rounded-xl border bg-card transition-all duration-300 ${
+        isFocused
+          ? "shadow-[0_2px_20px_-4px_oklch(0.62_0.14_40/0.12)] border-primary/30"
+          : "shadow-sm border-border/60 hover:border-border"
+      }`}
+    >
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         onKeyDown={handleKeyDown}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder="What's on your mind?"
-        className="w-full min-h-[80px] resize-none rounded-lg border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
+        className="w-full min-h-[88px] resize-none bg-transparent px-5 pt-4 pb-2 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
         disabled={isSubmitting}
       />
-      <div className="flex items-center justify-between">
-        <div className="flex gap-1">
+      <div className="flex items-center justify-between px-3 pb-3">
+        <div className="flex gap-0.5">
           {typeButtons.map((btn) => (
-            <Button
+            <button
               key={btn.type}
-              variant={activeType === btn.type ? "default" : "ghost"}
-              size="sm"
               onClick={() => setActiveType(btn.type)}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
+                activeType === btn.type
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50"
+              }`}
             >
               {btn.icon}
-              <span className="ml-1">{btn.label}</span>
-            </Button>
+              <span>{btn.label}</span>
+            </button>
           ))}
         </div>
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting || !content.trim()}
           size="sm"
+          className="rounded-lg h-8 px-3 gap-1.5 text-xs font-medium"
         >
-          {isSubmitting ? "Saving..." : "Save"}
+          {isSubmitting ? (
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
+              Saving
+            </span>
+          ) : (
+            <>
+              <ArrowUp className="h-3.5 w-3.5" />
+              Save
+            </>
+          )}
         </Button>
       </div>
     </div>

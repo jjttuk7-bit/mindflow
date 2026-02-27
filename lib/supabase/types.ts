@@ -5,6 +5,8 @@ export interface Item {
   type: ContentType
   content: string
   summary?: string | null
+  is_pinned?: boolean
+  is_archived?: boolean
   metadata: LinkMeta | ImageMeta | VoiceMeta | Record<string, never>
   created_at: string
   updated_at: string

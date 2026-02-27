@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
 import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X } from "lucide-react"
+import { ShareButton } from "@/components/share-button"
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   text: {
@@ -325,6 +326,7 @@ export function FeedCard({
           >
             <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
           </button>
+          <ShareButton itemId={item.id} />
           <button
             onClick={handleArchive}
             className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"

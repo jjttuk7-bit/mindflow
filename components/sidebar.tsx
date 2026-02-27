@@ -1,9 +1,10 @@
 "use client"
 
 import { useStore } from "@/lib/store"
+import { useTheme } from "@/hooks/use-theme"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ContentType } from "@/lib/supabase/types"
-import { FileText, Link, Image, Mic, Layers } from "lucide-react"
+import { FileText, Link, Image, Mic, Layers, Sun, Moon } from "lucide-react"
 
 const filters: {
   label: string
@@ -21,6 +22,7 @@ const filters: {
 export function Sidebar() {
   const { tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag } =
     useStore()
+  const { dark, toggle } = useTheme()
 
   const tagCounts = tags.map((tag) => ({
     ...tag,
@@ -114,11 +116,18 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-border/40">
+      <div className="px-4 py-4 border-t border-border/40 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground/40 tracking-wide">
           <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>
           <span className="ml-2">to search</span>
         </p>
+        <button
+          onClick={toggle}
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+          aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
       </div>
     </aside>
   )

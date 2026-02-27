@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useStore } from "@/lib/store"
 import { ContentType } from "@/lib/supabase/types"
 import { createClient } from "@/lib/supabase/client"
+import { VoiceRecorder } from "@/components/voice-recorder"
 import { FileText, Link, Image, Mic, ArrowUp, Upload, X } from "lucide-react"
 
 const typeButtons: {
@@ -60,6 +61,57 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     return data.publicUrl
   }
 
+  async function uploadAudio(blob: Blob): Promise<string | null> {
+    const supabase = createClient()
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webm`
+    const { error } = await supabase.storage
+      .from("items-audio")
+      .upload(path, blob, { contentType: "audio/webm" })
+    if (error) return null
+    const { data } = supabase.storage.from("items-audio").getPublicUrl(path)
+    return data.publicUrl
+  }
+
+  async function handleVoiceRecorded(blob: Blob, duration: number) {
+    setIsSubmitting(true)
+    try {
+      // Upload audio file
+      const fileUrl = await uploadAudio(blob)
+      if (!fileUrl) return
+
+      // Transcribe via Whisper
+      const formData = new FormData()
+      formData.append("audio", blob, "recording.webm")
+      const transcribeRes = await fetch("/api/ai/transcribe", {
+        method: "POST",
+        body: formData,
+      })
+      let transcript = ""
+      if (transcribeRes.ok) {
+        const data = await transcribeRes.json()
+        transcript = data.transcript || ""
+      }
+
+      // Save item
+      const res = await fetch("/api/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "voice",
+          content: transcript || "Voice memo",
+          metadata: { file_url: fileUrl, duration, transcript },
+        }),
+      })
+      if (res.ok) {
+        const item = await res.json()
+        addItem({ ...item, tags: [] })
+        onSaved?.()
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   async function handleSubmit() {
     if (activeType === "image") {
       if (!selectedFile) return
@@ -106,7 +158,9 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   }
 
   const canSubmit =
-    activeType === "image"
+    activeType === "voice"
+      ? false // Voice uses its own send button
+      : activeType === "image"
       ? !!selectedFile && !isSubmitting
       : !!content.trim() && !isSubmitting
 
@@ -119,7 +173,9 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       }`}
     >
       {/* Input area changes based on type */}
-      {activeType === "link" ? (
+      {activeType === "voice" ? (
+        <VoiceRecorder onRecorded={handleVoiceRecorded} disabled={isSubmitting} />
+      ) : activeType === "link" ? (
         <input
           type="url"
           value={content}

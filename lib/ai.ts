@@ -61,3 +61,12 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 
   return response.data[0].embedding
 }
+
+export async function transcribeAudio(file: File): Promise<string> {
+  const response = await openai.audio.transcriptions.create({
+    model: "whisper-1",
+    file,
+  })
+
+  return response.text
+}

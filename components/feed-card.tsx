@@ -7,6 +7,8 @@ import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
 import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
+import { VoiceCard } from "@/components/voice-card"
+import { VoiceMeta } from "@/lib/supabase/types"
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   text: {
@@ -50,6 +52,10 @@ function isLinkMeta(meta: unknown): meta is LinkMeta {
 
 function isImageMeta(meta: unknown): meta is ImageMeta {
   return !!meta && typeof meta === "object" && "image_url" in meta
+}
+
+function isVoiceMeta(meta: unknown): meta is VoiceMeta {
+  return !!meta && typeof meta === "object" && "file_url" in meta
 }
 
 interface RelatedItem {
@@ -158,6 +164,16 @@ export function FeedCard({
         <ImageCard
           imageUrl={meta.image_url}
           caption={item.content !== "Image" ? item.content : undefined}
+        />
+      )
+    }
+
+    if (item.type === "voice" && isVoiceMeta(meta)) {
+      return (
+        <VoiceCard
+          fileUrl={meta.file_url}
+          duration={meta.duration}
+          transcript={meta.transcript}
         />
       )
     }

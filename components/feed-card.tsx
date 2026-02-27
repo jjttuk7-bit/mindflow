@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Item, LinkMeta, ImageMeta } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2 } from "lucide-react"
+import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   text: {
@@ -51,6 +51,14 @@ function isImageMeta(meta: unknown): meta is ImageMeta {
   return !!meta && typeof meta === "object" && "image_url" in meta
 }
 
+interface RelatedItem {
+  id: string
+  content: string
+  summary?: string
+  type: string
+  similarity: number
+}
+
 export function FeedCard({
   item,
   onDelete,
@@ -59,8 +67,24 @@ export function FeedCard({
   onDelete: (id: string) => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const [related, setRelated] = useState<RelatedItem[]>([])
+  const [relatedLoaded, setRelatedLoaded] = useState(false)
   const config = typeConfig[item.type] ?? typeConfig.text
   const meta = item.metadata
+
+  const hasSummary = item.summary && item.content.length > 100
+  const displayText = hasSummary && !expanded ? item.summary : item.content
+
+  // Fetch related items on first hover
+  useEffect(() => {
+    if (!hovered || relatedLoaded) return
+    setRelatedLoaded(true)
+    fetch(`/api/items/${item.id}/related`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setRelated(data))
+      .catch(() => {})
+  }, [hovered, relatedLoaded, item.id])
 
   const renderContent = () => {
     if (item.type === "link" && isLinkMeta(meta)) {
@@ -76,11 +100,31 @@ export function FeedCard({
       )
     }
 
-    // Default: text content
+    // Default: text content (with optional summary)
     return (
-      <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
-        {item.content}
-      </p>
+      <div>
+        <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
+          {displayText}
+        </p>
+        {hasSummary && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 mt-1.5 text-[11px] text-primary/60 hover:text-primary transition-colors"
+          >
+            {expanded ? (
+              <>
+                <ChevronUp className="h-3 w-3" />
+                Show summary
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3 w-3" />
+                Show full text
+              </>
+            )}
+          </button>
+        )}
+      </div>
     )
   }
 
@@ -126,6 +170,28 @@ export function FeedCard({
               {timeAgo(item.created_at)}
             </span>
           </div>
+
+          {/* Related items */}
+          {related.length > 0 && (
+            <div className="pt-2 border-t border-border/30">
+              <p className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/40 mb-1.5">
+                Related
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {related.map((r) => (
+                  <span
+                    key={r.id}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-[11px] text-muted-foreground/70 hover:bg-muted/70 transition-colors cursor-default"
+                  >
+                    {typeConfig[r.type]?.icon}
+                    <span className="truncate max-w-[180px]">
+                      {r.summary || r.content}
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Delete */}

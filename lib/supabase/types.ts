@@ -4,6 +4,7 @@ export interface Item {
   id: string
   type: ContentType
   content: string
+  summary?: string | null
   metadata: LinkMeta | ImageMeta | VoiceMeta | Record<string, never>
   created_at: string
   updated_at: string

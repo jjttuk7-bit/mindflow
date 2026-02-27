@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { generateTags } from "@/lib/ai"
+import { generateTags, generateSummary, generateEmbedding } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
@@ -10,8 +10,12 @@ export async function POST(req: NextRequest) {
   const { data: existingTags } = await supabase.from("tags").select("name")
   const tagNames = existingTags?.map((t) => t.name) || []
 
-  // Generate tags via AI
-  const suggestedTags = await generateTags(content, type, tagNames)
+  // Run AI tasks in parallel: tags + summary + embedding
+  const [suggestedTags, summary, embedding] = await Promise.all([
+    generateTags(content, type, tagNames),
+    generateSummary(content),
+    generateEmbedding(content),
+  ])
 
   // Upsert tags and create relations
   for (const tagName of suggestedTags) {
@@ -31,5 +35,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ tags: suggestedTags })
+  // Update item with summary and embedding
+  const updates: Record<string, unknown> = {}
+  if (summary) updates.summary = summary
+  if (embedding) updates.embedding = JSON.stringify(embedding)
+
+  if (Object.keys(updates).length > 0) {
+    await supabase.from("items").update(updates).eq("id", item_id)
+  }
+
+  return NextResponse.json({ tags: suggestedTags, summary })
 }

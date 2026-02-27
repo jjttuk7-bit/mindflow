@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { getUser } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 import ogs from "open-graph-scraper"
 
@@ -25,7 +25,9 @@ async function scrapeOg(url: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const body = await req.json()
   const { type, content, metadata = {} } = body
 
@@ -38,16 +40,20 @@ export async function POST(req: NextRequest) {
 
   const { data: item, error } = await supabase
     .from("items")
-    .insert({ type, content, metadata: meta })
+    .insert({ type, content, metadata: meta, user_id: user.id })
     .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Trigger async AI tagging (fire and forget)
+  // Trigger async AI tagging (fire and forget) — forward cookies for auth
+  const cookieHeader = req.headers.get("cookie") || ""
   fetch(`${req.nextUrl.origin}/api/ai/tag`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      cookie: cookieHeader,
+    },
     body: JSON.stringify({ item_id: item.id, content, type }),
   }).catch(() => {})
 
@@ -55,7 +61,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const { searchParams } = req.nextUrl
   const type = searchParams.get("type")
   const limit = parseInt(searchParams.get("limit") || "50")

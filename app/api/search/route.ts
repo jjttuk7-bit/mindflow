@@ -1,9 +1,10 @@
-import { createClient } from "@/lib/supabase/server"
+import { getUser } from "@/lib/supabase/server"
 import { generateEmbedding } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const { query, limit = 10 } = await req.json()
 
   if (!query?.trim()) {

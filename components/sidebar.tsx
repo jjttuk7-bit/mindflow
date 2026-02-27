@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { ContentType } from "@/lib/supabase/types"
 import { FileText, Link, Image, Mic, Layers, Sun, Moon, Archive, MoreHorizontal, Pencil, Trash2, Check, X } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
+import { UserMenu } from "@/components/user-menu"
 
 const filters: {
   label: string
@@ -270,20 +271,23 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-border/40 flex items-center justify-between">
-        <p className="text-[10px] text-muted-foreground/40 tracking-wide">
-          <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>
-          <span className="ml-2">to search</span>
-        </p>
-        <div className="flex items-center gap-1">
-          <ExportMenu />
-          <button
-            onClick={toggle}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
-            aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </button>
+      <div className="px-4 py-3 border-t border-border/40 space-y-3">
+        <UserMenu />
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground/40 tracking-wide">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>
+            <span className="ml-2">to search</span>
+          </p>
+          <div className="flex items-center gap-1">
+            <ExportMenu />
+            <button
+              onClick={toggle}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+              aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
       </div>
     </aside>

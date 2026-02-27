@@ -1,10 +1,11 @@
-import { createClient } from "@/lib/supabase/server"
+import { getUser } from "@/lib/supabase/server"
 import { generateTags, generateSummary, generateEmbedding } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient()
+    const { supabase, user } = await getUser()
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     const { item_id, content, type } = await req.json()
 
     // Get existing tags for reuse

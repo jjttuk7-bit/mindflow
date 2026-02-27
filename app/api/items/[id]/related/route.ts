@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { getUser } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   // Get the item's embedding
   const { data: item } = await supabase

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { getUser } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function PATCH(
@@ -6,7 +6,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const { name } = await req.json()
 
   const { data, error } = await supabase
@@ -25,7 +27,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createClient()
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   // Remove tag associations first
   await supabase.from("item_tags").delete().eq("tag_id", id)

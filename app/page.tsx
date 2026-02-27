@@ -2,6 +2,7 @@
 
 import { Sidebar } from "@/components/sidebar"
 import { MainFeed } from "@/components/main-feed"
+import { SearchDialog } from "@/components/search-dialog"
 import { useItems } from "@/hooks/use-items"
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
     <div className="flex h-screen">
       <Sidebar />
       <MainFeed onRefetch={refetch} />
+      <SearchDialog />
     </div>
   )
 }

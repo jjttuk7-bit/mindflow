@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { MainFeed } from "@/components/main-feed"
 import { SearchDialog } from "@/components/search-dialog"
@@ -16,11 +17,23 @@ export default function Home() {
   useTodos()
 
   const { sidebarView } = useStore()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
-      {sidebarView === "todos" ? <TodoList /> : <MainFeed onRefetch={refetch} />}
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {sidebarView === "todos" ? (
+        <TodoList onMenuClick={() => setSidebarOpen(true)} />
+      ) : (
+        <MainFeed onRefetch={refetch} onMenuClick={() => setSidebarOpen(true)} />
+      )}
       <SearchDialog />
       <ChatPanel />
     </div>

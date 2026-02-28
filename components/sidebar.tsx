@@ -166,7 +166,7 @@ function TagItem({
   )
 }
 
-export function Sidebar() {
+export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const {
     tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag,
     showArchived, setShowArchived, removeTag, renameTag,
@@ -243,7 +243,7 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen">
+    <aside className={`w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"} md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none`}>
       {/* Brand */}
       <div className="px-6 pt-7 pb-5">
         <h1 className="font-display text-2xl tracking-tight text-foreground">
@@ -480,7 +480,7 @@ export function Sidebar() {
         {/* Navigation */}
         <div className="px-4 space-y-0.5">
           <button
-            onClick={() => setSidebarView(sidebarView === "todos" ? "feed" : "todos")}
+            onClick={() => { setSidebarView(sidebarView === "todos" ? "feed" : "todos"); onClose() }}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
               sidebarView === "todos"
                 ? "bg-primary/10 text-primary font-medium"
@@ -503,13 +503,14 @@ export function Sidebar() {
           </button>
           <a
             href="/insights"
+            onClick={onClose}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
             Insights
           </a>
           <button
-            onClick={() => setChatOpen(true)}
+            onClick={() => { setChatOpen(true); onClose() }}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <MessageSquare className="h-4 w-4 text-muted-foreground/50" />
@@ -549,6 +550,7 @@ export function Sidebar() {
           <div className="flex items-center gap-1">
             <a
               href="/settings"
+              onClick={onClose}
               className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
               aria-label="Settings"
             >

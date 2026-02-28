@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { useStore } from "@/lib/store"
-import { Check, Trash2, Plus, Link as LinkIcon } from "lucide-react"
+import { Check, Trash2, Plus, Link as LinkIcon, Menu } from "lucide-react"
 
 type TodoFilter = "all" | "active" | "completed"
 
-export function TodoList() {
+export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
   const { todos, addTodo, updateTodo, removeTodo, projects } = useStore()
   const [newContent, setNewContent] = useState("")
   const [filter, setFilter] = useState<TodoFilter>("all")
@@ -67,7 +67,19 @@ export function TodoList() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-      <div className="px-8 pt-8 pb-4">
+      {/* Mobile header with hamburger */}
+      <div className="flex items-center gap-3 px-4 pt-4 md:hidden">
+        <button
+          onClick={onMenuClick}
+          className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <h1 className="font-display text-lg tracking-tight text-foreground">Mindflow</h1>
+      </div>
+
+      <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -116,7 +128,7 @@ export function TodoList() {
       </div>
 
       {/* Todo list */}
-      <div className="flex-1 overflow-y-auto px-8">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8">
         <div className="max-w-2xl mx-auto space-y-6 pb-8">
           {filtered.length === 0 && (
             <div className="text-center py-12">

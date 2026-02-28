@@ -97,7 +97,7 @@ export default function InsightsPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
           <a
             href="/"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -113,7 +113,7 @@ export default function InsightsPage() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -128,9 +128,9 @@ export default function InsightsPage() {
             </p>
           </div>
         ) : (
-          <div className="flex gap-8 items-start">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
             {/* Report list sidebar */}
-            <div className="w-56 flex-shrink-0">
+            <div className="w-full md:w-56 flex-shrink-0">
               <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 mb-3">
                 Monthly Reports
               </p>

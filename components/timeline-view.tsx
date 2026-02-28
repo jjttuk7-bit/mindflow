@@ -119,7 +119,7 @@ export function TimelineView() {
   const dateGroups = groupByDate(sorted)
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-4 sm:p-6 space-y-8">
       {Array.from(dateGroups.entries()).map(([dateKey, dateItems]) => (
         <div key={dateKey}>
           {/* Sticky date header */}

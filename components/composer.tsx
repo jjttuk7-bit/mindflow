@@ -195,6 +195,9 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         addItem({ ...item, tags: [] })
         toast.success("Voice memo saved!")
         onSaved?.()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error || "Failed to save voice memo")
       }
     } finally {
       setIsSubmitting(false)

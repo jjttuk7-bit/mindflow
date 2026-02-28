@@ -112,6 +112,9 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         toast.success("Voice memo captured!")
         setComposerOpen(false)
         onSaved?.()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error || "Failed to save voice memo")
       }
     } catch {
       toast.error("Failed to save voice memo")

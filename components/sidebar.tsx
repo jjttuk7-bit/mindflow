@@ -458,17 +458,13 @@ export function Sidebar() {
               </span>
             )}
           </button>
-          <button
-            onClick={() => setSidebarView(sidebarView === "insights" ? "feed" : "insights")}
-            className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
-              sidebarView === "insights"
-                ? "bg-primary/10 text-primary font-medium"
-                : "text-foreground/70 hover:bg-accent hover:text-foreground"
-            }`}
+          <a
+            href="/insights"
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
-            <BarChart3 className={`h-4 w-4 ${sidebarView === "insights" ? "text-primary" : "text-muted-foreground/50"}`} />
+            <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
             Insights
-          </button>
+          </a>
           <button
             onClick={() => setChatOpen(true)}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"

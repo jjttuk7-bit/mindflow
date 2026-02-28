@@ -274,7 +274,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
               }`}
             >
               {btn.icon}
-              <span>{btn.label}</span>
+              <span className="hidden sm:inline">{btn.label}</span>
             </button>
           ))}
         </div>

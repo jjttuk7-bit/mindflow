@@ -2,7 +2,9 @@ import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!)
+}
 
 // Service role client — no cookies needed for webhooks
 function getServiceClient() {
@@ -17,6 +19,8 @@ export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature")!
 
   let event: Stripe.Event
+
+  const stripe = getStripe()
 
   try {
     event = stripe.webhooks.constructEvent(

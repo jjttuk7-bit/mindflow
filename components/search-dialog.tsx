@@ -19,6 +19,21 @@ const typeIcons: Record<string, React.ReactNode> = {
   voice: <Mic className="h-3.5 w-3.5 text-amber-accent" />,
 }
 
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query.trim()) return text
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const parts = text.split(new RegExp(`(${escaped})`, "i"))
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <mark key={i} className="bg-primary/20 text-foreground rounded-sm px-0.5">
+        {part}
+      </mark>
+    ) : (
+      part
+    )
+  )
+}
+
 export function SearchDialog() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
@@ -147,7 +162,9 @@ export function SearchDialog() {
               <div className="mt-0.5">{typeIcons[item.type]}</div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm leading-relaxed truncate text-foreground/80">
-                  {item.summary || item.content}
+                  {mode === "keyword"
+                    ? highlightMatch(item.summary || item.content, query)
+                    : item.summary || item.content}
                 </p>
                 <div className="flex gap-1.5 mt-1.5 items-center">
                   {item.tags?.map((tag) => (

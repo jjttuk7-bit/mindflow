@@ -1,0 +1,105 @@
+"use client"
+
+import { useStore } from "@/lib/store"
+import { useTheme } from "@/hooks/use-theme"
+import { ExportMenu } from "@/components/export-menu"
+import {
+  CalendarDays, Pin, Archive, BarChart3, Settings, Sun, Moon,
+} from "lucide-react"
+
+export function MoreMenu() {
+  const {
+    showArchived, setShowArchived, smartFolder, setSmartFolder,
+    setActiveFilter, setActiveTag, setActiveProject, setActiveTab,
+    items,
+  } = useStore()
+  const { dark, toggle } = useTheme()
+
+  const archivedCount = items.filter((i) => i.is_archived).length
+  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived).length
+  const thisWeekCount = (() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    return items.filter((i) => !i.is_archived && new Date(i.created_at) >= weekAgo).length
+  })()
+
+  function goToSmartFolder(folder: string) {
+    setSmartFolder(folder)
+    setActiveFilter("all")
+    setActiveTag(null)
+    setActiveProject(null)
+    if (showArchived) setShowArchived(false)
+    setActiveTab("feed")
+  }
+
+  return (
+    <main className="flex-1 flex flex-col h-full overflow-hidden bg-background">
+      <div className="px-4 pt-4 pb-3">
+        <h2 className="font-display text-xl tracking-tight text-foreground">More</h2>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-1">
+        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
+          Smart Folders
+        </p>
+        <button
+          onClick={() => goToSmartFolder("this-week")}
+          className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
+            smartFolder === "this-week" ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <CalendarDays className="h-5 w-5 text-muted-foreground/60" />
+            This Week
+          </span>
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{thisWeekCount}</span>
+        </button>
+        <button
+          onClick={() => goToSmartFolder("pinned")}
+          className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
+            smartFolder === "pinned" ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <Pin className="h-5 w-5 text-muted-foreground/60" />
+            Pinned
+          </span>
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{pinnedCount}</span>
+        </button>
+        <button
+          onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); setActiveTab("feed") }}
+          className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
+            showArchived ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <Archive className="h-5 w-5 text-muted-foreground/60" />
+            Archive
+          </span>
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{archivedCount}</span>
+        </button>
+
+        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
+          Settings
+        </p>
+        <a href="/insights" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
+          <BarChart3 className="h-5 w-5 text-muted-foreground/60" />
+          Insights
+        </a>
+        <a href="/settings" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
+          <Settings className="h-5 w-5 text-muted-foreground/60" />
+          Settings
+        </a>
+        <button
+          onClick={toggle}
+          className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors"
+        >
+          {dark ? <Sun className="h-5 w-5 text-muted-foreground/60" /> : <Moon className="h-5 w-5 text-muted-foreground/60" />}
+          {dark ? "Light Mode" : "Dark Mode"}
+        </button>
+        <div className="px-1 pt-2">
+          <ExportMenu />
+        </div>
+      </div>
+    </main>
+  )
+}

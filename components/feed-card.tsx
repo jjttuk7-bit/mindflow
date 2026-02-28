@@ -9,6 +9,7 @@ import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archiv
 import { ShareButton } from "@/components/share-button"
 import { VoiceCard } from "@/components/voice-card"
 import { VoiceMeta } from "@/lib/supabase/types"
+import { toast } from "sonner"
 
 const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   text: {
@@ -110,21 +111,33 @@ export function FeedCard({
   async function handlePin() {
     const newVal = !item.is_pinned
     onUpdate(item.id, { is_pinned: newVal })
-    await fetch(`/api/items/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_pinned: newVal }),
-    })
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_pinned: newVal }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      onUpdate(item.id, { is_pinned: !newVal })
+      toast.error("Failed to update pin")
+    }
   }
 
   async function handleArchive() {
     const newVal = !item.is_archived
     onUpdate(item.id, { is_archived: newVal })
-    await fetch(`/api/items/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_archived: newVal }),
-    })
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_archived: newVal }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      onUpdate(item.id, { is_archived: !newVal })
+      toast.error("Failed to update archive")
+    }
   }
 
   async function handleEditSave() {
@@ -132,20 +145,26 @@ export function FeedCard({
       setEditing(false)
       return
     }
+    const prevContent = item.content
     onUpdate(item.id, { content: editContent.trim() })
     setEditing(false)
-    const res = await fetch(`/api/items/${item.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: editContent.trim() }),
-    })
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: editContent.trim() }),
+      })
+      if (!res.ok) throw new Error()
       // Re-trigger AI tagging for updated content
       fetch("/api/ai/tag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId: item.id, content: editContent.trim() }),
       })
+    } catch {
+      onUpdate(item.id, { content: prevContent })
+      setEditContent(prevContent)
+      toast.error("Failed to save edit")
     }
   }
 

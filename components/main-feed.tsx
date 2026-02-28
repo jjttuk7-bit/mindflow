@@ -4,28 +4,28 @@ import { Composer } from "@/components/composer"
 import { FeedList } from "@/components/feed-list"
 import { TimelineView } from "@/components/timeline-view"
 import { SortDropdown } from "@/components/sort-dropdown"
+import { FeedSkeleton } from "@/components/feed-skeleton"
+import { PullToRefresh } from "@/components/pull-to-refresh"
 import { useStore } from "@/lib/store"
-import { Archive, List, Clock, Menu } from "lucide-react"
+import { Archive, List, Clock } from "lucide-react"
 
-export function MainFeed({ onRefetch, onMenuClick }: { onRefetch?: () => void; onMenuClick?: () => void }) {
+interface MainFeedProps {
+  onRefetch?: () => void
+  onMenuClick?: () => void
+  mobile?: boolean
+  loading?: boolean
+  loadMore?: () => void
+  loadingMore?: boolean
+  hasMore?: boolean
+}
+
+export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, loadingMore, hasMore }: MainFeedProps) {
   const { showArchived, viewMode, setViewMode } = useStore()
 
   return (
-    <main className="flex-1 flex flex-col h-screen overflow-hidden bg-background">
-      {/* Mobile header with hamburger */}
-      <div className="flex items-center gap-3 px-4 pt-4 md:hidden">
-        <button
-          onClick={onMenuClick}
-          className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-        <h1 className="font-display text-lg tracking-tight text-foreground">Mindflow</h1>
-      </div>
-
-      {/* Composer area (hidden in archive mode) */}
-      {!showArchived && (
+    <main className={`flex-1 flex flex-col h-full overflow-hidden bg-background ${mobile ? "pb-16" : ""}`}>
+      {/* Composer area (hidden in archive mode; hidden on mobile where FAB is used) */}
+      {!showArchived && !mobile && (
         <>
           <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-6">
             <div className="max-w-2xl mx-auto">
@@ -81,12 +81,23 @@ export function MainFeed({ onRefetch, onMenuClick }: { onRefetch?: () => void; o
         </div>
       </div>
 
-      {/* Feed */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Feed with pull-to-refresh on mobile */}
+      <PullToRefresh
+        onRefresh={async () => { onRefetch?.() }}
+        className="flex-1 overflow-y-auto"
+      >
         <div className="max-w-2xl mx-auto">
-          {viewMode === "timeline" ? <TimelineView /> : <FeedList />}
+          {loading ? (
+            <div className="px-6">
+              <FeedSkeleton count={4} />
+            </div>
+          ) : viewMode === "timeline" ? (
+            <TimelineView />
+          ) : (
+            <FeedList loadMore={loadMore} loadingMore={loadingMore} hasMore={hasMore} />
+          )}
         </div>
-      </div>
+      </PullToRefresh>
     </main>
   )
 }

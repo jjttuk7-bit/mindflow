@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 // Button replaced with native button for better mobile touch handling
 import { useStore } from "@/lib/store"
+import { toast } from "sonner"
 import { ContentType } from "@/lib/supabase/types"
 import { createClient } from "@/lib/supabase/client"
 import { VoiceRecorder } from "@/components/voice-recorder"
-import { FileText, Link, Image, Mic, ArrowUp, Upload, X } from "lucide-react"
+import { FileText, Link, Image, Mic, ArrowUp, Upload, X, Camera } from "lucide-react"
 
 const typeButtons: {
   type: ContentType
@@ -28,8 +29,23 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasCamera, setHasCamera] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [showCamera, setShowCamera] = useState(false)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const { addItem } = useStore()
+
+  // Detect camera availability
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.mediaDevices?.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        setHasCamera(devices.some((d) => d.kind === "videoinput"))
+      }).catch(() => setHasCamera(false))
+    }
+  }, [])
 
   function handleFileSelect(file: File) {
     if (!file.type.startsWith("image/")) return
@@ -43,6 +59,77 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     setPreviewUrl(null)
   }
 
+  function handleTakePhoto() {
+    if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+      cameraInputRef.current?.click()
+    } else {
+      startCamera()
+    }
+  }
+
+  async function startCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      })
+      setCameraStream(stream)
+      setShowCamera(true)
+    } catch {
+      cameraInputRef.current?.click()
+    }
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((t) => t.stop())
+    }
+    setCameraStream(null)
+    setShowCamera(false)
+  }
+
+  function capturePhoto() {
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    if (!video || !canvas) return
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext("2d")?.drawImage(video, 0, 0)
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          const file = new File([blob], `photo-${Date.now()}.jpg`, {
+            type: "image/jpeg",
+          })
+          handleFileSelect(file)
+          stopCamera()
+        }
+      },
+      "image/jpeg",
+      0.9
+    )
+  }
+
+  // Attach camera stream to video element & cleanup on stream change/unmount
+  useEffect(() => {
+    if (videoRef.current && cameraStream) {
+      videoRef.current.srcObject = cameraStream
+    }
+    return () => {
+      cameraStream?.getTracks().forEach((t) => t.stop())
+    }
+  }, [cameraStream])
+
+  // Stop camera when switching away from image mode
+  useEffect(() => {
+    if (activeType !== "image") {
+      setCameraStream((prev) => {
+        prev?.getTracks().forEach((t) => t.stop())
+        return null
+      })
+      setShowCamera(false)
+    }
+  }, [activeType])
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
@@ -54,10 +141,14 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     const supabase = createClient()
     const ext = file.name.split(".").pop()
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const { error } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("items-images")
       .upload(path, file, { contentType: file.type })
-    if (error) return null
+    if (uploadError) {
+      console.error("Image upload error:", uploadError.message)
+      setError(`Upload failed: ${uploadError.message}`)
+      return null
+    }
     const { data } = supabase.storage.from("items-images").getPublicUrl(path)
     return data.publicUrl
   }
@@ -106,6 +197,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       if (res.ok) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
+        toast.success("Voice memo saved!")
         onSaved?.()
       }
     } finally {
@@ -148,6 +240,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         addItem({ ...item, tags: [] })
         setContent("")
         clearFile()
+        toast.success("Saved!")
         onSaved?.()
       } else {
         const data = await res.json().catch(() => ({}))
@@ -199,36 +292,104 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         />
       ) : activeType === "image" ? (
         <div className="px-5 pt-4 pb-2 space-y-3">
-          {/* Drop zone */}
-          {!selectedFile && (
+          {/* Hidden file inputs */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleFileSelect(file)
+              e.target.value = ""
+            }}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleFileSelect(file)
+              e.target.value = ""
+            }}
+          />
+          <canvas ref={canvasRef} className="hidden" />
+
+          {/* Option buttons + drop zone */}
+          {!selectedFile && !showCamera && (
             <div
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed cursor-pointer transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed transition-all duration-200 ${
                 isDragging
                   ? "border-primary/50 bg-primary/5"
-                  : "border-border/50 hover:border-border hover:bg-muted/30"
+                  : "border-border/50 hover:border-border/80"
               }`}
             >
-              <Upload className="h-5 w-5 text-muted-foreground/40 mb-2" />
-              <p className="text-sm text-muted-foreground/50">
-                Drop an image or <span className="text-primary/70 font-medium">browse</span>
+              <div className="flex gap-3 mb-2">
+                {hasCamera && (
+                  <button
+                    type="button"
+                    onClick={handleTakePhoto}
+                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  >
+                    <Camera className="h-4 w-4" />
+                    Take Photo
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground/40">
+                or drag & drop an image here
               </p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleFileSelect(file)
-                }}
-              />
             </div>
           )}
-          {/* Preview */}
+
+          {/* Desktop camera preview */}
+          {showCamera && (
+            <div className="space-y-2">
+              <div className="relative rounded-lg overflow-hidden bg-black">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full max-h-48 object-cover"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Camera className="h-4 w-4" />
+                  Capture
+                </button>
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Image preview */}
           {selectedFile && previewUrl && (
             <div className="relative">
               <img
@@ -244,6 +405,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
               </button>
             </div>
           )}
+
           {/* Caption */}
           <textarea
             value={content}

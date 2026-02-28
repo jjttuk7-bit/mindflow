@@ -54,6 +54,11 @@ interface MindflowStore {
 
   chatOpen: boolean
   setChatOpen: (open: boolean) => void
+
+  composerOpen: boolean
+  setComposerOpen: (open: boolean) => void
+  activeTab: "feed" | "projects" | "todos" | "chat" | "more"
+  setActiveTab: (tab: "feed" | "projects" | "todos" | "chat" | "more") => void
 }
 
 export const useStore = create<MindflowStore>((set) => ({
@@ -125,4 +130,9 @@ export const useStore = create<MindflowStore>((set) => ({
 
   chatOpen: false,
   setChatOpen: (chatOpen) => set({ chatOpen }),
+
+  composerOpen: false,
+  setComposerOpen: (composerOpen) => set({ composerOpen }),
+  activeTab: "feed",
+  setActiveTab: (activeTab) => set({ activeTab }),
 }))

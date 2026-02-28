@@ -1,12 +1,31 @@
 "use client"
 
+import { useState, useEffect, useRef } from "react"
 import { useStore } from "@/lib/store"
 import { FeedCard } from "@/components/feed-card"
+import { SwipeableCard } from "@/components/swipeable-card"
+import { CardContextMenu } from "@/components/card-context-menu"
 import { Item } from "@/lib/supabase/types"
 import { Sparkles, Pin } from "lucide-react"
+import { toast } from "sonner"
 
-export function FeedList() {
-  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem, activeProject, smartFolder, searchQuery } = useStore()
+export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => void; loadingMore?: boolean; hasMore?: boolean }) {
+  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem, addItem, activeProject, smartFolder, searchQuery } = useStore()
+  const [contextItem, setContextItem] = useState<Item | null>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMore || !sentinelRef.current) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore()
+      },
+      { rootMargin: "200px" }
+    )
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [loadMore])
 
   const baseFiltered = items.filter((item) => {
     // Archive filter
@@ -50,12 +69,53 @@ export function FeedList() {
   const unpinned = showArchived ? sorted : sorted.filter((i) => !i.is_pinned)
 
   async function handleDelete(id: string) {
-    await fetch(`/api/items/${id}`, { method: "DELETE" })
+    const prev = items.find((i) => i.id === id)
     removeItem(id)
+    toast.success("Deleted")
+    try {
+      const res = await fetch(`/api/items/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error()
+    } catch {
+      if (prev) addItem(prev)
+      toast.error("Failed to delete")
+    }
   }
 
   function handleUpdate(id: string, updates: Partial<Item>) {
     updateItem(id, updates)
+  }
+
+  async function handleSwipeArchive(item: Item) {
+    updateItem(item.id, { is_archived: true })
+    toast.success("Archived")
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_archived: true }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      updateItem(item.id, { is_archived: false })
+      toast.error("Failed to archive")
+    }
+  }
+
+  async function handleSwipePin(item: Item) {
+    const newVal = !item.is_pinned
+    updateItem(item.id, { is_pinned: newVal })
+    toast.success(newVal ? "Pinned" : "Unpinned")
+    try {
+      const res = await fetch(`/api/items/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_pinned: newVal }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      updateItem(item.id, { is_pinned: !newVal })
+      toast.error("Failed to update")
+    }
   }
 
   if (pinned.length === 0 && unpinned.length === 0) {
@@ -90,7 +150,9 @@ export function FeedList() {
             </span>
           </div>
           {pinned.map((item) => (
-            <FeedCard key={item.id} item={item} onDelete={handleDelete} onUpdate={handleUpdate} />
+            <SwipeableCard key={item.id} onSwipeLeft={() => handleSwipeArchive(item)} onSwipeRight={() => handleSwipePin(item)} onLongPress={() => setContextItem(item)}>
+              <FeedCard item={item} onDelete={handleDelete} onUpdate={handleUpdate} />
+            </SwipeableCard>
           ))}
           <div className="h-px bg-gradient-to-r from-transparent via-border/40 to-transparent my-2" />
         </>
@@ -98,8 +160,31 @@ export function FeedList() {
 
       {/* Regular items */}
       {unpinned.map((item) => (
-        <FeedCard key={item.id} item={item} onDelete={handleDelete} onUpdate={handleUpdate} />
+        <SwipeableCard key={item.id} onSwipeLeft={() => handleSwipeArchive(item)} onSwipeRight={() => handleSwipePin(item)} onLongPress={() => setContextItem(item)}>
+          <FeedCard item={item} onDelete={handleDelete} onUpdate={handleUpdate} />
+        </SwipeableCard>
       ))}
+
+      {/* Infinite scroll sentinel */}
+      {hasMore !== false && (
+        <div ref={sentinelRef} className="flex items-center justify-center py-4">
+          {loadingMore && (
+            <span className="h-5 w-5 rounded-full border-2 border-muted-foreground/20 border-t-muted-foreground/60 animate-spin" />
+          )}
+        </div>
+      )}
+      {hasMore === false && unpinned.length > 0 && (
+        <p className="text-center text-xs text-muted-foreground/40 py-4">You've seen it all</p>
+      )}
+
+      {/* Long-press context menu */}
+      <CardContextMenu
+        item={contextItem}
+        onClose={() => setContextItem(null)}
+        onPin={handleSwipePin}
+        onArchive={handleSwipeArchive}
+        onDelete={handleDelete}
+      />
     </div>
   )
 }

@@ -22,6 +22,7 @@ export function ImageCard({
           <img
             src={imageUrl}
             alt={caption || "Uploaded image"}
+            loading="lazy"
             className="w-full max-h-64 object-cover"
           />
         </button>

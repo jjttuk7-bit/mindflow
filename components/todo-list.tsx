@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useStore } from "@/lib/store"
 import { Check, Trash2, Plus, Link as LinkIcon, Menu } from "lucide-react"
+import { toast } from "sonner"
 
 type TodoFilter = "all" | "active" | "completed"
 
@@ -47,12 +48,14 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
     if (res.ok) {
       const todo = await res.json()
       addTodo(todo)
+      toast.success("Todo added")
     }
     setNewContent("")
   }
 
   async function handleToggle(id: string, currentCompleted: boolean) {
     updateTodo(id, { is_completed: !currentCompleted })
+    toast.success(!currentCompleted ? "Completed" : "Marked active")
     await fetch(`/api/todos/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -62,6 +65,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
 
   async function handleDelete(id: string) {
     removeTodo(id)
+    toast.success("Deleted")
     await fetch(`/api/todos/${id}`, { method: "DELETE" })
   }
 

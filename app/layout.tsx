@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -18,6 +19,13 @@ export const metadata: Metadata = {
   description: "AI-powered personal knowledge manager",
 };
 
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,6 +37,7 @@ export default function RootLayout({
         className={`${dmSans.variable} ${dmSerif.variable} font-[family-name:var(--font-body)] antialiased`}
       >
         {children}
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

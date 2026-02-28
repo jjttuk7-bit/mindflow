@@ -24,6 +24,7 @@ export function LinkCard({
           <img
             src={meta.og_image}
             alt={meta.og_title || ""}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         </div>

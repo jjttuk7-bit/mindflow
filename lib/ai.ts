@@ -125,6 +125,22 @@ Content: ${content}`
   }
 }
 
+export async function describeImage(base64: string, mimeType: string): Promise<string> {
+  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType,
+        data: base64,
+      },
+    },
+    "Describe this image in one concise sentence. If there is text in the image, mention it. Keep it under 30 words. If the image context appears Korean, respond in Korean. Return ONLY the description, nothing else.",
+  ])
+
+  return result.response.text().trim()
+}
+
 export async function transcribeAudio(file: File): Promise<string> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 

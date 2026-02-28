@@ -46,6 +46,18 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
     if (!file.type.startsWith("image/")) return
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
+
+    // Auto-describe image with AI
+    const formData = new FormData()
+    formData.append("image", file)
+    fetch("/api/ai/describe-image", { method: "POST", body: formData })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.description && !content.trim()) {
+          setContent(data.description)
+        }
+      })
+      .catch(() => {})
   }
 
   function clearFile() {

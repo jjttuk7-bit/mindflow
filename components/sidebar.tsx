@@ -243,7 +243,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   }
 
   return (
-    <aside className={`w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"} md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none`}>
+    <aside className={`w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full pointer-events-none"} md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none md:pointer-events-auto`}>
       {/* Brand */}
       <div className="px-6 pt-7 pb-5">
         <h1 className="font-display text-2xl tracking-tight text-foreground">

@@ -3,6 +3,7 @@
 import { Sidebar } from "@/components/sidebar"
 import { MainFeed } from "@/components/main-feed"
 import { SearchDialog } from "@/components/search-dialog"
+import { ChatPanel } from "@/components/chat-panel"
 import { TodoList } from "@/components/todo-list"
 import { useItems } from "@/hooks/use-items"
 import { useProjects } from "@/hooks/use-projects"
@@ -21,6 +22,7 @@ export default function Home() {
       <Sidebar />
       {sidebarView === "todos" ? <TodoList /> : <MainFeed onRefetch={refetch} />}
       <SearchDialog />
+      <ChatPanel />
     </div>
   )
 }

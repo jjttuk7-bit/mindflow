@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Pin,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
 import { UserMenu } from "@/components/user-menu"
@@ -170,7 +171,7 @@ export function Sidebar() {
     tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag,
     showArchived, setShowArchived, removeTag, renameTag,
     projects, activeProject, setActiveProject, addProject, removeProject,
-    todos, sidebarView, setSidebarView,
+    todos, sidebarView, setSidebarView, setChatOpen,
   } = useStore()
   const { dark, toggle } = useTheme()
 
@@ -467,6 +468,13 @@ export function Sidebar() {
           >
             <BarChart3 className={`h-4 w-4 ${sidebarView === "insights" ? "text-primary" : "text-muted-foreground/50"}`} />
             Insights
+          </button>
+          <button
+            onClick={() => setChatOpen(true)}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+          >
+            <MessageSquare className="h-4 w-4 text-muted-foreground/50" />
+            AI Chat
           </button>
           <button
             onClick={() => setShowArchived(!showArchived)}

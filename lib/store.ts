@@ -49,6 +49,9 @@ interface MindflowStore {
   sidebarView: SidebarView
   setSidebarView: (view: SidebarView) => void
 
+  smartFolder: string | null
+  setSmartFolder: (folder: string | null) => void
+
   chatOpen: boolean
   setChatOpen: (open: boolean) => void
 }
@@ -116,6 +119,9 @@ export const useStore = create<MindflowStore>((set) => ({
   setViewMode: (viewMode) => set({ viewMode }),
   sidebarView: "feed",
   setSidebarView: (sidebarView) => set({ sidebarView }),
+
+  smartFolder: null,
+  setSmartFolder: (smartFolder) => set({ smartFolder }),
 
   chatOpen: false,
   setChatOpen: (chatOpen) => set({ chatOpen }),

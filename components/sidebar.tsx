@@ -172,6 +172,7 @@ export function Sidebar() {
     showArchived, setShowArchived, removeTag, renameTag,
     projects, activeProject, setActiveProject, addProject, removeProject,
     todos, sidebarView, setSidebarView, setChatOpen,
+    smartFolder, setSmartFolder,
   } = useStore()
   const { dark, toggle } = useTheme()
 
@@ -187,6 +188,12 @@ export function Sidebar() {
   }))
 
   const archivedCount = items.filter((i) => i.is_archived).length
+  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived).length
+  const thisWeekCount = (() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    return items.filter((i) => !i.is_archived && new Date(i.created_at) >= weekAgo).length
+  })()
   const pendingTodoCount = todos.filter((t) => !t.is_completed).length
 
   async function handleRenameTag(id: string, name: string) {
@@ -277,9 +284,10 @@ export function Sidebar() {
               {projects.map((project) => (
                 <div key={project.id} className="group relative">
                   <button
-                    onClick={() =>
+                    onClick={() => {
                       setActiveProject(activeProject === project.id ? null : project.id)
-                    }
+                      setSmartFolder(null)
+                    }}
                     className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                       activeProject === project.id
                         ? "bg-primary/10 text-primary font-medium"
@@ -348,29 +356,63 @@ export function Sidebar() {
           <div className="space-y-0.5">
             <button
               onClick={() => {
-                setSidebarView("feed")
-                setActiveFilter("all")
-                setActiveTag(null)
-                setActiveProject(null)
-                if (showArchived) setShowArchived(false)
+                if (smartFolder === "this-week") {
+                  setSmartFolder(null)
+                } else {
+                  setSmartFolder("this-week")
+                  setSidebarView("feed")
+                  setActiveFilter("all")
+                  setActiveTag(null)
+                  setActiveProject(null)
+                  if (showArchived) setShowArchived(false)
+                }
               }}
-              className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+              className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                smartFolder === "this-week"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground/70 hover:bg-accent hover:text-foreground"
+              }`}
             >
-              <CalendarDays className="h-4 w-4 text-muted-foreground/50" />
-              <span>This Week</span>
+              <span className="flex items-center gap-2.5">
+                <CalendarDays className={`h-4 w-4 ${smartFolder === "this-week" ? "text-primary" : "text-muted-foreground/50"}`} />
+                This Week
+              </span>
+              <span className={`text-[11px] tabular-nums ${
+                smartFolder === "this-week" ? "text-primary/70" : "text-muted-foreground/50"
+              }`}>
+                {thisWeekCount}
+              </span>
             </button>
             <button
               onClick={() => {
-                setSidebarView("feed")
-                setActiveFilter("all")
-                setActiveTag(null)
-                setActiveProject(null)
-                if (!showArchived) setShowArchived(false)
+                if (smartFolder === "pinned") {
+                  setSmartFolder(null)
+                } else {
+                  setSmartFolder("pinned")
+                  setSidebarView("feed")
+                  setActiveFilter("all")
+                  setActiveTag(null)
+                  setActiveProject(null)
+                  if (showArchived) setShowArchived(false)
+                }
               }}
-              className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+              className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                smartFolder === "pinned"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground/70 hover:bg-accent hover:text-foreground"
+              }`}
             >
-              <Pin className="h-4 w-4 text-muted-foreground/50" />
-              <span>Pinned</span>
+              <span className="flex items-center gap-2.5">
+                <Pin className={`h-4 w-4 ${smartFolder === "pinned" ? "text-primary" : "text-muted-foreground/50"}`} />
+                Pinned
+              </span>
+              {pinnedCount > 0 && (
+                <span className={`text-[11px] tabular-nums ${
+                  smartFolder === "pinned" ? "text-primary/70" : "text-muted-foreground/50"
+                }`}>
+                  {pinnedCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -397,6 +439,7 @@ export function Sidebar() {
                 onToggle={() => {
                   setActiveTag(activeTag === tag.name ? null : tag.name)
                   if (showArchived) setShowArchived(false)
+                  setSmartFolder(null)
                 }}
                 onRename={(name) => handleRenameTag(tag.id, name)}
                 onDelete={() => handleDeleteTag(tag.id)}
@@ -416,7 +459,7 @@ export function Sidebar() {
             {filters.map((f) => (
               <button
                 key={f.value}
-                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false) }}
+                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false); setSmartFolder(null) }}
                 className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                   activeFilter === f.value && !showArchived
                     ? "bg-primary/10 text-primary font-medium"
@@ -473,7 +516,7 @@ export function Sidebar() {
             AI Chat
           </button>
           <button
-            onClick={() => setShowArchived(!showArchived)}
+            onClick={() => { setShowArchived(!showArchived); setSmartFolder(null) }}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
               showArchived
                 ? "bg-primary/10 text-primary font-medium"

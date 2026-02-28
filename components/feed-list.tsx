@@ -6,7 +6,7 @@ import { Item } from "@/lib/supabase/types"
 import { Sparkles, Pin } from "lucide-react"
 
 export function FeedList() {
-  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem, activeProject } = useStore()
+  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem, activeProject, smartFolder, searchQuery } = useStore()
 
   const baseFiltered = items.filter((item) => {
     // Archive filter
@@ -18,6 +18,23 @@ export function FeedList() {
     if (activeTag && !item.tags?.some((t) => t.name === activeTag)) return false
     // Project filter
     if (activeProject && item.project_id !== activeProject) return false
+    // Search filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      const matchContent = item.content.toLowerCase().includes(q)
+      const matchSummary = item.summary?.toLowerCase().includes(q)
+      const matchTag = item.tags?.some((t) => t.name.toLowerCase().includes(q))
+      if (!matchContent && !matchSummary && !matchTag) return false
+    }
+    // Smart folder filter
+    if (smartFolder === "this-week") {
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      if (new Date(item.created_at) < weekAgo) return false
+    }
+    if (smartFolder === "pinned") {
+      if (!item.is_pinned) return false
+    }
     return true
   })
 

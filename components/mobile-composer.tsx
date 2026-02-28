@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useStore } from "@/lib/store"
 import { ContentType } from "@/lib/supabase/types"
-import { createClient } from "@/lib/supabase/client"
 import { VoiceRecorder } from "@/components/voice-recorder"
 import { toast } from "sonner"
 import {
@@ -56,32 +55,31 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
   }
 
   async function uploadImage(file: File): Promise<string | null> {
-    const supabase = createClient()
-    const ext = file.name.split(".").pop()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const { error } = await supabase.storage
-      .from("items-images")
-      .upload(path, file, { contentType: file.type })
-    if (error) {
-      toast.error(`Upload failed: ${error.message}`)
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("bucket", "items-images")
+    const res = await fetch("/api/upload", { method: "POST", body: formData })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      toast.error(`Upload failed: ${data.error || res.statusText}`)
       return null
     }
-    const { data } = supabase.storage.from("items-images").getPublicUrl(path)
-    return data.publicUrl
+    const { url } = await res.json()
+    return url
   }
 
   async function uploadAudio(blob: Blob): Promise<string | null> {
-    const supabase = createClient()
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webm`
-    const { error } = await supabase.storage
-      .from("items-audio")
-      .upload(path, blob, { contentType: "audio/webm" })
-    if (error) {
-      toast.error(`Audio upload failed: ${error.message}`)
+    const formData = new FormData()
+    formData.append("file", new File([blob], "recording.webm", { type: "audio/webm" }))
+    formData.append("bucket", "items-audio")
+    const res = await fetch("/api/upload", { method: "POST", body: formData })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      toast.error(`Upload failed: ${data.error || res.statusText}`)
       return null
     }
-    const { data } = supabase.storage.from("items-audio").getPublicUrl(path)
-    return data.publicUrl
+    const { url } = await res.json()
+    return url
   }
 
   async function handleVoiceRecorded(blob: Blob, duration: number) {

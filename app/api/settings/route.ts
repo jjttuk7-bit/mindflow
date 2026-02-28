@@ -29,7 +29,12 @@ export async function PATCH(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const updates = await req.json()
-  const allowed = { preferences: updates.preferences }
+
+  // Build allowed update fields
+  const allowed: Record<string, unknown> = {}
+  if (updates.preferences !== undefined) allowed.preferences = updates.preferences
+  if (updates.telegram_chat_id !== undefined) allowed.telegram_chat_id = updates.telegram_chat_id
+  if (updates.telegram_linked_at !== undefined) allowed.telegram_linked_at = updates.telegram_linked_at
 
   const { data, error } = await supabase
     .from("user_settings")

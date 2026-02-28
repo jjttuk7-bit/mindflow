@@ -508,13 +508,13 @@ export function Sidebar() {
             <span className="ml-2">to search</span>
           </p>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => {/* Settings page navigation - placeholder */}}
+            <a
+              href="/settings"
               className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
               aria-label="Settings"
             >
               <Settings className="h-4 w-4" />
-            </button>
+            </a>
             <ExportMenu />
             <button
               onClick={toggle}

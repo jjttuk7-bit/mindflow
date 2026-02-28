@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Button } from "@/components/ui/button"
+// Button replaced with native button for better mobile touch handling
 import { useStore } from "@/lib/store"
 import { ContentType } from "@/lib/supabase/types"
 import { createClient } from "@/lib/supabase/client"
@@ -27,6 +27,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { addItem } = useStore()
 
@@ -120,12 +121,16 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     }
 
     setIsSubmitting(true)
+    setError(null)
     try {
       let metadata = {}
 
       if (activeType === "image" && selectedFile) {
         const imageUrl = await uploadImage(selectedFile)
-        if (!imageUrl) return
+        if (!imageUrl) {
+          setError("Failed to upload image")
+          return
+        }
         metadata = { image_url: imageUrl }
       }
 
@@ -144,7 +149,12 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         setContent("")
         clearFile()
         onSaved?.()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || `Save failed (${res.status})`)
       }
+    } catch (err) {
+      setError("Network error. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -258,14 +268,19 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         />
       )}
 
+      {error && (
+        <p className="text-xs text-destructive px-4 pb-1">{error}</p>
+      )}
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="flex gap-0.5">
           {typeButtons.map((btn) => (
             <button
               key={btn.type}
+              type="button"
               onClick={() => {
                 setActiveType(btn.type)
                 clearFile()
+                setError(null)
               }}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                 activeType === btn.type
@@ -278,11 +293,11 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
             </button>
           ))}
         </div>
-        <Button
-          onClick={handleSubmit}
+        <button
+          type="button"
+          onPointerDown={(e) => { e.preventDefault(); if (canSubmit) handleSubmit() }}
           disabled={!canSubmit}
-          size="sm"
-          className="rounded-lg h-8 px-3 gap-1.5 text-xs font-medium"
+          className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg h-10 sm:h-8 px-4 sm:px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50 transition-all touch-manipulation"
         >
           {isSubmitting ? (
             <span className="flex items-center gap-1.5">
@@ -295,7 +310,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
               Save
             </>
           )}
-        </Button>
+        </button>
       </div>
     </div>
   )

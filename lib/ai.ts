@@ -61,6 +61,70 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   return result.embedding.values
 }
 
+export async function classifyProject(
+  content: string,
+  type: string,
+  existingProjects: { id: string; name: string }[]
+): Promise<{ action: "none" } | { action: "new"; name: string } | { action: "existing"; project_id: string }> {
+  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
+
+  let prompt: string
+  if (existingProjects.length === 0) {
+    prompt = `You are a project classifier. Given content, decide if it warrants creating a new project.
+A project groups related items by topic/theme (e.g., "Web Development", "Travel Plans", "Work").
+Content type: ${type}.
+Return ONLY valid JSON: {"action":"new","name":"Project Name"} or {"action":"none"}.
+
+Content: ${content}`
+  } else {
+    const projectList = existingProjects.map((p) => `- ${p.id}: ${p.name}`).join("\n")
+    prompt = `You are a project classifier. Given content, assign it to an existing project or suggest a new one.
+Existing projects:
+${projectList}
+
+Content type: ${type}.
+Return ONLY valid JSON:
+- {"action":"existing","project_id":"<id>"} if it fits an existing project
+- {"action":"new","name":"Project Name"} if it needs a new project
+- {"action":"none"} if it doesn't fit any project
+
+Content: ${content}`
+  }
+
+  const result = await model.generateContent(prompt)
+  const text = result.response.text().trim()
+  try {
+    return JSON.parse(text)
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/)
+    if (match) {
+      try { return JSON.parse(match[0]) } catch { /* ignore */ }
+    }
+    return { action: "none" }
+  }
+}
+
+export async function extractTodos(content: string): Promise<string[]> {
+  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
+
+  const prompt = `You are a TODO extractor. Given content, extract actionable TODO items.
+Return ONLY a JSON array of strings. If there are no actionable items, return [].
+
+Content: ${content}`
+
+  const result = await model.generateContent(prompt)
+  const text = result.response.text().trim()
+  try {
+    return JSON.parse(text)
+  } catch {
+    const match = text.match(/\[[\s\S]*\]/)
+    if (match) {
+      try { return JSON.parse(match[0]) } catch { /* ignore */ }
+    }
+    return []
+  }
+}
+
 export async function transcribeAudio(file: File): Promise<string> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 

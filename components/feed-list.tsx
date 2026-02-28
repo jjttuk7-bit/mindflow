@@ -6,7 +6,7 @@ import { Item } from "@/lib/supabase/types"
 import { Sparkles, Pin } from "lucide-react"
 
 export function FeedList() {
-  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem } = useStore()
+  const { items, activeFilter, activeTag, showArchived, sortBy, removeItem, updateItem, activeProject } = useStore()
 
   const baseFiltered = items.filter((item) => {
     // Archive filter
@@ -16,6 +16,8 @@ export function FeedList() {
     if (activeFilter !== "all" && item.type !== activeFilter) return false
     // Tag filter
     if (activeTag && !item.tags?.some((t) => t.name === activeTag)) return false
+    // Project filter
+    if (activeProject && item.project_id !== activeProject) return false
     return true
   })
 

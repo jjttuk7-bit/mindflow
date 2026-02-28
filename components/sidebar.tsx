@@ -5,7 +5,29 @@ import { useStore } from "@/lib/store"
 import { useTheme } from "@/hooks/use-theme"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ContentType } from "@/lib/supabase/types"
-import { FileText, Link, Image, Mic, Layers, Sun, Moon, Archive, MoreHorizontal, Pencil, Trash2, Check, X } from "lucide-react"
+import {
+  FileText,
+  Link,
+  Image,
+  Mic,
+  Layers,
+  Sun,
+  Moon,
+  Archive,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  FolderOpen,
+  ListTodo,
+  BarChart3,
+  Settings,
+  Plus,
+  ChevronDown,
+  Pin,
+  CalendarDays,
+} from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
 import { UserMenu } from "@/components/user-menu"
 
@@ -144,9 +166,17 @@ function TagItem({
 }
 
 export function Sidebar() {
-  const { tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag, showArchived, setShowArchived, removeTag, renameTag } =
-    useStore()
+  const {
+    tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag,
+    showArchived, setShowArchived, removeTag, renameTag,
+    projects, activeProject, setActiveProject, addProject, removeProject,
+    todos, sidebarView, setSidebarView,
+  } = useStore()
   const { dark, toggle } = useTheme()
+
+  const [creatingProject, setCreatingProject] = useState(false)
+  const [newProjectName, setNewProjectName] = useState("")
+  const [projectsExpanded, setProjectsExpanded] = useState(true)
 
   const tagCounts = tags.map((tag) => ({
     ...tag,
@@ -156,6 +186,7 @@ export function Sidebar() {
   }))
 
   const archivedCount = items.filter((i) => i.is_archived).length
+  const pendingTodoCount = todos.filter((t) => !t.is_completed).length
 
   async function handleRenameTag(id: string, name: string) {
     renameTag(id, name)
@@ -173,6 +204,36 @@ export function Sidebar() {
     await fetch(`/api/tags/${id}`, { method: "DELETE" })
   }
 
+  async function handleCreateProject() {
+    if (!newProjectName.trim()) return
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newProjectName.trim() }),
+    })
+    if (res.ok) {
+      const project = await res.json()
+      addProject(project)
+    }
+    setNewProjectName("")
+    setCreatingProject(false)
+  }
+
+  async function handleDeleteProject(id: string) {
+    await fetch(`/api/projects/${id}`, { method: "DELETE" })
+    removeProject(id)
+    if (activeProject === id) setActiveProject(null)
+  }
+
+  function getItemCountForProject(projectId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const project = projects.find((p) => p.id === projectId) as any
+    if (project?.items && Array.isArray(project.items) && project.items.length > 0) {
+      return project.items[0]?.count ?? 0
+    }
+    return items.filter((i) => i.project_id === projectId).length
+  }
+
   return (
     <aside className="w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen">
       {/* Brand */}
@@ -188,6 +249,133 @@ export function Sidebar() {
       <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
 
       <ScrollArea className="flex-1 py-5">
+        {/* Projects */}
+        <div className="px-4">
+          <div className="flex items-center justify-between px-2 mb-3">
+            <button
+              onClick={() => setProjectsExpanded(!projectsExpanded)}
+              className="flex items-center gap-1 text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70"
+            >
+              <ChevronDown className={`h-3 w-3 transition-transform ${projectsExpanded ? "" : "-rotate-90"}`} />
+              Projects
+            </button>
+            <button
+              onClick={() => setCreatingProject(true)}
+              className="h-5 w-5 flex items-center justify-center rounded text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <Plus className="h-3 w-3" />
+            </button>
+          </div>
+          {projectsExpanded && (
+            <div className="space-y-0.5">
+              {projects.length === 0 && !creatingProject && (
+                <p className="text-xs text-muted-foreground/50 px-2 italic">
+                  No projects yet
+                </p>
+              )}
+              {projects.map((project) => (
+                <div key={project.id} className="group relative">
+                  <button
+                    onClick={() =>
+                      setActiveProject(activeProject === project.id ? null : project.id)
+                    }
+                    className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+                      activeProject === project.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-foreground/70 hover:bg-accent hover:text-foreground"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: project.color }}
+                      />
+                      <span className="truncate">{project.name}</span>
+                    </span>
+                    <span className={`text-[11px] tabular-nums flex-shrink-0 ${
+                      activeProject === project.id ? "text-primary/70" : "text-muted-foreground/50"
+                    }`}>
+                      {getItemCountForProject(project.id)}
+                    </span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteProject(project.id) }}
+                    className="absolute right-8 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {creatingProject && (
+                <div className="flex items-center gap-1 px-3 py-1.5">
+                  <input
+                    autoFocus
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCreateProject()
+                      if (e.key === "Escape") { setCreatingProject(false); setNewProjectName("") }
+                    }}
+                    placeholder="Project name..."
+                    className="flex-1 min-w-0 bg-muted/50 border border-border/60 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30"
+                  />
+                  <button
+                    onClick={handleCreateProject}
+                    className="h-6 w-6 flex items-center justify-center rounded text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    <Check className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={() => { setCreatingProject(false); setNewProjectName("") }}
+                    className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+
+        {/* Smart Folders */}
+        <div className="px-4">
+          <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
+            Smart Folders
+          </p>
+          <div className="space-y-0.5">
+            <button
+              onClick={() => {
+                setSidebarView("feed")
+                setActiveFilter("all")
+                setActiveTag(null)
+                setActiveProject(null)
+                if (showArchived) setShowArchived(false)
+              }}
+              className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+            >
+              <CalendarDays className="h-4 w-4 text-muted-foreground/50" />
+              <span>This Week</span>
+            </button>
+            <button
+              onClick={() => {
+                setSidebarView("feed")
+                setActiveFilter("all")
+                setActiveTag(null)
+                setActiveProject(null)
+                if (!showArchived) setShowArchived(false)
+              }}
+              className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+            >
+              <Pin className="h-4 w-4 text-muted-foreground/50" />
+              <span>Pinned</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+
         {/* Tags */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
@@ -218,7 +406,7 @@ export function Sidebar() {
 
         <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
 
-        {/* Filters */}
+        {/* Type Filters */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
             Type
@@ -245,8 +433,41 @@ export function Sidebar() {
 
         <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
 
-        {/* Archive */}
-        <div className="px-4">
+        {/* Navigation */}
+        <div className="px-4 space-y-0.5">
+          <button
+            onClick={() => setSidebarView(sidebarView === "todos" ? "feed" : "todos")}
+            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+              sidebarView === "todos"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            <span className="flex items-center gap-2.5">
+              <ListTodo className={`h-4 w-4 ${sidebarView === "todos" ? "text-primary" : "text-muted-foreground/50"}`} />
+              TODO
+            </span>
+            {pendingTodoCount > 0 && (
+              <span className={`text-[11px] tabular-nums px-1.5 py-0.5 rounded-full ${
+                sidebarView === "todos"
+                  ? "bg-primary/20 text-primary"
+                  : "bg-muted text-muted-foreground/60"
+              }`}>
+                {pendingTodoCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setSidebarView(sidebarView === "insights" ? "feed" : "insights")}
+            className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+              sidebarView === "insights"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            <BarChart3 className={`h-4 w-4 ${sidebarView === "insights" ? "text-primary" : "text-muted-foreground/50"}`} />
+            Insights
+          </button>
           <button
             onClick={() => setShowArchived(!showArchived)}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
@@ -279,6 +500,13 @@ export function Sidebar() {
             <span className="ml-2">to search</span>
           </p>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => {/* Settings page navigation - placeholder */}}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+              aria-label="Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
             <ExportMenu />
             <button
               onClick={toggle}

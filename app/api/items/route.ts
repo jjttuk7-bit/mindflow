@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl
   const type = searchParams.get("type")
+  const projectId = searchParams.get("project_id")
   const limit = parseInt(searchParams.get("limit") || "50")
   const offset = parseInt(searchParams.get("offset") || "0")
 
@@ -77,6 +78,10 @@ export async function GET(req: NextRequest) {
 
   if (type && type !== "all") {
     query = query.eq("type", type)
+  }
+
+  if (projectId) {
+    query = query.eq("project_id", projectId)
   }
 
   const { data, error } = await query

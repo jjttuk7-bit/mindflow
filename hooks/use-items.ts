@@ -4,19 +4,20 @@ import { useEffect, useCallback } from "react"
 import { useStore } from "@/lib/store"
 
 export function useItems() {
-  const { setItems, setTags, activeFilter, activeTag } = useStore()
+  const { setItems, setTags, activeFilter, activeTag, activeProject } = useStore()
 
   const fetchItems = useCallback(async () => {
     const params = new URLSearchParams()
     if (activeFilter !== "all") params.set("type", activeFilter)
     if (activeTag) params.set("tag", activeTag)
+    if (activeProject) params.set("project_id", activeProject)
 
     const res = await fetch(`/api/items?${params}`)
     if (res.ok) {
       const data = await res.json()
       setItems(data)
     }
-  }, [activeFilter, activeTag, setItems])
+  }, [activeFilter, activeTag, activeProject, setItems])
 
   const fetchTags = useCallback(async () => {
     const res = await fetch("/api/tags")

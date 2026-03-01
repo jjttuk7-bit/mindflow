@@ -59,13 +59,10 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         const desc = data?.description || null
-        if (desc && !content.trim()) {
-          setContent(desc)
-        }
-        describePromiseRef.current = null
+        if (desc) setContent(desc)
         return desc
       })
-      .catch(() => { describePromiseRef.current = null; return null })
+      .catch(() => null)
   }
 
   function clearFile() {
@@ -256,8 +253,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
 
         // If image saved without caption, update when AI caption arrives
         if (activeType === "image" && !content.trim() && describePromiseRef.current) {
-          const pendingPromise = describePromiseRef.current
-          pendingPromise.then((desc) => {
+          describePromiseRef.current.then((desc) => {
             if (desc) {
               updateItem(item.id, { content: desc })
               fetch(`/api/items/${item.id}`, {
@@ -268,6 +264,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
             }
           })
         }
+        describePromiseRef.current = null
 
         setContent("")
         clearFile()

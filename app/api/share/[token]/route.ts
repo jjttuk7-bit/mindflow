@@ -1,15 +1,19 @@
-import { createClient } from "@/lib/supabase/server"
+import { createClient as createAdminClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
+
+const supabaseAdmin = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params
-  const supabase = await createClient()
 
-  // Find shared item by token
-  const { data: shared, error: shareError } = await supabase
+  // Use admin client to bypass RLS for public shared items
+  const { data: shared, error: shareError } = await supabaseAdmin
     .from("shared_items")
     .select("item_id")
     .eq("token", token)
@@ -20,7 +24,7 @@ export async function GET(
   }
 
   // Get the full item with tags
-  const { data: item, error: itemError } = await supabase
+  const { data: item, error: itemError } = await supabaseAdmin
     .from("items")
     .select("*, tags:item_tags(tag:tags(*))")
     .eq("id", shared.item_id)

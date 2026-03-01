@@ -42,6 +42,8 @@ export default function LoginPage() {
           password,
         })
         if (error) throw error
+        // Send welcome email
+        fetch("/api/auth/welcome", { method: "POST" }).catch(() => {})
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,

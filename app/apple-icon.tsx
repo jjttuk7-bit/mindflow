@@ -11,8 +11,8 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="108" fill="url(#bg)"/>
-  <path d="M 135 375 L 135 190 Q 135 145 165 145 Q 195 145 220 200 L 256 285 L 292 200 Q 317 145 347 145 Q 377 145 377 190 L 377 375" fill="none" stroke="white" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 105 415 Q 180 450 256 415 Q 332 380 407 415" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M 105 390 L 105 130 L 256 310 L 407 130 L 407 390" fill="none" stroke="white" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 100 430 Q 200 455 256 435 Q 312 415 412 440" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="14" stroke-linecap="round"/>
 </svg>`
 
 export default function AppleIcon() {

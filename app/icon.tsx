@@ -3,18 +3,6 @@ import { ImageResponse } from "next/og"
 export const size = { width: 512, height: 512 }
 export const contentType = "image/png"
 
-const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#C4724A"/>
-      <stop offset="100%" stop-color="#8B4F35"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
-  <path d="M 105 390 L 105 130 L 256 310 L 407 130 L 407 390" fill="none" stroke="white" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M 100 430 Q 200 455 256 435 Q 312 415 412 440" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="14" stroke-linecap="round"/>
-</svg>`).toString("base64")
-
 export default function Icon() {
   return new ImageResponse(
     (
@@ -25,15 +13,42 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          background: "linear-gradient(135deg, #C4724A, #8B4F35)",
+          borderRadius: 108,
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`data:image/svg+xml;base64,${svg}`}
-          width={512}
-          height={512}
-          alt=""
-        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 0,
+          }}
+        >
+          <span
+            style={{
+              color: "white",
+              fontSize: 340,
+              fontWeight: 900,
+              fontFamily: "Georgia, serif",
+              lineHeight: 0.85,
+              letterSpacing: -10,
+              marginTop: -15,
+            }}
+          >
+            M
+          </span>
+          <div
+            style={{
+              display: "flex",
+              width: 260,
+              height: 14,
+              marginTop: -30,
+              borderRadius: 7,
+              background: "rgba(255,255,255,0.2)",
+            }}
+          />
+        </div>
       </div>
     ),
     { ...size }

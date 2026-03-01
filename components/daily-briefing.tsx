@@ -69,6 +69,7 @@ export function DailyBriefing() {
 
   const hour = new Date().getHours()
   const TimeIcon = hour < 12 ? Sun : hour < 18 ? Cloud : Moon
+  const greeting = hour < 12 ? "좋은 아침이에요" : hour < 18 ? "좋은 오후에요" : "좋은 저녁이에요"
 
   const { yesterday, todos, week, totalItems } = data
 
@@ -89,7 +90,7 @@ export function DailyBriefing() {
         </div>
         <div>
           <span className="text-[13px] font-semibold text-foreground/90">
-            {data.greeting}
+            {greeting}
           </span>
           <span className="text-[11px] text-muted-foreground/50 ml-2">
             총 {totalItems}개의 기억

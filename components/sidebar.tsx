@@ -22,6 +22,7 @@ import {
   FolderOpen,
   ListTodo,
   BarChart3,
+  GitBranch,
   Settings,
   Plus,
   ChevronDown,
@@ -508,6 +509,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
             Insights
+          </a>
+          <a
+            href="/knowledge-map"
+            onClick={onClose}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+          >
+            <GitBranch className="h-4 w-4 text-muted-foreground/50" />
+            Knowledge Map
           </a>
           <button
             onClick={() => { setChatOpen(true); onClose() }}

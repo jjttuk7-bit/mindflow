@@ -126,7 +126,7 @@ Content: ${content}`
 }
 
 export async function describeImage(base64: string, mimeType: string): Promise<string> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
+  const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-pro-preview-05-06" })
 
   const result = await model.generateContent([
     {
@@ -135,14 +135,14 @@ export async function describeImage(base64: string, mimeType: string): Promise<s
         data: base64,
       },
     },
-    `Analyze this image and provide a concise description (1-2 sentences, under 40 words).
+    `이 이미지를 분석하고 간결한 설명(1-2문장, 40단어 이내)을 작성하세요.
 
-Rules:
-- If the image contains text, TRANSCRIBE the text EXACTLY as written first, then briefly describe the image context.
-- For screenshots or documents, focus on the text content.
-- For photos, describe the main subject and scene.
-- If the text or context is Korean, respond entirely in Korean.
-- Return ONLY the description, no labels or prefixes.`,
+규칙:
+- 이미지에 텍스트가 있으면 한글, 숫자, 영문 모두 정확히 그대로 옮겨 적으세요. 한글 자모 하나하나 정확히 읽어주세요.
+- 스크린샷이나 문서는 텍스트 내용에 집중하세요.
+- 사진은 주요 피사체와 장면을 설명하세요.
+- 한국어로 응답하세요.
+- 설명만 반환하고, 레이블이나 접두사는 붙이지 마세요.`,
   ])
 
   return result.response.text().trim()

@@ -103,6 +103,16 @@ export function MoreMenu() {
         <div className="px-1 pt-2">
           <ExportMenu />
         </div>
+
+        <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+          <a href="/terms" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+            이용약관
+          </a>
+          <span className="text-muted-foreground/20">|</span>
+          <a href="/privacy" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+            개인정보처리방침
+          </a>
+        </div>
       </div>
     </main>
   )

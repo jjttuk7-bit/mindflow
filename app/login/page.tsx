@@ -188,6 +188,14 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+
+        <p className="text-center text-[11px] text-muted-foreground/50 mt-4">
+          계속 진행하면{" "}
+          <a href="/terms" className="underline hover:text-muted-foreground">이용약관</a>
+          {" "}및{" "}
+          <a href="/privacy" className="underline hover:text-muted-foreground">개인정보처리방침</a>
+          에 동의하는 것으로 간주됩니다.
+        </p>
       </div>
     </div>
   )

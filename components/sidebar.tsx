@@ -551,6 +551,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-border/40 space-y-3">
         <UserMenu />
+        <div className="flex items-center gap-2 px-1">
+          <a href="/terms" className="text-[10px] text-muted-foreground/35 hover:text-muted-foreground transition-colors">이용약관</a>
+          <span className="text-muted-foreground/20 text-[10px]">|</span>
+          <a href="/privacy" className="text-[10px] text-muted-foreground/35 hover:text-muted-foreground transition-colors">개인정보처리방침</a>
+        </div>
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-muted-foreground/40 tracking-wide">
             <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>

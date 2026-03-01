@@ -4,7 +4,7 @@ import { useStore } from "@/lib/store"
 import { useTheme } from "@/hooks/use-theme"
 import { ExportMenu } from "@/components/export-menu"
 import {
-  CalendarDays, Pin, Archive, BarChart3, Settings, Sun, Moon,
+  CalendarDays, Pin, Archive, BarChart3, GitBranch, Settings, Sun, Moon,
 } from "lucide-react"
 
 export function MoreMenu() {
@@ -84,6 +84,10 @@ export function MoreMenu() {
         <a href="/insights" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <BarChart3 className="h-5 w-5 text-muted-foreground/60" />
           Insights
+        </a>
+        <a href="/knowledge-map" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
+          <GitBranch className="h-5 w-5 text-muted-foreground/60" />
+          지식 맵
         </a>
         <a href="/settings" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <Settings className="h-5 w-5 text-muted-foreground/60" />

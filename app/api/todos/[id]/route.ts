@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, todoUpdateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function PATCH(
@@ -9,13 +10,10 @@ export async function PATCH(
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const body = await req.json()
-  const allowed: Record<string, unknown> = {}
-  if (body.is_completed !== undefined) allowed.is_completed = body.is_completed
-  if (body.content !== undefined) allowed.content = body.content
-  if (body.project_id !== undefined) allowed.project_id = body.project_id
-  if (body.due_date !== undefined) allowed.due_date = body.due_date
-  allowed.updated_at = new Date().toISOString()
+  const raw = await req.json()
+  const parsed = validate(todoUpdateSchema, raw)
+  if (!parsed.success) return parsed.error
+  const allowed: Record<string, unknown> = { ...parsed.data, updated_at: new Date().toISOString() }
 
   const { data, error } = await supabase
     .from("todos")

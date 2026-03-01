@@ -1,13 +1,17 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateTags, generateSummary, generateEmbedding, classifyProject, extractTodos } from "@/lib/ai"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
+import { validate, aiTagSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
     const { supabase, user } = await getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const { item_id, content, type } = await req.json()
+    const raw = await req.json()
+    const parsed = validate(aiTagSchema, raw)
+    if (!parsed.success) return parsed.error
+    const { item_id, content, type } = parsed.data
 
     // Get existing tags for reuse
     const { data: userTagRows } = await supabase

@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, settingsUpdateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET() {
@@ -28,13 +29,10 @@ export async function PATCH(req: NextRequest) {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const updates = await req.json()
-
-  // Build allowed update fields
-  const allowed: Record<string, unknown> = {}
-  if (updates.preferences !== undefined) allowed.preferences = updates.preferences
-  if (updates.telegram_chat_id !== undefined) allowed.telegram_chat_id = updates.telegram_chat_id
-  if (updates.telegram_linked_at !== undefined) allowed.telegram_linked_at = updates.telegram_linked_at
+  const raw = await req.json()
+  const parsed = validate(settingsUpdateSchema, raw)
+  if (!parsed.success) return parsed.error
+  const allowed: Record<string, unknown> = { ...parsed.data }
 
   const { data, error } = await supabase
     .from("user_settings")

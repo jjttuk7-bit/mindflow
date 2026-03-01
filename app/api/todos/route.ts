@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, todoCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -34,8 +35,10 @@ export async function POST(req: NextRequest) {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const body = await req.json()
-  const { content, project_id, item_id, due_date } = body
+  const raw = await req.json()
+  const parsed = validate(todoCreateSchema, raw)
+  if (!parsed.success) return parsed.error
+  const { content, project_id, item_id, due_date } = parsed.data
 
   const { data, error } = await supabase
     .from("todos")

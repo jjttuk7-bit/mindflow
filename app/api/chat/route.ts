@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateEmbedding } from "@/lib/ai"
 import { checkUsageLimit } from "@/lib/plans"
+import { validate, chatSchema } from "@/lib/validations"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -26,11 +27,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { message, session_id } = await req.json()
-
-  if (!message?.trim()) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 })
-  }
+  const raw = await req.json()
+  const parsed = validate(chatSchema, raw)
+  if (!parsed.success) return parsed.error
+  const { message, session_id } = parsed.data
 
   // Create or reuse session
   let currentSessionId = session_id

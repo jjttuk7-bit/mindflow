@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, tagUpdateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function PATCH(
@@ -9,11 +10,13 @@ export async function PATCH(
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { name } = await req.json()
+  const raw = await req.json()
+  const parsed = validate(tagUpdateSchema, raw)
+  if (!parsed.success) return parsed.error
 
   const { data, error } = await supabase
     .from("tags")
-    .update({ name })
+    .update({ name: parsed.data.name })
     .eq("id", id)
     .select()
     .single()

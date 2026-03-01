@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, itemCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 import ogs from "open-graph-scraper"
 
@@ -28,8 +29,10 @@ export async function POST(req: NextRequest) {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const body = await req.json()
-  const { type, content, metadata = {} } = body
+  const raw = await req.json()
+  const parsed = validate(itemCreateSchema, raw)
+  if (!parsed.success) return parsed.error
+  const { type, content, metadata } = parsed.data
 
   // For links, scrape OG metadata
   let meta = metadata

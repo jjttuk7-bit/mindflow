@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, itemUpdateSchema } from "@/lib/validations"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -15,11 +16,13 @@ export async function PATCH(
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const body = await req.json()
+  const raw = await req.json()
+  const parsed = validate(itemUpdateSchema, raw)
+  if (!parsed.success) return parsed.error
 
   const { data, error } = await supabase
     .from("items")
-    .update({ ...body, updated_at: new Date().toISOString() })
+    .update({ ...parsed.data, updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

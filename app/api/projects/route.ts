@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
+import { validate, projectCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET() {
@@ -37,8 +38,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const body = await req.json()
-  const { name, color = "#8B7355", description } = body
+  const raw = await req.json()
+  const parsed = validate(projectCreateSchema, raw)
+  if (!parsed.success) return parsed.error
+  const { name, color, description } = parsed.data
 
   const { data, error } = await supabase
     .from("projects")

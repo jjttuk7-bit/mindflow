@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
 import { checkUsageLimit } from "@/lib/plans"
+import { validate, exportSummarySchema } from "@/lib/validations"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -32,13 +33,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const body = await req.json()
-    const { item_ids, project_id, tag, depth = "brief" } = body as {
-      item_ids?: string[]
-      project_id?: string
-      tag?: string
-      depth: "brief" | "detailed"
-    }
+    const raw = await req.json()
+    const parsed = validate(exportSummarySchema, raw)
+    if (!parsed.success) return parsed.error
+    const { item_ids, project_id, tag, depth } = parsed.data
 
     // Build query to fetch items
     let query = supabase

@@ -1,10 +1,14 @@
 import { getUser } from "@/lib/supabase/server"
+import { validate, shareSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  const { itemId } = await req.json()
+  const raw = await req.json()
+  const parsed = validate(shareSchema, raw)
+  if (!parsed.success) return parsed.error
+  const { itemId } = parsed.data
 
   // Check if already shared
   const { data: existing } = await supabase

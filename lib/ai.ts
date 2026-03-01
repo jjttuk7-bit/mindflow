@@ -90,31 +90,55 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 export async function classifyProject(
   content: string,
   type: string,
-  existingProjects: { id: string; name: string }[]
+  existingProjects: { id: string; name: string; samples?: string[] }[]
 ): Promise<{ action: "none" } | { action: "new"; name: string } | { action: "existing"; project_id: string }> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 
   let prompt: string
   if (existingProjects.length === 0) {
-    prompt = `You are a project classifier. Given content, decide if it warrants creating a new project.
-A project groups related items by topic/theme (e.g., "Web Development", "Travel Plans", "Work").
-Content type: ${type}.
-Return ONLY valid JSON: {"action":"new","name":"Project Name"} or {"action":"none"}.
+    prompt = `당신은 프로젝트 분류 전문가입니다. 콘텐츠를 보고 새 프로젝트를 만들지 판단하세요.
+프로젝트는 관련 항목을 주제/테마별로 묶는 그룹입니다 (예: "웹 개발", "여행 계획", "업무").
+콘텐츠 유형: ${type}
 
-Content: ${content}`
+규칙:
+- 명확한 주제가 있을 때만 새 프로젝트 생성
+- 일상적이거나 짧은 메모는 "none" 반환
+- 프로젝트 이름은 간결하게 (2~4단어)
+
+JSON만 반환: {"action":"new","name":"프로젝트 이름"} 또는 {"action":"none"}
+
+콘텐츠: ${content}`
   } else {
-    const projectList = existingProjects.map((p) => `- ${p.id}: ${p.name}`).join("\n")
-    prompt = `You are a project classifier. Given content, assign it to an existing project or suggest a new one.
-Existing projects:
+    const projectList = existingProjects
+      .map((p) => {
+        const sampleText = p.samples?.length
+          ? `\n  최근 항목: ${p.samples.join(" | ")}`
+          : ""
+        return `- ${p.id}: ${p.name}${sampleText}`
+      })
+      .join("\n")
+
+    const suppressNew = existingProjects.length >= 3
+      ? "\n- 기존 프로젝트가 3개 이상이므로, 기존 프로젝트에 분류하는 것을 강하게 선호하세요. 정말 맞는 프로젝트가 없을 때만 새로 만드세요."
+      : ""
+
+    prompt = `당신은 프로젝트 분류 전문가입니다. 콘텐츠를 기존 프로젝트에 분류하거나 새 프로젝트를 제안하세요.
+
+기존 프로젝트:
 ${projectList}
 
-Content type: ${type}.
-Return ONLY valid JSON:
-- {"action":"existing","project_id":"<id>"} if it fits an existing project
-- {"action":"new","name":"Project Name"} if it needs a new project
-- {"action":"none"} if it doesn't fit any project
+콘텐츠 유형: ${type}
 
-Content: ${content}`
+규칙:
+- 기존 프로젝트의 최근 항목을 참고하여 콘텐츠가 맞는 프로젝트에 분류
+- 일상적이거나 짧은 메모는 "none" 반환${suppressNew}
+
+JSON만 반환:
+- {"action":"existing","project_id":"<id>"} 기존 프로젝트에 맞을 때
+- {"action":"new","name":"프로젝트 이름"} 새 프로젝트가 필요할 때
+- {"action":"none"} 어디에도 맞지 않을 때
+
+콘텐츠: ${content}`
   }
 
   const result = await model.generateContent(prompt)

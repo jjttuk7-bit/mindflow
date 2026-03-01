@@ -80,10 +80,25 @@ export async function POST(req: NextRequest) {
           .select("id, name")
           .eq("user_id", user.id)
 
+        // Fetch 3 most recent items per project for context
+        const projectsWithContext = await Promise.all(
+          (existingProjects || []).map(async (p) => {
+            const { data: recentItems } = await supabase
+              .from("items")
+              .select("content, summary")
+              .eq("project_id", p.id)
+              .order("created_at", { ascending: false })
+              .limit(3)
+            const samples = (recentItems || [])
+              .map((i) => i.summary || i.content.slice(0, 80))
+            return { id: p.id, name: p.name, samples }
+          })
+        )
+
         const classification = await classifyProject(
           content,
           type,
-          existingProjects || []
+          projectsWithContext
         )
 
         if (classification.action === "existing") {

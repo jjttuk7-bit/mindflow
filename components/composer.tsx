@@ -36,7 +36,6 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [showCamera, setShowCamera] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const { addItem, updateItem } = useStore()
-  const describePromiseRef = useRef<Promise<string | null> | null>(null)
 
   // Detect camera availability
   useEffect(() => {
@@ -52,17 +51,15 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
 
-    // Auto-describe image with AI (store promise for async caption)
+    // Auto-describe image with AI
     const formData = new FormData()
     formData.append("image", file)
-    describePromiseRef.current = fetch("/api/ai/describe-image", { method: "POST", body: formData })
+    fetch("/api/ai/describe-image", { method: "POST", body: formData })
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
-        const desc = data?.description || null
-        if (desc) setContent(desc)
-        return desc
+        if (data?.description) setContent(data.description)
       })
-      .catch(() => null)
+      .catch(() => {})
   }
 
   function clearFile() {
@@ -251,25 +248,31 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
 
-        // If image saved without caption, update when AI caption arrives
-        if (activeType === "image" && !content.trim() && describePromiseRef.current) {
-          describePromiseRef.current.then((desc) => {
-            if (desc) {
-              updateItem(item.id, { content: desc })
-              fetch(`/api/items/${item.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content: desc }),
-              }).catch(() => {})
-            }
-          })
-        }
-        describePromiseRef.current = null
+        // If image saved without caption, generate caption async and update
+        const savedFile = activeType === "image" && !content.trim() ? selectedFile : null
 
         setContent("")
         clearFile()
         toast.success("Saved!")
         onSaved?.()
+
+        if (savedFile) {
+          const fd = new FormData()
+          fd.append("image", savedFile)
+          fetch("/api/ai/describe-image", { method: "POST", body: fd })
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => {
+              if (data?.description) {
+                updateItem(item.id, { content: data.description })
+                fetch(`/api/items/${item.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ content: data.description }),
+                }).catch(() => {})
+              }
+            })
+            .catch(() => {})
+        }
       } else {
         const data = await res.json().catch(() => ({}))
         setError(data.error || `Save failed (${res.status})`)

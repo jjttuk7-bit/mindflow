@@ -35,7 +35,8 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [showCamera, setShowCamera] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
-  const { addItem } = useStore()
+  const { addItem, updateItem } = useStore()
+  const describePromiseRef = useRef<Promise<string | null> | null>(null)
 
   // Detect camera availability
   useEffect(() => {
@@ -51,17 +52,20 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
 
-    // Auto-describe image with AI
+    // Auto-describe image with AI (store promise for async caption)
     const formData = new FormData()
     formData.append("image", file)
-    fetch("/api/ai/describe-image", { method: "POST", body: formData })
+    describePromiseRef.current = fetch("/api/ai/describe-image", { method: "POST", body: formData })
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
-        if (data?.description && !content.trim()) {
-          setContent(data.description)
+        const desc = data?.description || null
+        if (desc && !content.trim()) {
+          setContent(desc)
         }
+        describePromiseRef.current = null
+        return desc
       })
-      .catch(() => {})
+      .catch(() => { describePromiseRef.current = null; return null })
   }
 
   function clearFile() {
@@ -249,6 +253,22 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       if (res.ok) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
+
+        // If image saved without caption, update when AI caption arrives
+        if (activeType === "image" && !content.trim() && describePromiseRef.current) {
+          const pendingPromise = describePromiseRef.current
+          pendingPromise.then((desc) => {
+            if (desc) {
+              updateItem(item.id, { content: desc })
+              fetch(`/api/items/${item.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content: desc }),
+              }).catch(() => {})
+            }
+          })
+        }
+
         setContent("")
         clearFile()
         toast.success("Saved!")

@@ -11,28 +11,54 @@ function getGenAI() {
 export async function generateTags(
   content: string,
   type: string,
-  existingTags: string[]
+  existingTags: string[],
+  tagFrequencies?: string[]
 ): Promise<string[]> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 
-  const prompt = `You are a tagging assistant. Given content, return 1-3 relevant tags as a JSON array of strings.
-Prefer reusing existing tags when appropriate: [${existingTags.join(", ")}].
-Only create new tags when none of the existing tags fit.
-Tags should be lowercase, single-word or hyphenated (e.g., "web-dev", "design", "meeting").
-Content type: ${type}.
-Return ONLY a JSON array, nothing else.
+  const freqSection = tagFrequencies?.length
+    ? `\n사용자의 기존 태그 (사용 빈도순):\n${tagFrequencies.join(", ")}\n기존 태그를 최대한 재사용하세요. 빈도가 높은 태그를 선호합니다.`
+    : existingTags.length
+    ? `\n사용자의 기존 태그: ${existingTags.join(", ")}\n기존 태그를 최대한 재사용하세요.`
+    : ""
 
-Content: ${content}`
+  const prompt = `당신은 콘텐츠 태깅 전문가입니다. 주어진 콘텐츠에 1~3개의 태그를 붙여주세요.
+
+규칙:
+- 태그는 소문자, 영문 또는 한글, 단어 1~2개 (예: "web-dev", "회의", "design", "독서")
+- 기존 태그가 맞으면 반드시 재사용. 새 태그는 기존 태그가 맞지 않을 때만 생성
+- 너무 포괄적인 태그 금지: "일반", "기타", "general", "other", "misc", "stuff", "note"
+- 콘텐츠의 핵심 주제/행동을 반영하는 구체적 태그만 사용
+- 1~3개만 반환. 애매하면 적게
+${freqSection}
+
+콘텐츠 유형: ${type}
+
+좋은 태그 예시:
+- "React 컴포넌트 리팩토링 작업" → ["react", "리팩토링"]
+- "팀 회의에서 Q3 목표 논의" → ["회의", "목표"]
+- "여행 가기 전 짐 싸야 할 것들" → ["여행", "todo"]
+
+나쁜 태그 예시:
+- ["general", "note"] ← 너무 포괄적
+- ["react", "javascript", "web", "dev", "coding"] ← 너무 많음
+
+JSON 배열만 반환하세요. 다른 텍스트 없이.
+
+콘텐츠: ${content}`
 
   const result = await model.generateContent(prompt)
   const text = result.response.text().trim()
   try {
-    return JSON.parse(text)
+    const tags = JSON.parse(text)
+    return Array.isArray(tags) ? tags.slice(0, 3) : []
   } catch {
-    // Try extracting JSON array from response
     const match = text.match(/\[[\s\S]*\]/)
     if (match) {
-      try { return JSON.parse(match[0]) } catch { /* ignore */ }
+      try {
+        const tags = JSON.parse(match[0])
+        return Array.isArray(tags) ? tags.slice(0, 3) : []
+      } catch { /* ignore */ }
     }
     return []
   }

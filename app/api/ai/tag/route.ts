@@ -10,12 +10,26 @@ export async function POST(req: NextRequest) {
     const { item_id, content, type } = await req.json()
 
     // Get existing tags for reuse
-    const { data: existingTags } = await supabase.from("tags").select("name")
-    const tagNames = existingTags?.map((t) => t.name) || []
+    const { data: userTagRows } = await supabase
+      .from("item_tags")
+      .select("tag_id, tags(name), items!inner(user_id)")
+      .eq("items.user_id", user.id)
+
+    // Count frequency per tag
+    const tagFreqMap = new Map<string, number>()
+    for (const row of userTagRows || []) {
+      const name = (row.tags as unknown as { name: string })?.name
+      if (name) tagFreqMap.set(name, (tagFreqMap.get(name) || 0) + 1)
+    }
+    // Sort by frequency descending, format as "tag-name (count)"
+    const tagNamesWithFreq = [...tagFreqMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => `${name} (${count})`)
+    const tagNames = [...tagFreqMap.keys()]
 
     // Run AI tasks in parallel: tags + summary + embedding
     const [suggestedTags, summary, embedding] = await Promise.all([
-      generateTags(content, type, tagNames),
+      generateTags(content, type, tagNames, tagNamesWithFreq),
       generateSummary(content),
       generateEmbedding(content),
     ])

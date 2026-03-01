@@ -31,6 +31,7 @@ import {
   MessageSquare,
 } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
+import { SidebarFeedbackButton } from "@/components/feedback-dialog"
 import { UserMenu } from "@/components/user-menu"
 
 const filters: {
@@ -525,6 +526,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <MessageSquare className="h-4 w-4 text-muted-foreground/50" />
             AI Chat
           </button>
+          <SidebarFeedbackButton onClose={onClose} />
           <button
             onClick={() => { setShowArchived(!showArchived); setSmartFolder(null) }}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${

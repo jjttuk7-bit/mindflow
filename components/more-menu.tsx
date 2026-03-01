@@ -3,6 +3,7 @@
 import { useStore } from "@/lib/store"
 import { useTheme } from "@/hooks/use-theme"
 import { ExportMenu } from "@/components/export-menu"
+import { FeedbackButton } from "@/components/feedback-dialog"
 import {
   CalendarDays, Pin, Archive, BarChart3, GitBranch, Settings, Sun, Moon,
 } from "lucide-react"
@@ -93,6 +94,7 @@ export function MoreMenu() {
           <Settings className="h-5 w-5 text-muted-foreground/60" />
           Settings
         </a>
+        <FeedbackButton />
         <button
           onClick={toggle}
           className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors"

@@ -6,6 +6,7 @@ import { FeedCard } from "@/components/feed-card"
 import { SwipeableCard } from "@/components/swipeable-card"
 import { CardContextMenu } from "@/components/card-context-menu"
 import { Item } from "@/lib/supabase/types"
+import { ResurfacedMemory } from "@/components/resurfaced-memory"
 import { Sparkles, Pin } from "lucide-react"
 import { toast } from "sonner"
 
@@ -156,6 +157,11 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
           ))}
           <div className="h-px bg-gradient-to-r from-transparent via-border/40 to-transparent my-2" />
         </>
+      )}
+
+      {/* Resurfaced memory - only on default feed */}
+      {!showArchived && !activeProject && !smartFolder && !searchQuery && (
+        <ResurfacedMemory />
       )}
 
       {/* Regular items */}

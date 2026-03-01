@@ -1,11 +1,15 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateEmbedding } from "@/lib/ai"
 import { checkUsageLimit } from "@/lib/plans"
+import { rateLimit } from "@/lib/rate-limit"
 import { validate, chatSchema } from "@/lib/validations"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, { maxRequests: 10, windowMs: 60_000 })
+  if (limited) return limited
+
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 

@@ -1,10 +1,14 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateTags, generateSummary, generateEmbedding, classifyProject, extractTodos } from "@/lib/ai"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
+import { rateLimit } from "@/lib/rate-limit"
 import { validate, aiTagSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, { maxRequests: 20, windowMs: 60_000 })
+  if (limited) return limited
+
   try {
     const { supabase, user } = await getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

@@ -1,9 +1,13 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateEmbedding } from "@/lib/ai"
+import { rateLimit } from "@/lib/rate-limit"
 import { validate, searchSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, { maxRequests: 20, windowMs: 60_000 })
+  if (limited) return limited
+
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const raw = await req.json()

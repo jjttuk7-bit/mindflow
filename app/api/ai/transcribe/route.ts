@@ -1,8 +1,12 @@
 import { transcribeAudio } from "@/lib/ai"
 import { getUser } from "@/lib/supabase/server"
+import { rateLimit } from "@/lib/rate-limit"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimit(req, { maxRequests: 10, windowMs: 60_000 })
+  if (limited) return limited
+
   const { user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 

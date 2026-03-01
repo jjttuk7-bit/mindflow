@@ -149,18 +149,23 @@ export function FeedCard({
     onUpdate(item.id, { content: editContent.trim() })
     setEditing(false)
     try {
+      const patchBody: Record<string, unknown> = { content: editContent.trim() }
+      // For voice, also update transcript in metadata
+      if (item.type === "voice" && isVoiceMeta(item.metadata)) {
+        patchBody.metadata = { ...item.metadata, transcript: editContent.trim() }
+      }
       const res = await fetch(`/api/items/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: editContent.trim() }),
+        body: JSON.stringify(patchBody),
       })
       if (!res.ok) throw new Error()
       // Re-trigger AI tagging for updated content
       fetch("/api/ai/tag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId: item.id, content: editContent.trim() }),
-      })
+        body: JSON.stringify({ item_id: item.id, content: editContent.trim(), type: item.type }),
+      }).catch(() => {})
     } catch {
       onUpdate(item.id, { content: prevContent })
       setEditContent(prevContent)
@@ -173,6 +178,44 @@ export function FeedCard({
     setEditing(false)
   }
 
+  const editControls = (
+    <div className="flex items-center gap-1.5 mt-2">
+      <button
+        onClick={handleEditSave}
+        className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+      >
+        <Check className="h-3 w-3" />
+        Save
+      </button>
+      <button
+        onClick={handleEditCancel}
+        className="flex items-center gap-1 px-2.5 py-1 rounded-md text-muted-foreground text-xs font-medium hover:bg-muted transition-colors"
+      >
+        <X className="h-3 w-3" />
+        Cancel
+      </button>
+      <span className="text-[10px] text-muted-foreground/40 ml-auto hidden sm:inline">Ctrl+Enter to save</span>
+    </div>
+  )
+
+  const editTextarea = (placeholder: string) => (
+    <textarea
+      ref={textareaRef}
+      value={editContent}
+      onChange={(e) => {
+        setEditContent(e.target.value)
+        e.target.style.height = "auto"
+        e.target.style.height = e.target.scrollHeight + "px"
+      }}
+      placeholder={placeholder}
+      className="w-full text-[15px] leading-relaxed bg-muted/30 border border-border/60 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleEditSave()
+        if (e.key === "Escape") handleEditCancel()
+      }}
+    />
+  )
+
   const renderContent = () => {
     if (item.type === "link" && isLinkMeta(meta)) {
       return <LinkCard url={item.content} meta={meta} />
@@ -180,58 +223,45 @@ export function FeedCard({
 
     if (item.type === "image" && isImageMeta(meta)) {
       return (
-        <ImageCard
-          imageUrl={meta.image_url}
-          caption={item.content !== "Image" ? item.content : undefined}
-        />
+        <div className="space-y-2">
+          <ImageCard
+            imageUrl={meta.image_url}
+            caption={!editing && item.content !== "Image" ? item.content : undefined}
+          />
+          {editing && (
+            <>
+              {editTextarea("Add a caption...")}
+              {editControls}
+            </>
+          )}
+        </div>
       )
     }
 
     if (item.type === "voice" && isVoiceMeta(meta)) {
       return (
-        <VoiceCard
-          fileUrl={meta.file_url}
-          duration={meta.duration}
-          transcript={meta.transcript}
-        />
+        <div className="space-y-2">
+          <VoiceCard
+            fileUrl={meta.file_url}
+            duration={meta.duration}
+            transcript={!editing ? meta.transcript : undefined}
+          />
+          {editing && (
+            <>
+              {editTextarea("Edit transcript...")}
+              {editControls}
+            </>
+          )}
+        </div>
       )
     }
 
-    // Editing mode
+    // Text editing mode
     if (editing) {
       return (
         <div className="space-y-2">
-          <textarea
-            ref={textareaRef}
-            value={editContent}
-            onChange={(e) => {
-              setEditContent(e.target.value)
-              e.target.style.height = "auto"
-              e.target.style.height = e.target.scrollHeight + "px"
-            }}
-            className="w-full text-[15px] leading-relaxed bg-muted/30 border border-border/60 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleEditSave()
-              if (e.key === "Escape") handleEditCancel()
-            }}
-          />
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={handleEditSave}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-            >
-              <Check className="h-3 w-3" />
-              Save
-            </button>
-            <button
-              onClick={handleEditCancel}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-muted-foreground text-xs font-medium hover:bg-muted transition-colors"
-            >
-              <X className="h-3 w-3" />
-              Cancel
-            </button>
-            <span className="text-[10px] text-muted-foreground/40 ml-auto">Ctrl+Enter to save</span>
-          </div>
+          {editTextarea("Edit content...")}
+          {editControls}
         </div>
       )
     }
@@ -339,9 +369,9 @@ export function FeedCard({
 
         {/* Action buttons */}
         <div className={`shrink-0 flex flex-col gap-0.5 transition-all duration-200 ${
-          hovered ? "opacity-100" : "opacity-0"
-        }`}>
-          {item.type === "text" && !editing && (
+          hovered ? "opacity-100" : "opacity-0 md:opacity-0"
+        } max-md:opacity-100`}>
+          {item.type !== "link" && !editing && (
             <button
               onClick={() => { setEditContent(item.content); setEditing(true) }}
               className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"

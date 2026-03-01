@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Sidebar } from "@/components/sidebar"
+import { Onboarding } from "@/components/onboarding"
 import { MainFeed } from "@/components/main-feed"
 import { SearchDialog } from "@/components/search-dialog"
 import { ChatPanel } from "@/components/chat-panel"
@@ -25,6 +26,18 @@ export function Dashboard() {
 
   const { sidebarView, activeTab, composerOpen } = useStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.preferences?.onboarding_completed) {
+          setShowOnboarding(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const renderMobileContent = () => {
     switch (activeTab) {
@@ -76,6 +89,7 @@ export function Dashboard() {
       {/* Shared */}
       <SearchDialog />
       {composerOpen && <MobileComposer onSaved={refetch} />}
+      {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
     </div>
   )
 }

@@ -34,6 +34,16 @@ export async function PATCH(req: NextRequest) {
   if (!parsed.success) return parsed.error
   const allowed: Record<string, unknown> = { ...parsed.data }
 
+  // Merge preferences with existing instead of replacing
+  if (allowed.preferences) {
+    const { data: current } = await supabase
+      .from("user_settings")
+      .select("preferences")
+      .eq("user_id", user.id)
+      .single()
+    allowed.preferences = { ...(current?.preferences as Record<string, unknown> ?? {}), ...(allowed.preferences as Record<string, unknown>) }
+  }
+
   const { data, error } = await supabase
     .from("user_settings")
     .update({ ...allowed, updated_at: new Date().toISOString() })

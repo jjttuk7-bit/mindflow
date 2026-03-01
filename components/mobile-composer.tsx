@@ -17,7 +17,7 @@ const typeButtons: { type: ContentType; icon: React.ReactNode; label: string }[]
 ]
 
 export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
-  const { setComposerOpen, addItem } = useStore()
+  const { setComposerOpen, addItem, updateItem } = useStore()
   const [content, setContent] = useState("")
   const [activeType, setActiveType] = useState<ContentType>("text")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -164,9 +164,31 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
       if (res.ok) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
+
+        // If image saved without caption, generate caption async and update
+        const savedFile = activeType === "image" && !content.trim() ? selectedFile : null
+
         toast.success("Captured!")
         setComposerOpen(false)
         onSaved?.()
+
+        if (savedFile) {
+          const fd = new FormData()
+          fd.append("image", savedFile)
+          fetch("/api/ai/describe-image", { method: "POST", body: fd })
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => {
+              if (data?.description) {
+                updateItem(item.id, { content: data.description })
+                fetch(`/api/items/${item.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ content: data.description }),
+                }).catch(() => {})
+              }
+            })
+            .catch(() => {})
+        }
       } else {
         const data = await res.json().catch(() => ({}))
         toast.error(data.error || "Save failed")

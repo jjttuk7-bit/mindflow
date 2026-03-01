@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateEmbedding } from "@/lib/ai"
 import { checkUsageLimit } from "@/lib/plans"
+import { withLogging } from "@/lib/logger"
 import { rateLimit } from "@/lib/rate-limit"
 import { validate, chatSchema } from "@/lib/validations"
 import { GoogleGenerativeAI } from "@google/generative-ai"
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
 
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const log = withLogging("/api/chat").start(user.id)
 
   // Check daily chat usage limit
   const { allowed, used, limit } = await checkUsageLimit(
@@ -121,6 +123,7 @@ ${context ? `Context:\n${context}` : "No relevant context found in the knowledge
     return NextResponse.json({ error: assistantMsgError.message }, { status: 400 })
   }
 
+  log.success({ sources: relevantItems.length })
   return NextResponse.json({
     session_id: currentSessionId,
     message: reply,

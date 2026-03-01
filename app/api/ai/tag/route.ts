@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/supabase/server"
 import { generateTags, generateSummary, generateEmbedding, classifyProject, extractTodos } from "@/lib/ai"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
+import { logger, withLogging } from "@/lib/logger"
 import { rateLimit } from "@/lib/rate-limit"
 import { validate, aiTagSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
   try {
     const { supabase, user } = await getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const log = withLogging("/api/ai/tag").start(user.id)
     const raw = await req.json()
     const parsed = validate(aiTagSchema, raw)
     if (!parsed.success) return parsed.error
@@ -153,10 +155,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    log.success({ tags: suggestedTags.length })
     return NextResponse.json({ tags: suggestedTags, summary })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error("AI tag error:", message)
+    logger.error("/api/ai/tag failed", { error: message })
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

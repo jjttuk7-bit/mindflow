@@ -12,25 +12,28 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
-  const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
-    // Already installed as PWA
+    // Already installed as PWA — hide
     const standalone = window.matchMedia("(display-mode: standalone)").matches
       || ("standalone" in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone)
-    setIsStandalone(standalone)
     if (standalone) return
 
-    // Check if dismissed recently
+    // Check if dismissed recently (7 days)
     const dismissed = localStorage.getItem("pwa-install-dismissed")
     if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return
 
+    // Detect mobile
+    const isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    if (!isMobile) return
+
     // iOS detection
-    const ua = navigator.userAgent
-    const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
     setIsIOS(ios)
 
-    // Android/Chrome: capture beforeinstallprompt
+    // Capture beforeinstallprompt (Android Chrome)
     const handler = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
@@ -38,16 +41,13 @@ export function PWAInstallPrompt() {
     }
     window.addEventListener("beforeinstallprompt", handler)
 
-    // iOS: show manual instructions after 3 seconds
-    if (ios) {
-      const timer = setTimeout(() => setShowBanner(true), 3000)
-      return () => {
-        clearTimeout(timer)
-        window.removeEventListener("beforeinstallprompt", handler)
-      }
-    }
+    // Show banner after 2 seconds on all mobile devices
+    const timer = setTimeout(() => setShowBanner(true), 2000)
 
-    return () => window.removeEventListener("beforeinstallprompt", handler)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener("beforeinstallprompt", handler)
+    }
   }, [])
 
   async function handleInstall() {
@@ -56,6 +56,7 @@ export function PWAInstallPrompt() {
     const { outcome } = await deferredPrompt.userChoice
     if (outcome === "accepted") {
       setShowBanner(false)
+      localStorage.setItem("pwa-install-dismissed", Date.now().toString())
     }
     setDeferredPrompt(null)
   }
@@ -65,7 +66,7 @@ export function PWAInstallPrompt() {
     localStorage.setItem("pwa-install-dismissed", Date.now().toString())
   }
 
-  if (isStandalone || !showBanner) return null
+  if (!showBanner) return null
 
   return (
     <div className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-80 z-50 animate-in slide-in-from-bottom duration-300">
@@ -77,12 +78,16 @@ export function PWAInstallPrompt() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground">Mindflow 앱 설치</p>
             {isIOS ? (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Safari 하단의 <span className="inline-block align-middle">⬆️</span> 공유 버튼 → &quot;홈 화면에 추가&quot;를 눌러주세요
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                하단 공유 버튼 <span className="text-base leading-none align-middle">⬆</span> → &quot;홈 화면에 추가&quot;를 눌러주세요
               </p>
-            ) : (
+            ) : deferredPrompt ? (
               <p className="text-xs text-muted-foreground mt-0.5">
                 홈 화면에 추가하면 앱처럼 사용할 수 있어요
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                브라우저 메뉴 <span className="font-bold">⋮</span> → &quot;홈 화면에 추가&quot; 또는 &quot;앱 설치&quot;를 눌러주세요
               </p>
             )}
           </div>
@@ -93,7 +98,7 @@ export function PWAInstallPrompt() {
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        {!isIOS && deferredPrompt && (
+        {deferredPrompt && (
           <button
             onClick={handleInstall}
             className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"

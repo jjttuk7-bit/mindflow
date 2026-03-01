@@ -26,6 +26,14 @@ export const metadata: Metadata = {
   applicationName: "Mindflow",
   keywords: ["AI", "지식 관리", "노트", "메모", "태깅", "knowledge management", "productivity"],
   authors: [{ name: "Mindflow" }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192", sizes: "192x192", type: "image/png" },
+      { url: "/icon", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",

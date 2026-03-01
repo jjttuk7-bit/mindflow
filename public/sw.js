@@ -1,4 +1,4 @@
-const CACHE_NAME = "mindflow-v1"
+const CACHE_NAME = "mindflow-v2"
 const STATIC_ASSETS = ["/", "/login"]
 
 self.addEventListener("install", (event) => {

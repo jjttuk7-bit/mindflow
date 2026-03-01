@@ -73,6 +73,7 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from("items")
     .select("*, item_tags(tag_id, tags(*))")
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1)
 

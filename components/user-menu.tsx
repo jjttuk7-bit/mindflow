@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useStore } from "@/lib/store"
 import { LogOut, User } from "lucide-react"
 
 export function UserMenu() {
@@ -17,6 +18,10 @@ export function UserMenu() {
 
   async function handleSignOut() {
     setLoading(true)
+    useStore.getState().setItems([])
+    useStore.getState().setTags([])
+    useStore.getState().setProjects([])
+    useStore.getState().setTodos([])
     await supabase.auth.signOut()
     window.location.href = "/login"
   }

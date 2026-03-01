@@ -17,9 +17,26 @@ const dmSerif = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Mindflow — 기록은 내가, 정리는 AI가",
+  title: {
+    default: "Mindflow — 기록은 내가, 정리는 AI가",
+    template: "%s | Mindflow",
+  },
   description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
   applicationName: "Mindflow",
+  keywords: ["AI", "지식 관리", "노트", "메모", "태깅", "knowledge management", "productivity"],
+  authors: [{ name: "Mindflow" }],
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    siteName: "Mindflow",
+    title: "Mindflow — 기록은 내가, 정리는 AI가",
+    description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mindflow — 기록은 내가, 정리는 AI가",
+    description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SWRegister } from "@/components/sw-register";
+import { PWAInstallPrompt } from "@/components/pwa-install";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -65,6 +66,7 @@ export default function RootLayout({
           {children}
           <Toaster position="top-center" richColors closeButton />
           <SWRegister />
+          <PWAInstallPrompt />
         </ThemeProvider>
       </body>
     </html>

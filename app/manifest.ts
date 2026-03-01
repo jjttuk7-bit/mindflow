@@ -35,14 +35,6 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
     ],
-    screenshots: [
-      {
-        src: "/icon",
-        sizes: "512x512",
-        type: "image/png",
-        form_factor: "wide",
-        label: "Mindflow Dashboard",
-      },
-    ],
+    prefer_related_applications: false,
   }
 }

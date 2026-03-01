@@ -27,7 +27,7 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/60"
-      aria-label="Toggle theme"
+      aria-label="테마 전환"
     >
       {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </button>
@@ -50,13 +50,13 @@ function Navbar() {
             href="/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg hover:bg-accent/60"
           >
-            Sign in
+            로그인
           </Link>
           <Link
             href="/login"
             className="text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg"
           >
-            Get Started
+            시작하기
           </Link>
         </div>
       </div>
@@ -73,27 +73,27 @@ function Hero() {
           AI-Powered Knowledge Manager
         </div>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight text-foreground leading-[1.1]">
-          Your thoughts,
+          당신의 생각을,
           <br />
-          <span className="text-primary">beautifully organized</span>
+          <span className="text-primary">아름답게 정리하다</span>
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Capture ideas, links, images, and voice memos in one place.
-          Let AI automatically tag, connect, and surface insights from your personal knowledge base.
+          아이디어, 링크, 이미지, 음성 메모를 한곳에 담아보세요.
+          AI가 자동으로 태그하고, 연결하고, 인사이트를 발견해 줍니다.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/login"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-8 py-3.5 rounded-xl shadow-sm"
           >
-            Start for Free
+            무료로 시작하기
             <ArrowRight className="w-4 h-4" />
           </Link>
           <a
             href="#features"
             className="w-full sm:w-auto inline-flex items-center justify-center text-base font-medium text-foreground bg-secondary hover:bg-secondary/80 px-8 py-3.5 rounded-xl"
           >
-            See Features
+            기능 살펴보기
           </a>
         </div>
       </div>
@@ -102,10 +102,10 @@ function Hero() {
 }
 
 const captureTypes = [
-  { icon: FileText, label: "Text & Ideas", color: "text-primary" },
-  { icon: Link2, label: "Web Links", color: "text-sage" },
-  { icon: Image, label: "Images", color: "text-dusty-rose" },
-  { icon: Mic, label: "Voice Memos", color: "text-terracotta" },
+  { icon: FileText, label: "텍스트 & 아이디어", color: "text-primary" },
+  { icon: Link2, label: "웹 링크", color: "text-sage" },
+  { icon: Image, label: "이미지", color: "text-dusty-rose" },
+  { icon: Mic, label: "음성 메모", color: "text-terracotta" },
 ]
 
 function CaptureSection() {
@@ -114,10 +114,10 @@ function CaptureSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-            Capture anything, instantly
+            무엇이든, 바로 Capture
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-            Whatever crosses your mind — jot it down. Mindflow handles text, links, images, and voice with equal ease.
+            머릿속에 떠오르는 모든 것을 기록하세요. 텍스트, 링크, 이미지, 음성까지 Mindflow가 깔끔하게 담아줍니다.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -143,37 +143,37 @@ const features = [
     icon: Tag,
     title: "Smart AI Tagging",
     description:
-      "AI reads your content and suggests relevant tags automatically. No more manual categorization — just write and let Mindflow organize.",
+      "AI가 콘텐츠를 분석해 관련 태그를 자동으로 추천합니다. 더 이상 수동 분류는 필요 없어요 — 그냥 쓰면, Mindflow가 정리합니다.",
   },
   {
     icon: MessageSquare,
     title: "AI Chat Assistant",
     description:
-      "Ask questions about your saved knowledge. The AI retrieves relevant items and gives you answers grounded in your own notes.",
+      "저장한 지식에 대해 자유롭게 질문하세요. AI가 관련 항목을 찾아, 내 노트에 기반한 답변을 제공합니다.",
   },
   {
     icon: CheckSquare,
     title: "Integrated Todos",
     description:
-      "Turn thoughts into action. Create todos linked to your ideas and projects, all in one seamless workflow.",
+      "생각을 바로 행동으로 옮기세요. 아이디어와 프로젝트에 연결된 할 일 목록을 하나의 워크플로우에서 관리합니다.",
   },
   {
     icon: Share2,
     title: "Share & Collaborate",
     description:
-      "Share individual items or curate a public profile. Generate share links with one click for easy collaboration.",
+      "개별 항목을 공유하거나 공개 프로필을 구성하세요. 원클릭으로 공유 링크를 생성해 누구와도 쉽게 협업할 수 있습니다.",
   },
   {
     icon: Zap,
     title: "AI Summaries & Insights",
     description:
-      "Get weekly insights on your thinking patterns. AI-generated summaries help you see the big picture across all your notes.",
+      "나의 사고 패턴에 대한 주간 인사이트를 받아보세요. AI가 모든 노트를 분석해 큰 그림을 보여줍니다.",
   },
   {
     icon: Globe,
     title: "Link Previews",
     description:
-      "Save a URL and Mindflow automatically fetches the title, description, and image. Your bookmarks look beautiful and informative.",
+      "URL을 저장하면 Mindflow가 자동으로 제목, 설명, 이미지를 가져옵니다. 북마크가 한눈에 보기 좋게 정리됩니다.",
   },
 ]
 
@@ -183,10 +183,10 @@ function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-            Everything you need to think clearly
+            명확하게 사고하기 위한 모든 것
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-            Mindflow combines capture, organization, and AI intelligence into one elegant tool.
+            Mindflow는 기록, 정리, AI 인텔리전스를 하나의 우아한 도구에 담았습니다.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -206,9 +206,9 @@ function FeaturesSection() {
 }
 
 const steps = [
-  { num: "1", title: "Capture", description: "Write, paste a link, upload an image, or record a voice memo." },
-  { num: "2", title: "Organize", description: "AI auto-tags your content. Group items into projects and smart folders." },
-  { num: "3", title: "Discover", description: "Chat with your knowledge base. Get insights and connections you missed." },
+  { num: "1", title: "Capture", description: "텍스트를 쓰거나, 링크를 붙이거나, 이미지를 올리거나, 음성을 녹음하세요." },
+  { num: "2", title: "Organize", description: "AI가 콘텐츠를 자동 태그합니다. 프로젝트와 스마트 폴더로 깔끔하게 분류하세요." },
+  { num: "3", title: "Discover", description: "나만의 지식 베이스에 질문하세요. 놓쳤던 연결고리와 인사이트를 발견합니다." },
 ]
 
 function HowItWorks() {
@@ -217,7 +217,7 @@ function HowItWorks() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-            Simple as 1-2-3
+            3단계로 간단하게
           </h2>
         </div>
         <div className="grid sm:grid-cols-3 gap-8 sm:gap-10">
@@ -242,7 +242,7 @@ function SecurityBadge() {
       <div className="max-w-3xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-accent/40 px-4 py-2 rounded-full">
           <Shield className="w-4 h-4 text-sage" />
-          End-to-end encrypted &middot; Row-level security &middot; Your data stays yours
+          End-to-end 암호화 &middot; Row-level 보안 &middot; 내 데이터는 내 것
         </div>
       </div>
     </section>
@@ -254,17 +254,17 @@ function CTA() {
     <section className="py-20 sm:py-28 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-          Start organizing your mind today
+          지금 바로 생각을 정리하세요
         </h2>
         <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-          Free to use. No credit card required. Set up in under a minute.
+          무료로 사용할 수 있습니다. 신용카드 불필요. 1분이면 시작할 수 있어요.
         </p>
         <div className="mt-10">
           <Link
             href="/login"
             className="inline-flex items-center gap-2 text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-10 py-4 rounded-xl shadow-sm"
           >
-            Create Your Mindflow
+            나만의 Mindflow 만들기
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -283,7 +283,7 @@ function Footer() {
         </div>
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <Link href="/login" className="hover:text-foreground">
-            Sign in
+            로그인
           </Link>
         </div>
       </div>

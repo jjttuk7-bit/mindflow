@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { LinkMeta } from "@/lib/supabase/types"
 import { ExternalLink, Globe } from "lucide-react"
 
@@ -21,11 +22,13 @@ export function LinkCard({
     >
       {meta.og_image && (
         <div className="shrink-0 w-20 h-20 rounded-md overflow-hidden bg-muted">
-          <img
+          <Image
             src={meta.og_image}
             alt={meta.og_title || ""}
-            loading="lazy"
+            width={80}
+            height={80}
             className="w-full h-full object-cover"
+            unoptimized
           />
         </div>
       )}

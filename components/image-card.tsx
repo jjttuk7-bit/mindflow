@@ -1,7 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { ImageLightbox } from "@/components/image-lightbox"
+import Image from "next/image"
+import dynamic from "next/dynamic"
+
+const ImageLightbox = dynamic(() => import("@/components/image-lightbox").then(m => m.ImageLightbox), { ssr: false })
 
 export function ImageCard({
   imageUrl,
@@ -19,10 +22,12 @@ export function ImageCard({
           onClick={() => setLightboxOpen(true)}
           className="block w-full rounded-lg overflow-hidden bg-muted/30 border border-border/30 hover:border-border/60 transition-all duration-200 cursor-zoom-in"
         >
-          <img
+          <Image
             src={imageUrl}
             alt={caption || "Uploaded image"}
-            loading="lazy"
+            width={600}
+            height={256}
+            sizes="(max-width: 768px) 100vw, 600px"
             className="w-full max-h-64 object-cover"
           />
         </button>

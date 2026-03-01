@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import Image from "next/image"
 import { X } from "lucide-react"
 
 export function ImageLightbox({
@@ -37,12 +38,20 @@ export function ImageLightbox({
       >
         <X className="h-5 w-5" />
       </button>
-      <img
-        src={src}
-        alt={alt}
-        className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+      <div
+        className="relative max-w-[90vw] max-h-[85vh] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
-      />
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={1200}
+          height={900}
+          sizes="90vw"
+          className="max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-lg shadow-2xl"
+          priority
+        />
+      </div>
     </div>
   )
 }

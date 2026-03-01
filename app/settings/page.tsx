@@ -33,11 +33,11 @@ import {
 import Link from "next/link"
 
 const PRO_FEATURES = [
-  "Unlimited Telegram captures",
-  "AI project classification",
-  "Unlimited AI chat",
-  "Full insight reports",
-  "Priority support",
+  "무제한 Telegram 캡처",
+  "AI 프로젝트 자동 분류",
+  "무제한 AI 채팅",
+  "전체 인사이트 리포트",
+  "우선 지원",
 ]
 
 export default function SettingsPage() {
@@ -207,10 +207,10 @@ function SettingsContent() {
           </Link>
           <div>
             <h1 className="font-display text-2xl tracking-tight text-foreground">
-              Settings
+              설정
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Manage your account and integrations
+              계정, 연동, 구독을 관리하세요
             </p>
           </div>
         </div>
@@ -220,7 +220,7 @@ function SettingsContent() {
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30 px-4 py-3">
             <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
             <p className="text-sm text-green-800 dark:text-green-200 flex-1">
-              Welcome to Pro! Your subscription is now active.
+              Pro 플랜에 오신 것을 환영합니다! 구독이 활성화되었습니다.
             </p>
             <button
               onClick={() => setBillingBanner(null)}
@@ -234,7 +234,7 @@ function SettingsContent() {
           <div className="mb-6 flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
             <Info className="h-5 w-5 text-muted-foreground shrink-0" />
             <p className="text-sm text-muted-foreground flex-1">
-              Checkout was cancelled. You can upgrade anytime.
+              결제가 취소되었습니다. 언제든 업그레이드할 수 있습니다.
             </p>
             <button
               onClick={() => setBillingBanner(null)}
@@ -251,22 +251,22 @@ function SettingsContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <User className="h-4 w-4" />
-                General
+                일반
               </CardTitle>
-              <CardDescription>Your account information</CardDescription>
+              <CardDescription>계정 정보</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Email</p>
+                  <p className="text-sm font-medium text-foreground">이메일</p>
                   <p className="text-sm text-muted-foreground">{email}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Plan</p>
+                  <p className="text-sm font-medium text-foreground">플랜</p>
                   <p className="text-sm text-muted-foreground">
-                    Your current subscription plan
+                    현재 구독 플랜
                   </p>
                 </div>
                 <Badge
@@ -286,7 +286,7 @@ function SettingsContent() {
                 Telegram
               </CardTitle>
               <CardDescription>
-                Capture thoughts, links, and voice notes directly from Telegram
+                Telegram에서 바로 생각, 링크, 음성 메모를 캡처하세요
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -299,15 +299,15 @@ function SettingsContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          Connected
+                          연결됨
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Linked{" "}
+                          연결일:{" "}
                           {settings?.telegram_linked_at
                             ? new Date(
                                 settings.telegram_linked_at
                               ).toLocaleDateString()
-                            : "recently"}
+                            : "최근"}
                         </p>
                       </div>
                     </div>
@@ -322,23 +322,23 @@ function SettingsContent() {
                       ) : (
                         <Unlink className="h-3 w-3" />
                       )}
-                      Unlink
+                      연결 해제
                     </Button>
                   </div>
                   <div className="text-xs text-muted-foreground space-y-1">
                     <p>
-                      Send messages to your Telegram bot to capture items.
-                      Supported: text, links, photos, and voice messages.
+                      Telegram 봇에 메시지를 보내 아이템을 캡처하세요.
+                      지원: 텍스트, 링크, 사진, 음성 메시지
                     </p>
                     <p>
-                      Commands: /search, /recent, /todo
+                      명령어: /search, /recent, /todo
                     </p>
                   </div>
                 </>
               ) : telegramLink ? (
                 <div className="space-y-3">
                   <p className="text-sm text-foreground">
-                    Open this link in Telegram to connect your account:
+                    Telegram에서 아래 링크를 열어 계정을 연결하세요:
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
@@ -370,24 +370,23 @@ function SettingsContent() {
                   <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
                     <p className="text-xs text-muted-foreground space-y-1">
                       <span className="font-medium text-foreground block mb-1">
-                        Instructions:
+                        연결 방법:
                       </span>
-                      1. Click the link or open it in Telegram
+                      1. 링크를 클릭하거나 Telegram에서 열기
                       <br />
-                      2. Press &quot;Start&quot; in the bot chat
+                      2. 봇 채팅에서 &quot;Start&quot; 누르기
                       <br />
-                      3. Your account will be linked automatically
+                      3. 계정이 자동으로 연결됩니다
                       <br />
-                      4. Refresh this page to see the connected status
+                      4. 이 페이지를 새로고침하여 연결 상태를 확인하세요
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Link your Telegram account to capture items by messaging a
-                    bot. Send text, photos, and voice messages directly from
-                    Telegram.
+                    Telegram 계정을 연결하면 봇에 메시지를 보내 아이템을 캡처할 수 있습니다.
+                    텍스트, 사진, 음성 메시지를 바로 보내보세요.
                   </p>
                   <Button onClick={handleLinkTelegram} disabled={linkLoading}>
                     {linkLoading ? (
@@ -395,7 +394,7 @@ function SettingsContent() {
                     ) : (
                       <LinkIcon className="h-4 w-4" />
                     )}
-                    Link Telegram
+                    Telegram 연결
                   </Button>
                 </div>
               )}
@@ -407,10 +406,10 @@ function SettingsContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <CreditCard className="h-4 w-4" />
-                Billing
+                구독
               </CardTitle>
               <CardDescription>
-                Manage your subscription and billing
+                구독 및 결제를 관리하세요
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -423,10 +422,10 @@ function SettingsContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          Pro Plan Active
+                          Pro 플랜 활성
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          You have access to all features
+                          모든 기능을 이용할 수 있습니다
                         </p>
                       </div>
                     </div>
@@ -443,10 +442,10 @@ function SettingsContent() {
                     ) : (
                       <ExternalLink className="h-4 w-4" />
                     )}
-                    Manage Subscription
+                    구독 관리
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    Cancel or modify your subscription via Stripe
+                    Stripe를 통해 구독을 취소하거나 변경할 수 있습니다
                   </p>
                 </>
               ) : (
@@ -456,7 +455,7 @@ function SettingsContent() {
                       <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                         <span className="text-sm font-medium text-foreground">
-                          Upgrade to Pro
+                          Pro로 업그레이드
                         </span>
                       </div>
                       <div className="text-right">
@@ -490,7 +489,7 @@ function SettingsContent() {
                     ) : (
                       <Sparkles className="h-4 w-4" />
                     )}
-                    Upgrade Now
+                    지금 업그레이드
                   </Button>
                 </>
               )}
@@ -502,23 +501,23 @@ function SettingsContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Database className="h-4 w-4" />
-                Data
+                데이터
               </CardTitle>
-              <CardDescription>Export and manage your data</CardDescription>
+              <CardDescription>데이터를 내보내고 관리하세요</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    Export Data
+                    데이터 내보내기
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Download your items in JSON or Markdown format
+                    JSON 또는 Markdown 형식으로 아이템을 다운로드하세요
                   </p>
                 </div>
                 <Link href="/">
                   <Button variant="outline" size="sm">
-                    Go to Export
+                    피드에서 내보내기
                   </Button>
                 </Link>
               </div>

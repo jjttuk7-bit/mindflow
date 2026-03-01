@@ -1,8 +1,13 @@
 "use client"
 
-import { KnowledgeMap } from "@/components/knowledge-map"
+import dynamic from "next/dynamic"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+
+const KnowledgeMap = dynamic(
+  () => import("@/components/knowledge-map").then(m => m.KnowledgeMap),
+  { ssr: false, loading: () => <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" /></div> }
+)
 
 export default function KnowledgeMapPage() {
   return (

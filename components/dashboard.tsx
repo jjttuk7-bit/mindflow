@@ -1,23 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { Sidebar } from "@/components/sidebar"
-import { Onboarding } from "@/components/onboarding"
 import { MainFeed } from "@/components/main-feed"
-import { SearchDialog } from "@/components/search-dialog"
-import { ChatPanel } from "@/components/chat-panel"
-import { TodoList } from "@/components/todo-list"
 import { BottomNav } from "@/components/bottom-nav"
 import { FAB } from "@/components/fab"
 import { MobileHeader } from "@/components/mobile-header"
 import { FilterChips } from "@/components/filter-chips"
-import { MoreMenu } from "@/components/more-menu"
-import { MobileProjectList } from "@/components/mobile-project-list"
-import { MobileComposer } from "@/components/mobile-composer"
 import { useItems } from "@/hooks/use-items"
 import { useProjects } from "@/hooks/use-projects"
 import { useTodos } from "@/hooks/use-todos"
 import { useStore } from "@/lib/store"
+
+const ChatPanel = dynamic(() => import("@/components/chat-panel").then(m => m.ChatPanel), { ssr: false })
+const SearchDialog = dynamic(() => import("@/components/search-dialog").then(m => m.SearchDialog), { ssr: false })
+const MobileComposer = dynamic(() => import("@/components/mobile-composer").then(m => m.MobileComposer), { ssr: false })
+const Onboarding = dynamic(() => import("@/components/onboarding").then(m => m.Onboarding), { ssr: false })
+const TodoList = dynamic(() => import("@/components/todo-list").then(m => m.TodoList))
+const MoreMenu = dynamic(() => import("@/components/more-menu").then(m => m.MoreMenu))
+const MobileProjectList = dynamic(() => import("@/components/mobile-project-list").then(m => m.MobileProjectList))
 
 export function Dashboard() {
   const { refetch, loading, loadMore, loadingMore, hasMore } = useItems()

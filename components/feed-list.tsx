@@ -6,6 +6,7 @@ import { FeedCard } from "@/components/feed-card"
 import { SwipeableCard } from "@/components/swipeable-card"
 import { CardContextMenu } from "@/components/card-context-menu"
 import { Item } from "@/lib/supabase/types"
+import { DailyBriefing } from "@/components/daily-briefing"
 import { ResurfacedMemory } from "@/components/resurfaced-memory"
 import { Sparkles, Pin } from "lucide-react"
 import { toast } from "sonner"
@@ -159,9 +160,12 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
         </>
       )}
 
-      {/* Resurfaced memory - only on default feed */}
+      {/* Daily briefing & resurfaced memory - only on default feed */}
       {!showArchived && !activeProject && !smartFolder && !searchQuery && (
-        <ResurfacedMemory />
+        <>
+          <DailyBriefing />
+          <ResurfacedMemory />
+        </>
       )}
 
       {/* Regular items */}

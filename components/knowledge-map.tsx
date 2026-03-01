@@ -99,8 +99,8 @@ export function KnowledgeMap() {
         "link",
         forceLink<GraphNode, GraphEdge>(edges)
           .id((d) => d.id)
-          .distance((d) => 80 / (d.weight + 0.1))
-          .strength((d) => d.weight * 0.3)
+          .distance((d: GraphEdge) => 80 / (d.weight + 0.1))
+          .strength((d: GraphEdge) => d.weight * 0.3)
       )
       .force("charge", forceManyBody().strength(-120))
       .force("center", forceCenter(0, 0))

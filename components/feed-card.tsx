@@ -36,16 +36,22 @@ const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: 
 }
 
 function timeAgo(dateStr: string) {
-  const seconds = Math.floor(
-    (Date.now() - new Date(dateStr).getTime()) / 1000
-  )
-  if (seconds < 60) return "just now"
+  const date = new Date(dateStr)
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (seconds < 60) return "방금"
   const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
+  if (minutes < 60) return `${minutes}분 전`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}시간 전`
   const days = Math.floor(hours / 24)
-  return `${days}d ago`
+  if (days < 7) return `${days}일 전`
+  // Show actual date for older items
+  const now = new Date()
+  const sameYear = date.getFullYear() === now.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  if (sameYear) return `${month}월 ${day}일`
+  return `${date.getFullYear()}.${month}.${day}`
 }
 
 function isLinkMeta(meta: unknown): meta is LinkMeta {

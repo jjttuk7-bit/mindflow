@@ -73,9 +73,9 @@ function Hero() {
           AI-Powered Knowledge Manager
         </div>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight text-foreground leading-[1.1]">
-          당신의 생각을,
+          기록은 내가,
           <br />
-          <span className="text-primary">아름답게 정리하다</span>
+          <span className="text-primary">정리는 AI가</span>
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           아이디어, 링크, 이미지, 음성 메모를 한곳에 담아보세요.

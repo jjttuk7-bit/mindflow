@@ -87,7 +87,7 @@ export function MoreMenu() {
         </a>
         <a href="/knowledge-map" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <GitBranch className="h-5 w-5 text-muted-foreground/60" />
-          지식 맵
+          Knowledge Map
         </a>
         <a href="/settings" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <Settings className="h-5 w-5 text-muted-foreground/60" />

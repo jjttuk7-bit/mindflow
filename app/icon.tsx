@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og"
 
-export const size = { width: 180, height: 180 }
+export const size = { width: 512, height: 512 }
 export const contentType = "image/png"
 
 const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -15,7 +15,7 @@ const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51
   <path d="M 100 430 Q 200 455 256 435 Q 312 415 412 440" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="14" stroke-linecap="round"/>
 </svg>`).toString("base64")
 
-export default function AppleIcon() {
+export default function Icon() {
   return new ImageResponse(
     (
       <div
@@ -30,8 +30,8 @@ export default function AppleIcon() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`data:image/svg+xml;base64,${svg}`}
-          width={180}
-          height={180}
+          width={512}
+          height={512}
           alt=""
         />
       </div>

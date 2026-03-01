@@ -268,6 +268,13 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ content: data.description }),
+                }).then(() => {
+                  // Re-trigger tagging with actual caption
+                  fetch("/api/ai/tag", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ item_id: item.id, content: data.description, type: "image" }),
+                  }).catch(() => {})
                 }).catch(() => {})
               }
             })

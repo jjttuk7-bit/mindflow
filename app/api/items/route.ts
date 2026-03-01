@@ -48,13 +48,20 @@ export async function POST(req: NextRequest) {
 
   // Trigger async AI tagging (fire and forget) — forward cookies for auth
   const cookieHeader = req.headers.get("cookie") || ""
+  // For links, enrich content with OG metadata for better tagging
+  let tagContent = content
+  if (type === "link" && meta) {
+    const m = meta as Record<string, string>
+    const parts = [m.og_title, m.og_description, content].filter(Boolean)
+    tagContent = parts.join(" — ")
+  }
   fetch(`${req.nextUrl.origin}/api/ai/tag`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       cookie: cookieHeader,
     },
-    body: JSON.stringify({ item_id: item.id, content, type }),
+    body: JSON.stringify({ item_id: item.id, content: tagContent, type }),
   }).catch(() => {})
 
   return NextResponse.json(item, { status: 201 })

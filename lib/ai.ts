@@ -14,54 +14,89 @@ export async function generateTags(
   existingTags: string[],
   tagFrequencies?: string[]
 ): Promise<string[]> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
+  // Skip tagging for placeholder content
+  if (!content || content === "Image" || content === "Voice memo" || content.length < 2) {
+    return []
+  }
+
+  const model = getGenAI().getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: { temperature: 0.3 },
+  })
 
   const freqSection = tagFrequencies?.length
-    ? `\n사용자의 기존 태그 (사용 빈도순):\n${tagFrequencies.join(", ")}\n기존 태그를 최대한 재사용하세요. 빈도가 높은 태그를 선호합니다.`
+    ? `\n[사용자의 기존 태그 - 사용 빈도순]\n${tagFrequencies.join(", ")}\n→ 기존 태그와 의미가 같으면 반드시 기존 태그를 그대로 사용. 새 태그는 기존에 해당하는 것이 정말 없을 때만.`
     : existingTags.length
-    ? `\n사용자의 기존 태그: ${existingTags.join(", ")}\n기존 태그를 최대한 재사용하세요.`
+    ? `\n[사용자의 기존 태그]\n${existingTags.join(", ")}\n→ 기존 태그와 의미가 같으면 반드시 재사용.`
     : ""
 
-  const prompt = `당신은 콘텐츠 태깅 전문가입니다. 주어진 콘텐츠에 1~3개의 태그를 붙여주세요.
+  const typeGuidance: Record<string, string> = {
+    text: `[텍스트 메모 태깅]
+- 핵심 주제 1~2개를 태그로 추출
+- 행동(todo, 회의, 리뷰)이나 분야(개발, 디자인, 마케팅)를 태그로`,
+    link: `[링크/URL 태깅]
+- 링크의 제목과 설명에서 핵심 주제를 파악
+- 서비스/플랫폼 이름보다 콘텐츠의 주제를 태그로
+- 기술 문서면 해당 기술명, 뉴스면 주제, 블로그면 토픽`,
+    image: `[이미지 캡션 태깅]
+- 이미지에서 추출된 텍스트나 설명의 핵심 주제를 태그로
+- 문서/스크린샷이면 문서의 주제를, 사진이면 피사체 카테고리를`,
+    voice: `[음성 메모 태깅]
+- 음성 전사(transcript)의 핵심 주제를 태그로
+- 구어체 특성상 핵심만 추출. 말버릇/감탄사 무시`,
+  }
 
-규칙:
-- 태그는 소문자, 영문 또는 한글, 단어 1~2개 (예: "web-dev", "회의", "design", "독서")
-- 기존 태그가 맞으면 반드시 재사용. 새 태그는 기존 태그가 맞지 않을 때만 생성
-- 너무 포괄적인 태그 금지: "일반", "기타", "general", "other", "misc", "stuff", "note"
-- 콘텐츠의 핵심 주제/행동을 반영하는 구체적 태그만 사용
-- 1~3개만 반환. 애매하면 적게
+  const guidance = typeGuidance[type] || typeGuidance.text
+
+  const prompt = `콘텐츠에 1~3개 태그를 붙이세요.
+
+${guidance}
+
+[규칙]
+1. 태그는 소문자. 영문 또는 한글. 1~2단어 (예: "react", "회의", "web-dev", "독서")
+2. 기존 태그가 의미상 맞으면 무조건 재사용 (동의어 사용 금지)
+3. 금지 태그: "일반", "기타", "메모", "general", "other", "misc", "note", "stuff", "image", "link", "voice", "text", "url", "사진", "음성", "링크"
+4. 콘텐츠 유형 자체를 태그로 쓰지 마세요 (예: type이 "image"인데 태그도 "image" → 금지)
+5. 확실한 주제만. 애매하면 1개만 반환
+6. 최대 3개. 무관한 태그 절대 금지
 ${freqSection}
 
-콘텐츠 유형: ${type}
+[예시]
+text "React 컴포넌트 리팩토링 작업" → ["react", "리팩토링"]
+text "팀 회의에서 Q3 목표 논의" → ["회의", "q3-목표"]
+text "여행 가기 전 짐 싸야 할 것들" → ["여행"]
+link "TypeScript 5.0 새 기능 소개 - 공식 블로그" → ["typescript"]
+link "맛집 추천 - 강남역 근처 이탈리안" → ["맛집", "강남"]
+image "프로젝트 일정표 - 3월 마일스톤" → ["일정", "프로젝트"]
+image "산 풍경" → ["풍경"]
+voice "내일 오전에 디자인 리뷰 미팅 있고, 오후에 코드 리뷰 해야 돼" → ["미팅", "코드리뷰"]
 
-좋은 태그 예시:
-- "React 컴포넌트 리팩토링 작업" → ["react", "리팩토링"]
-- "팀 회의에서 Q3 목표 논의" → ["회의", "목표"]
-- "여행 가기 전 짐 싸야 할 것들" → ["여행", "todo"]
-
-나쁜 태그 예시:
-- ["general", "note"] ← 너무 포괄적
-- ["react", "javascript", "web", "dev", "coding"] ← 너무 많음
-
-JSON 배열만 반환하세요. 다른 텍스트 없이.
+JSON 배열만 반환. 다른 텍스트 없이.
 
 콘텐츠: ${content}`
 
   const result = await model.generateContent(prompt)
   const text = result.response.text().trim()
-  try {
-    const tags = JSON.parse(text)
-    return Array.isArray(tags) ? tags.slice(0, 3) : []
-  } catch {
-    const match = text.match(/\[[\s\S]*\]/)
-    if (match) {
-      try {
-        const tags = JSON.parse(match[0])
-        return Array.isArray(tags) ? tags.slice(0, 3) : []
-      } catch { /* ignore */ }
-    }
-    return []
+
+  const banned = new Set(["일반", "기타", "메모", "general", "other", "misc", "note", "stuff", "image", "link", "voice", "text", "url", "사진", "음성", "링크"])
+
+  function parseTags(raw: string): string[] {
+    try {
+      const parsed = JSON.parse(raw)
+      if (!Array.isArray(parsed)) return []
+      return parsed
+        .map((t: unknown) => String(t).toLowerCase().trim())
+        .filter((t: string) => t.length >= 1 && t.length <= 20 && !banned.has(t))
+        .slice(0, 3)
+    } catch { return [] }
   }
+
+  let tags = parseTags(text)
+  if (!tags.length) {
+    const match = text.match(/\[[\s\S]*\]/)
+    if (match) tags = parseTags(match[0])
+  }
+  return tags
 }
 
 export async function generateSummary(content: string): Promise<string | null> {

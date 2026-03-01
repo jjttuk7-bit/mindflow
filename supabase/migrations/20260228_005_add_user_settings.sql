@@ -15,13 +15,18 @@ alter table user_settings enable row level security;
 create policy "Users can manage own settings" on user_settings
   for all using (auth.uid() = user_id);
 
-create or replace function create_user_settings()
-returns trigger as $$
+create or replace function public.create_user_settings()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
 begin
-  insert into user_settings (user_id) values (new.id);
+  insert into public.user_settings (user_id) values (new.id)
+  on conflict (user_id) do nothing;
   return new;
 end;
-$$ language plpgsql security definer;
+$$;
 
 create trigger on_auth_user_created
   after insert on auth.users

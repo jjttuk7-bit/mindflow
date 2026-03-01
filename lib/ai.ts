@@ -135,7 +135,14 @@ export async function describeImage(base64: string, mimeType: string): Promise<s
         data: base64,
       },
     },
-    "Describe this image in one concise sentence. If there is text in the image, mention it. Keep it under 30 words. If the image context appears Korean, respond in Korean. Return ONLY the description, nothing else.",
+    `Analyze this image and provide a concise description (1-2 sentences, under 40 words).
+
+Rules:
+- If the image contains text, TRANSCRIBE the text EXACTLY as written first, then briefly describe the image context.
+- For screenshots or documents, focus on the text content.
+- For photos, describe the main subject and scene.
+- If the text or context is Korean, respond entirely in Korean.
+- Return ONLY the description, no labels or prefixes.`,
   ])
 
   return result.response.text().trim()

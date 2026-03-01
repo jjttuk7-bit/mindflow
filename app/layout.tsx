@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SWRegister } from "@/components/sw-register";
 import { PWAInstallPrompt } from "@/components/pwa-install";
 import "./globals.css";
@@ -75,6 +77,8 @@ export default function RootLayout({
           <Toaster position="top-center" richColors closeButton />
           <SWRegister />
           <PWAInstallPrompt />
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>

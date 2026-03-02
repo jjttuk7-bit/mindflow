@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import dynamic from "next/dynamic"
+import { toast } from "sonner"
 import { Sidebar } from "@/components/sidebar"
 import { MainFeed } from "@/components/main-feed"
 import { BottomNav } from "@/components/bottom-nav"
@@ -26,9 +28,21 @@ export function Dashboard() {
   useProjects()
   useTodos()
 
+  const searchParams = useSearchParams()
   const { sidebarView, activeTab, composerOpen } = useStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get("shared") === "success") {
+      toast.success("공유된 콘텐츠가 저장되었습니다!")
+      window.history.replaceState({}, "", "/")
+    }
+    if (searchParams.get("error") === "share_failed") {
+      toast.error("공유 저장에 실패했습니다")
+      window.history.replaceState({}, "", "/")
+    }
+  }, [searchParams])
 
   useEffect(() => {
     fetch("/api/settings")

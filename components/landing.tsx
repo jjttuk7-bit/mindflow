@@ -18,6 +18,13 @@ import {
   Globe,
   Moon,
   Sun,
+  Flame,
+  PenTool,
+  TrendingUp,
+  Briefcase,
+  Network,
+  Bot,
+  Layers,
 } from "lucide-react"
 import { useTheme } from "@/hooks/use-theme"
 
@@ -70,16 +77,16 @@ function Hero() {
       <div className="max-w-3xl mx-auto text-center">
         <div className="inline-flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-6">
           <Sparkles className="w-3.5 h-3.5" />
-          AI-Powered Knowledge Manager
+          AI Knowledge Companion
         </div>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl tracking-tight text-foreground leading-[1.1]">
-          기록은 내가,
+          기록하면 AI가 정리하고,
           <br />
-          <span className="text-primary">정리는 AI가</span>
+          <span className="text-primary">성과로 만들어 줍니다</span>
         </h1>
         <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          아이디어, 링크, 이미지, 음성 메모를 한곳에 담아보세요.
-          AI가 자동으로 태그하고, 연결하고, 인사이트를 발견해 줍니다.
+          아이디어, 링크, 이미지, 음성을 한곳에 담으세요. AI가 자동 태깅하고,
+          실시간 대화로 지식을 검색하고, 블로그 글이나 제안서까지 만들어 줍니다.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
@@ -96,16 +103,21 @@ function Hero() {
             기능 살펴보기
           </a>
         </div>
+        <div className="mt-8 flex items-center justify-center gap-6 text-xs text-muted-foreground/60">
+          <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> 개인 데이터 보호</span>
+          <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> 30초 만에 시작</span>
+          <span className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> 무료 플랜 제공</span>
+        </div>
       </div>
     </section>
   )
 }
 
 const captureTypes = [
-  { icon: FileText, label: "텍스트 & 아이디어", color: "text-primary" },
-  { icon: Link2, label: "웹 링크", color: "text-sage" },
-  { icon: Image, label: "이미지", color: "text-dusty-rose" },
-  { icon: Mic, label: "음성 메모", color: "text-terracotta" },
+  { icon: FileText, label: "텍스트 & 아이디어", desc: "생각나는 모든 것을 즉시 기록", color: "text-primary" },
+  { icon: Link2, label: "웹 링크", desc: "OG 메타데이터 자동 추출", color: "text-sage" },
+  { icon: Image, label: "이미지 & 스크린샷", desc: "AI가 텍스트까지 추출", color: "text-dusty-rose" },
+  { icon: Mic, label: "음성 메모", desc: "AI 전사로 텍스트 변환", color: "text-terracotta" },
 ]
 
 function CaptureSection() {
@@ -117,19 +129,20 @@ function CaptureSection() {
             무엇이든, 바로 Capture
           </h2>
           <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-            머릿속에 떠오르는 모든 것을 기록하세요. 텍스트, 링크, 이미지, 음성까지 Mindflow가 깔끔하게 담아줍니다.
+            웹, 크롬 확장, 텔레그램, 모바일 공유 — 어디서든 한 번에 저장하세요.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          {captureTypes.map(({ icon: Icon, label, color }) => (
+          {captureTypes.map(({ icon: Icon, label, desc, color }) => (
             <div
               key={label}
-              className="flex flex-col items-center gap-3 p-6 sm:p-8 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border"
+              className="flex flex-col items-center gap-3 p-6 sm:p-8 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border transition-all duration-200"
             >
               <div className="w-12 h-12 rounded-xl bg-accent/60 flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${color}`} />
               </div>
               <span className="text-sm font-medium text-foreground">{label}</span>
+              <span className="text-[11px] text-muted-foreground/60 text-center">{desc}</span>
             </div>
           ))}
         </div>
@@ -140,40 +153,83 @@ function CaptureSection() {
 
 const features = [
   {
-    icon: Tag,
-    title: "Smart AI Tagging",
+    icon: Layers,
+    title: "다차원 스마트 태깅",
     description:
-      "AI가 콘텐츠를 분석해 관련 태그를 자동으로 추천합니다. 더 이상 수동 분류는 필요 없어요 — 그냥 쓰면, Mindflow가 정리합니다.",
+      "AI가 분야, 주제, 행동, 맥락 4축으로 3~5개 태그를 자동 생성합니다. 기존 태그를 학습해서 일관된 분류 체계를 유지합니다.",
+    badge: "Upgraded",
+  },
+  {
+    icon: Bot,
+    title: "AI 지식 동반자",
+    description:
+      "저장된 지식을 기반으로 실시간 스트리밍 대화. 할 일, 프로젝트, 최근 활동까지 인식하는 똑똑한 AI 채팅입니다.",
+    badge: "New",
+  },
+  {
+    icon: PenTool,
+    title: "콘텐츠 생성",
+    description:
+      "저장한 지식을 블로그 글, SNS 포스트, 뉴스레터, 이메일 초안으로 변환하세요. AI가 초안을 써줍니다.",
+    badge: "New",
+  },
+  {
+    icon: TrendingUp,
+    title: "트렌드 분석",
+    description:
+      "저장 패턴에서 관심 분야의 변화를 감지하고, 새로운 기회를 발견해 줍니다. 주간/월간 인사이트를 받아보세요.",
+    badge: "New",
+  },
+  {
+    icon: Briefcase,
+    title: "비즈니스 지원",
+    description:
+      "미팅 정리, 제안서 초안, 프로젝트 현황 보고 — 업무에 필요한 문서를 저장된 자료를 기반으로 작성합니다.",
+    badge: "New",
+  },
+  {
+    icon: Flame,
+    title: "스트릭 & 습관 형성",
+    description:
+      "매일 접속하면 연속 사용일이 카운트됩니다. 스마트 인사말과 데일리 브리핑으로 꾸준한 기록 습관을 만들어 줍니다.",
+    badge: "New",
   },
   {
     icon: MessageSquare,
-    title: "AI Chat Assistant",
+    title: "스트리밍 AI 응답",
     description:
-      "저장한 지식에 대해 자유롭게 질문하세요. AI가 관련 항목을 찾아, 내 노트에 기반한 답변을 제공합니다.",
+      "AI가 실시간으로 타이핑하듯 답변합니다. 대화 맥락을 기억하고, 할 일이나 메모를 '추가' 버튼으로 즉시 저장할 수 있습니다.",
+    badge: "New",
+  },
+  {
+    icon: Network,
+    title: "지식 맵 & 연결",
+    description:
+      "저장된 항목 간의 관계를 네트워크 그래프로 시각화. AI가 유사한 항목을 자동으로 발견하고 연결합니다.",
   },
   {
     icon: CheckSquare,
-    title: "Integrated Todos",
+    title: "스마트 할 일 관리",
     description:
-      "생각을 바로 행동으로 옮기세요. 아이디어와 프로젝트에 연결된 할 일 목록을 하나의 워크플로우에서 관리합니다.",
+      "콘텐츠에서 AI가 액션 아이템을 자동 추출하고, 프로젝트에 연결된 할 일을 한 곳에서 관리합니다.",
   },
   {
-    icon: Share2,
-    title: "Share & Collaborate",
+    icon: Tag,
+    title: "AI 프로젝트 분류",
     description:
-      "개별 항목을 공유하거나 공개 프로필을 구성하세요. 원클릭으로 공유 링크를 생성해 누구와도 쉽게 협업할 수 있습니다.",
+      "AI가 콘텐츠의 주제를 분석해 기존 프로젝트에 자동 분류하거나, 새 프로젝트를 만들어 줍니다.",
   },
   {
     icon: Zap,
-    title: "AI Summaries & Insights",
+    title: "인사이트 리포트",
     description:
-      "나의 사고 패턴에 대한 주간 인사이트를 받아보세요. AI가 모든 노트를 분석해 큰 그림을 보여줍니다.",
+      "월간 자동 생성되는 분석 리포트 — 관심사 트렌드, 활동 히트맵, 미뤄둔 할 일 리마인더까지 한눈에.",
   },
   {
     icon: Globe,
-    title: "Link Previews",
+    title: "어디서나 수집",
     description:
-      "URL을 저장하면 Mindflow가 자동으로 제목, 설명, 이미지를 가져옵니다. 북마크가 한눈에 보기 좋게 정리됩니다.",
+      "웹 앱, 크롬 확장, 텔레그램 봇, 모바일 공유 — 4가지 방법으로 언제 어디서든 바로 저장하세요.",
   },
 ]
 
@@ -183,16 +239,23 @@ function FeaturesSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-            명확하게 사고하기 위한 모든 것
+            저장을 넘어, 성과를 만드는 도구
           </h2>
-          <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-            Mindflow는 기록, 정리, AI 인텔리전스를 하나의 우아한 도구에 담았습니다.
+          <p className="mt-4 text-muted-foreground text-lg max-w-2xl mx-auto">
+            기록과 정리는 기본. AI가 지식을 블로그 글, 제안서, 인사이트로 전환해 줍니다.
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="group p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15">
+          {features.map(({ icon: Icon, title, description, badge }) => (
+            <div key={title} className="group relative p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
+              {badge && (
+                <span className={`absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  badge === "New" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-600"
+                }`}>
+                  {badge}
+                </span>
+              )}
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
                 <Icon className="w-5 h-5 text-primary" />
               </div>
               <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
@@ -205,31 +268,118 @@ function FeaturesSection() {
   )
 }
 
+const aiExamples = [
+  { icon: "💬", question: "이번 주 저장한 개발 내용 정리해줘", answer: "저장된 5개 항목을 분석하여 React 성능 최적화, TypeScript 마이그레이션 관련 내용을 주제별로 정리했습니다..." },
+  { icon: "📝", question: "이 내용으로 블로그 글 써줘", answer: "저장된 자료를 바탕으로 'React 성능 최적화 실전 가이드' 초안을 작성했습니다. 소개 → 문제 진단 → 해결법 → 결론 구조로..." },
+  { icon: "📊", question: "최근 내 관심사 트렌드 분석해줘", answer: "최근 2주간 AI/ML 관련 저장이 40% 증가했습니다. 특히 LLM 파인튜닝에 집중되어 있으며..." },
+  { icon: "💼", question: "클라이언트 미팅 내용 정리해줘", answer: "미팅 핵심 요약: 1) Q3 목표 매출 20% 성장 합의 2) 신규 기능 3개 우선순위 확정. 액션 아이템: ..." },
+]
+
+function AIShowcase() {
+  return (
+    <section className="py-20 sm:py-28 px-4 sm:px-6 bg-muted/30">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-4">
+            <Bot className="w-3.5 h-3.5" />
+            AI Knowledge Companion
+          </div>
+          <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
+            대화하듯 지식을 활용하세요
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
+            검색, 정리, 콘텐츠 생성, 비즈니스 지원까지 — 채팅 한 곳에서 모두 가능합니다.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+          {aiExamples.map(({ icon, question, answer }) => (
+            <div key={question} className="rounded-2xl bg-card border border-border/50 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start gap-3 mb-3">
+                <span className="text-lg">{icon}</span>
+                <p className="text-sm font-medium text-foreground">&quot;{question}&quot;</p>
+              </div>
+              <div className="ml-8 rounded-xl bg-muted/60 px-4 py-3">
+                <p className="text-xs text-muted-foreground leading-relaxed">{answer}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const steps = [
-  { num: "1", title: "Capture", description: "텍스트를 쓰거나, 링크를 붙이거나, 이미지를 올리거나, 음성을 녹음하세요." },
-  { num: "2", title: "Organize", description: "AI가 콘텐츠를 자동 태그합니다. 프로젝트와 스마트 폴더로 깔끔하게 분류하세요." },
-  { num: "3", title: "Discover", description: "나만의 지식 베이스에 질문하세요. 놓쳤던 연결고리와 인사이트를 발견합니다." },
+  { num: "1", title: "Capture", description: "텍스트, 링크, 이미지, 음성 — 무엇이든 한 번에 저장하세요." },
+  { num: "2", title: "Organize", description: "AI가 4축 태깅, 요약, 프로젝트 분류까지 자동 처리합니다." },
+  { num: "3", title: "Discover", description: "대화하듯 지식을 검색하고, 숨겨진 연결과 인사이트를 발견하세요." },
+  { num: "4", title: "Create", description: "저장된 지식을 블로그 글, 제안서, SNS 포스트로 전환하세요." },
 ]
 
 function HowItWorks() {
   return (
-    <section className="py-20 sm:py-28 px-4 sm:px-6 bg-muted/30">
-      <div className="max-w-4xl mx-auto">
+    <section className="py-20 sm:py-28 px-4 sm:px-6">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-            3단계로 간단하게
+            4단계로 지식이 성과가 됩니다
           </h2>
         </div>
-        <div className="grid sm:grid-cols-3 gap-8 sm:gap-10">
-          {steps.map(({ num, title, description }) => (
-            <div key={num} className="text-center">
-              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground text-lg font-semibold flex items-center justify-center mx-auto mb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+          {steps.map(({ num, title, description }, idx) => (
+            <div key={num} className="text-center relative">
+              {idx < steps.length - 1 && (
+                <div className="hidden lg:block absolute top-6 left-[60%] w-[80%] h-px border-t-2 border-dashed border-border/40" />
+              )}
+              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground text-lg font-semibold flex items-center justify-center mx-auto mb-4 relative z-10">
                 {num}
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function StreakSection() {
+  return (
+    <section className="py-20 sm:py-28 px-4 sm:px-6 bg-muted/30">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center gap-10 md:gap-16">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-500 bg-orange-500/10 px-3 py-1.5 rounded-full mb-4">
+              <Flame className="w-3.5 h-3.5" />
+              Streak System
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
+              매일 기록하는 습관
+            </h2>
+            <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
+              매일 MindFlow에 접속하면 연속 사용일이 카운트됩니다.
+              스마트 인사말과 데일리 브리핑이 꾸준한 기록 습관을 응원합니다.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+              <span className="inline-flex items-center gap-1.5 text-sm bg-card border border-border/50 px-3 py-1.5 rounded-lg text-foreground/80">
+                🔥 스트릭 배지
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-sm bg-card border border-border/50 px-3 py-1.5 rounded-lg text-foreground/80">
+                🌅 스마트 인사말
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-sm bg-card border border-border/50 px-3 py-1.5 rounded-lg text-foreground/80">
+                📊 데일리 브리핑
+              </span>
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-gradient-to-br from-orange-500/20 via-primary/10 to-amber-500/20 border border-orange-500/20 flex flex-col items-center justify-center gap-2">
+              <span className="text-5xl sm:text-6xl">🔥</span>
+              <span className="text-3xl sm:text-4xl font-bold text-foreground">14일</span>
+              <span className="text-xs text-muted-foreground">연속 사용 중</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -249,22 +399,92 @@ function SecurityBadge() {
   )
 }
 
-function CTA() {
+const plans = [
+  {
+    name: "Free",
+    price: "무료",
+    desc: "핵심 기능으로 시작하기",
+    features: ["AI 채팅 5회/일", "다차원 스마트 태깅", "스트릭 & 데일리 브리핑", "프로젝트 3개", "크롬 확장 & 텔레그램"],
+    cta: "무료로 시작",
+    highlight: false,
+  },
+  {
+    name: "Pro",
+    price: "$9.99/월",
+    desc: "무제한 AI + 고급 인사이트",
+    features: ["AI 채팅 무제한", "콘텐츠 생성 & 비즈니스 지원", "AI 프로필 분석", "월간 인사이트 리포트", "프로젝트 & 검색 무제한"],
+    cta: "Pro 시작하기",
+    highlight: true,
+  },
+]
+
+function PricingSection() {
   return (
     <section className="py-20 sm:py-28 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
+            심플한 요금제
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg">
+            무료로 시작하고, 필요할 때 업그레이드하세요.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          {plans.map(({ name, price, desc, features: feats, cta, highlight }) => (
+            <div
+              key={name}
+              className={`rounded-2xl p-6 sm:p-8 ${
+                highlight
+                  ? "bg-primary/5 border-2 border-primary/30 shadow-lg"
+                  : "bg-card border border-border/50 shadow-sm"
+              }`}
+            >
+              <h3 className="text-lg font-semibold text-foreground">{name}</h3>
+              <p className="text-3xl font-bold text-foreground mt-2">{price}</p>
+              <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+              <ul className="mt-6 space-y-3">
+                {feats.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
+                    <CheckSquare className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/login"
+                className={`mt-8 block text-center text-sm font-medium py-3 rounded-xl transition-colors ${
+                  highlight
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "bg-secondary text-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {cta}
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CTA() {
+  return (
+    <section className="py-20 sm:py-28 px-4 sm:px-6 bg-muted/30">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
-          지금 바로 생각을 정리하세요
+          지식을 쌓고, 성과를 만드세요
         </h2>
         <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
-          무료로 사용할 수 있습니다. 신용카드 불필요. 1분이면 시작할 수 있어요.
+          무료로 시작할 수 있습니다. 카드 등록 불필요. 30초면 시작할 수 있어요.
         </p>
         <div className="mt-10">
           <Link
             href="/login"
             className="inline-flex items-center gap-2 text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-10 py-4 rounded-xl shadow-sm"
           >
-            나만의 Mindflow 만들기
+            나만의 Mindflow 시작하기
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -282,9 +502,9 @@ function Footer() {
           <span className="text-sm">&copy; 2026 Mindflow</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
-          <Link href="/login" className="hover:text-foreground">
-            로그인
-          </Link>
+          <Link href="/terms" className="hover:text-foreground">이용약관</Link>
+          <Link href="/privacy" className="hover:text-foreground">개인정보처리방침</Link>
+          <Link href="/login" className="hover:text-foreground">로그인</Link>
         </div>
       </div>
     </footer>
@@ -299,7 +519,10 @@ export function Landing() {
         <Hero />
         <CaptureSection />
         <FeaturesSection />
+        <AIShowcase />
         <HowItWorks />
+        <StreakSection />
+        <PricingSection />
         <SecurityBadge />
         <CTA />
       </main>

@@ -6,7 +6,8 @@ import { useStore } from "@/lib/store"
 import { toast } from "sonner"
 import { ContentType } from "@/lib/supabase/types"
 import { VoiceRecorder } from "@/components/voice-recorder"
-import { FileText, Link, Image, Mic, ArrowUp, Upload, X, Camera } from "lucide-react"
+import { FileText, Link, Image, Mic, ArrowUp, Upload, X, Camera, Loader2 } from "lucide-react"
+import { ScreenshotData } from "@/lib/supabase/types"
 
 const typeButtons: {
   type: ContentType
@@ -29,6 +30,8 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasCamera, setHasCamera] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [screenshotData, setScreenshotData] = useState<ScreenshotData | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -50,22 +53,40 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     if (!file.type.startsWith("image/")) return
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
+    setScreenshotData(null)
 
-    // Auto-describe image with AI
+    // Analyze image with AI (screenshot detection + OCR)
+    setIsAnalyzing(true)
     const formData = new FormData()
     formData.append("image", file)
-    fetch("/api/ai/describe-image", { method: "POST", body: formData })
+    fetch("/api/ai/analyze-screenshot", { method: "POST", body: formData })
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
-        if (data?.description) setContent(data.description)
+        if (!data) return
+        if (data.is_screenshot) {
+          setContent(data.content || data.summary || "")
+          setScreenshotData({
+            type: data.type,
+            urls: data.extracted?.urls || [],
+            dates: data.extracted?.dates || [],
+            todos: data.extracted?.todos || [],
+            people: data.extracted?.people || [],
+            key_info: data.extracted?.key_info || [],
+          })
+        } else {
+          setContent(data.summary || data.content || "")
+        }
       })
       .catch(() => {})
+      .finally(() => setIsAnalyzing(false))
   }
 
   function clearFile() {
     setSelectedFile(null)
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(null)
+    setScreenshotData(null)
+    setIsAnalyzing(false)
   }
 
   function handleTakePhoto() {
@@ -232,7 +253,9 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           setError("Failed to upload image")
           return
         }
-        metadata = { image_url: imageUrl }
+        metadata = screenshotData
+          ? { image_url: imageUrl, screenshot: screenshotData }
+          : { image_url: imageUrl }
       }
 
       const res = await fetch("/api/items", {
@@ -248,7 +271,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
 
-        // If image saved without caption, generate caption async and update
+        // If image saved without caption, analyze async and update
         const savedFile = activeType === "image" && !content.trim() ? selectedFile : null
 
         setContent("")
@@ -259,21 +282,38 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         if (savedFile) {
           const fd = new FormData()
           fd.append("image", savedFile)
-          fetch("/api/ai/describe-image", { method: "POST", body: fd })
+          fetch("/api/ai/analyze-screenshot", { method: "POST", body: fd })
             .then((r) => r.ok ? r.json() : null)
             .then((data) => {
-              if (data?.description) {
-                updateItem(item.id, { content: data.description })
+              if (!data) return
+              const newContent = data.is_screenshot
+                ? (data.content || data.summary || "")
+                : (data.summary || data.content || "")
+              if (newContent) {
+                const newMeta: Record<string, unknown> = {}
+                if (data.is_screenshot) {
+                  newMeta.screenshot = {
+                    type: data.type,
+                    urls: data.extracted?.urls || [],
+                    dates: data.extracted?.dates || [],
+                    todos: data.extracted?.todos || [],
+                    people: data.extracted?.people || [],
+                    key_info: data.extracted?.key_info || [],
+                  }
+                }
+                updateItem(item.id, { content: newContent })
                 fetch(`/api/items/${item.id}`, {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ content: data.description }),
+                  body: JSON.stringify({
+                    content: newContent,
+                    ...(Object.keys(newMeta).length > 0 ? { metadata: { ...item.metadata, ...newMeta } } : {}),
+                  }),
                 }).then(() => {
-                  // Re-trigger tagging with actual caption
                   fetch("/api/ai/tag", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ item_id: item.id, content: data.description, type: "image" }),
+                    body: JSON.stringify({ item_id: item.id, content: newContent, type: "image" }),
                   }).catch(() => {})
                 }).catch(() => {})
               }
@@ -444,13 +484,21 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
             </div>
           )}
 
+          {/* Analyzing indicator */}
+          {isAnalyzing && (
+            <div className="flex items-center gap-2 text-sm text-primary/70">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>AI가 스크린샷을 분석하고 있습니다...</span>
+            </div>
+          )}
+
           {/* Caption */}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Add a caption..."
+            placeholder={isAnalyzing ? "분석 중..." : "Add a caption..."}
             className="w-full min-h-[44px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
             disabled={isSubmitting}
           />

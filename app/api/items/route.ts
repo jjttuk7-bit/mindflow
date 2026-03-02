@@ -51,12 +51,26 @@ export async function POST(req: NextRequest) {
 
   // Trigger async AI tagging (fire and forget) — forward cookies for auth
   const cookieHeader = req.headers.get("cookie") || ""
-  // For links, enrich content with OG metadata for better tagging
+  // Enrich content for better tagging based on type
   let tagContent = content
   if (type === "link" && meta) {
     const m = meta as Record<string, string>
     const parts = [m.og_title, m.og_description, content].filter(Boolean)
     tagContent = parts.join(" — ")
+  } else if (type === "image" && meta && typeof meta === "object" && "screenshot" in meta) {
+    // Screenshot: use full extracted text + summary for richer tagging
+    const sm = meta as Record<string, unknown>
+    const screenshot = sm.screenshot as Record<string, unknown> | undefined
+    if (screenshot) {
+      const parts = [content]
+      if (screenshot.key_info && Array.isArray(screenshot.key_info)) {
+        parts.push(...(screenshot.key_info as string[]))
+      }
+      if (screenshot.todos && Array.isArray(screenshot.todos)) {
+        parts.push(...(screenshot.todos as string[]))
+      }
+      tagContent = parts.filter(Boolean).join(" — ")
+    }
   }
   fetch(`${req.nextUrl.origin}/api/ai/tag`, {
     method: "POST",

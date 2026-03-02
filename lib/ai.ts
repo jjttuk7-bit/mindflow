@@ -233,6 +233,76 @@ export async function describeImage(base64: string, mimeType: string): Promise<s
   return result.response.text().trim()
 }
 
+export interface ScreenshotAnalysis {
+  is_screenshot: boolean
+  type: string
+  content: string
+  summary: string
+  extracted: {
+    urls: string[]
+    dates: string[]
+    todos: string[]
+    people: string[]
+    key_info: string[]
+  }
+}
+
+export async function analyzeScreenshot(base64: string, mimeType: string): Promise<ScreenshotAnalysis> {
+  const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-pro" })
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType,
+        data: base64,
+      },
+    },
+    `이 이미지를 분석하세요. 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+{
+  "is_screenshot": true 또는 false (스크린샷/캡처 여부),
+  "type": "tweet|chat|article|recipe|code|whiteboard|email|shopping|map|other" 중 하나,
+  "content": "이미지에서 추출한 모든 텍스트 (원문 그대로, 줄바꿈 포함)",
+  "summary": "핵심 내용 한 줄 요약 (한국어)",
+  "extracted": {
+    "urls": ["발견된 URL들"],
+    "dates": ["날짜/시간 정보"],
+    "todos": ["해야 할 일/액션 아이템"],
+    "people": ["언급된 사람/이름"],
+    "key_info": ["핵심 정보 (가격, 장소, 전화번호 등)"]
+  }
+}
+
+규칙:
+- is_screenshot=false이면 일반 사진: content에 짧은 설명, extracted는 모두 빈 배열
+- is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출
+- type은 스크린샷일 때만 유의미, 일반 사진이면 "other"
+- summary는 항상 한국어로 1~2문장
+- JSON만 반환하세요`,
+  ])
+
+  const text = result.response.text().trim()
+
+  try {
+    return JSON.parse(text)
+  } catch {
+    // Try extracting JSON from markdown code block
+    const match = text.match(/\{[\s\S]*\}/)
+    if (match) {
+      try {
+        return JSON.parse(match[0])
+      } catch { /* fall through */ }
+    }
+    // Fallback: treat as non-screenshot with raw text as description
+    return {
+      is_screenshot: false,
+      type: "other",
+      content: text.slice(0, 200),
+      summary: text.slice(0, 50),
+      extracted: { urls: [], dates: [], todos: [], people: [], key_info: [] },
+    }
+  }
+}
+
 export async function transcribeAudio(file: File): Promise<string> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 

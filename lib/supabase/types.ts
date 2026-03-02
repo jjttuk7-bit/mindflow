@@ -36,8 +36,18 @@ export interface LinkMeta {
   og_domain?: string
 }
 
+export interface ScreenshotData {
+  type: string
+  urls: string[]
+  dates: string[]
+  todos: string[]
+  people: string[]
+  key_info: string[]
+}
+
 export interface ImageMeta {
   image_url: string
+  screenshot?: ScreenshotData
 }
 
 export interface VoiceMeta {

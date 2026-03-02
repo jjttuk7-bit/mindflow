@@ -3,21 +3,47 @@
 import { useState } from "react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
+import { ScreenshotData } from "@/lib/supabase/types"
+import { ExternalLink, CheckSquare, Clock, MapPin, User, Info } from "lucide-react"
 
 const ImageLightbox = dynamic(() => import("@/components/image-lightbox").then(m => m.ImageLightbox), { ssr: false })
+
+const screenshotTypeLabels: Record<string, { label: string; color: string }> = {
+  tweet: { label: "Tweet", color: "bg-sky-500/10 text-sky-600" },
+  chat: { label: "Chat", color: "bg-violet-500/10 text-violet-600" },
+  article: { label: "Article", color: "bg-emerald-500/10 text-emerald-600" },
+  recipe: { label: "Recipe", color: "bg-orange-500/10 text-orange-600" },
+  code: { label: "Code", color: "bg-slate-500/10 text-slate-600" },
+  whiteboard: { label: "Whiteboard", color: "bg-amber-500/10 text-amber-600" },
+  email: { label: "Email", color: "bg-blue-500/10 text-blue-600" },
+  shopping: { label: "Shopping", color: "bg-pink-500/10 text-pink-600" },
+  map: { label: "Map", color: "bg-teal-500/10 text-teal-600" },
+  other: { label: "Screenshot", color: "bg-gray-500/10 text-gray-600" },
+}
 
 export function ImageCard({
   imageUrl,
   caption,
+  screenshot,
 }: {
   imageUrl: string
   caption?: string
+  screenshot?: ScreenshotData
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
+
+  const typeInfo = screenshot ? screenshotTypeLabels[screenshot.type] || screenshotTypeLabels.other : null
 
   return (
     <>
       <div className="space-y-2">
+        {/* Screenshot type badge */}
+        {screenshot && typeInfo && (
+          <span className={`inline-flex items-center gap-1 text-[10px] tracking-wide px-2 py-0.5 rounded-md font-semibold ${typeInfo.color}`}>
+            {typeInfo.label}
+          </span>
+        )}
+
         <button
           onClick={() => setLightboxOpen(true)}
           className="block w-full rounded-lg overflow-hidden bg-muted/30 border border-border/30 hover:border-border/60 transition-all duration-200 cursor-zoom-in"
@@ -31,10 +57,70 @@ export function ImageCard({
             className="w-full max-h-64 object-cover"
           />
         </button>
+
         {caption && (
-          <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90 line-clamp-4">
             {caption}
           </p>
+        )}
+
+        {/* Screenshot extracted info */}
+        {screenshot && (
+          <div className="space-y-1.5 pt-1">
+            {/* Extracted URLs */}
+            {screenshot.urls.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {screenshot.urls.map((url, i) => (
+                  <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/10 rounded-md px-2 py-0.5 transition-colors truncate max-w-[240px]"
+                  >
+                    <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                    {url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40)}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* TODOs */}
+            {screenshot.todos.length > 0 && (
+              <div className="space-y-0.5">
+                {screenshot.todos.map((todo, i) => (
+                  <div key={i} className="flex items-start gap-1.5 text-[11px] text-foreground/70">
+                    <CheckSquare className="h-3 w-3 mt-0.5 text-primary/50 shrink-0" />
+                    <span>{todo}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Key info chips (dates, people, key_info) */}
+            {(screenshot.dates.length > 0 || screenshot.people.length > 0 || screenshot.key_info.length > 0) && (
+              <div className="flex flex-wrap gap-1">
+                {screenshot.dates.map((d, i) => (
+                  <span key={`d${i}`} className="inline-flex items-center gap-1 text-[10px] bg-amber-500/8 text-amber-700 dark:text-amber-400 rounded-md px-1.5 py-0.5">
+                    <Clock className="h-2.5 w-2.5" />
+                    {d}
+                  </span>
+                ))}
+                {screenshot.people.map((p, i) => (
+                  <span key={`p${i}`} className="inline-flex items-center gap-1 text-[10px] bg-violet-500/8 text-violet-700 dark:text-violet-400 rounded-md px-1.5 py-0.5">
+                    <User className="h-2.5 w-2.5" />
+                    {p}
+                  </span>
+                ))}
+                {screenshot.key_info.map((k, i) => (
+                  <span key={`k${i}`} className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/8 text-emerald-700 dark:text-emerald-400 rounded-md px-1.5 py-0.5">
+                    <Info className="h-2.5 w-2.5" />
+                    {k}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
       <ImageLightbox

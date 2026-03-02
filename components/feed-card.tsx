@@ -268,6 +268,7 @@ export function FeedCard({
           <ImageCard
             imageUrl={meta.image_url}
             caption={!editing && item.content !== "Image" ? item.content : undefined}
+            screenshot={meta.screenshot}
           />
           {editing && (
             <>

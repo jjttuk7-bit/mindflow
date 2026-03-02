@@ -58,10 +58,40 @@ async function supabaseRefreshToken(refreshToken) {
   return res.json();
 }
 
+// ── Storage Abstraction (chrome.storage with localStorage fallback) ──
+
+const storage = {
+  async get(keys) {
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      return chrome.storage.local.get(keys);
+    }
+    const result = {};
+    for (const key of keys) {
+      const val = localStorage.getItem(`mf_${key}`);
+      if (val) result[key] = JSON.parse(val);
+    }
+    return result;
+  },
+  async set(obj) {
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      return chrome.storage.local.set(obj);
+    }
+    for (const [key, val] of Object.entries(obj)) {
+      localStorage.setItem(`mf_${key}`, JSON.stringify(val));
+    }
+  },
+  async remove(keys) {
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      return chrome.storage.local.remove(keys);
+    }
+    for (const key of keys) localStorage.removeItem(`mf_${key}`);
+  },
+};
+
 // ── Session Management ──
 
 async function loadSession() {
-  const stored = await chrome.storage.local.get(["session"]);
+  const stored = await storage.get(["session"]);
   if (!stored.session) return null;
 
   const s = stored.session;
@@ -84,12 +114,12 @@ async function loadSession() {
 
 async function saveSession(s) {
   session = s;
-  await chrome.storage.local.set({ session: s });
+  await storage.set({ session: s });
 }
 
 async function clearSession() {
   session = null;
-  await chrome.storage.local.remove(["session"]);
+  await storage.remove(["session"]);
 }
 
 // ── UI ──
@@ -127,13 +157,21 @@ function showStatus(message, type) {
 
 async function loadCurrentTab() {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      pageTitleEl.textContent = tab.title || "Untitled";
-      pageUrlEl.textContent = tab.url || "";
-      pageTitleEl.dataset.url = tab.url || "";
-      pageTitleEl.dataset.title = tab.title || "";
+    if (typeof chrome !== "undefined" && chrome.tabs) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab) {
+        pageTitleEl.textContent = tab.title || "Untitled";
+        pageUrlEl.textContent = tab.url || "";
+        pageTitleEl.dataset.url = tab.url || "";
+        pageTitleEl.dataset.title = tab.title || "";
+        return;
+      }
     }
+    // Fallback for testing outside extension
+    pageTitleEl.textContent = document.title || "Test Page";
+    pageUrlEl.textContent = location.href;
+    pageTitleEl.dataset.url = location.href;
+    pageTitleEl.dataset.title = document.title || "Test Page";
   } catch {
     pageTitleEl.textContent = "Unable to get page info";
   }

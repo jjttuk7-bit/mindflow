@@ -152,3 +152,12 @@ export interface UserSettings {
   created_at: string
   updated_at: string
 }
+
+export interface ItemConnection {
+  id: string
+  source_id: string
+  target_id: string
+  similarity: number
+  ai_reason?: string | null
+  created_at: string
+}

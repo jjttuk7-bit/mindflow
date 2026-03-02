@@ -103,7 +103,7 @@ export function MobileProjectList() {
                 </button>
                 <button
                   onClick={() => handleDelete(project.id)}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 md:opacity-0 md:group-hover:opacity-100 transition-all shrink-0"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

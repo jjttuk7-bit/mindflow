@@ -12,6 +12,8 @@ import {
   Loader2,
   ChevronDown,
   ExternalLink,
+  ListTodo,
+  FileText,
 } from "lucide-react"
 
 interface ChatSource {
@@ -21,6 +23,18 @@ interface ChatSource {
   type: string
 }
 
+// Parse suggestion blocks from message content
+function parseSuggestions(content: string) {
+  const suggestions: { type: "todo" | "memo"; text: string }[] = []
+  const regex = /> \*\*할 일 제안\*\*: (.+)|> \*\*메모 제안\*\*: (.+)/g
+  let match
+  while ((match = regex.exec(content)) !== null) {
+    if (match[1]) suggestions.push({ type: "todo", text: match[1].trim() })
+    if (match[2]) suggestions.push({ type: "memo", text: match[2].trim() })
+  }
+  return suggestions
+}
+
 export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const { chatOpen, setChatOpen } = useStore()
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -28,8 +42,10 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [streamingText, setStreamingText] = useState("")
   const [sessionsExpanded, setSessionsExpanded] = useState(false)
   const [sourcesMap, setSourcesMap] = useState<Record<string, ChatSource[]>>({})
+  const [addedSuggestions, setAddedSuggestions] = useState<Set<string>>(new Set())
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -37,7 +53,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  }, [messages, streamingText])
 
   // Focus input when panel opens
   useEffect(() => {
@@ -98,8 +114,33 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     setMessages([])
     setCurrentSessionId(null)
     setSourcesMap({})
+    setAddedSuggestions(new Set())
     setInput("")
     inputRef.current?.focus()
+  }
+
+  async function handleAddSuggestion(type: "todo" | "memo", text: string) {
+    const key = `${type}:${text}`
+    if (addedSuggestions.has(key)) return
+
+    try {
+      if (type === "todo") {
+        await fetch("/api/todos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text }),
+        })
+      } else {
+        await fetch("/api/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "text", content: text }),
+        })
+      }
+      setAddedSuggestions((prev) => new Set(prev).add(key))
+    } catch {
+      // ignore
+    }
   }
 
   async function handleSend() {
@@ -119,6 +160,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     }
     setMessages((prev) => [...prev, userMsg])
     setLoading(true)
+    setStreamingText("")
 
     try {
       const res = await fetch("/api/chat", {
@@ -144,29 +186,62 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
         return
       }
 
-      const data = await res.json()
+      // SSE streaming consumption
+      const reader = res.body?.getReader()
+      if (!reader) return
 
-      // Update session ID if new
-      if (!currentSessionId) {
-        setCurrentSessionId(data.session_id)
-        fetchSessions()
+      const decoder = new TextDecoder()
+      let fullText = ""
+      let sessionSources: ChatSource[] = []
+      let streamSessionId = currentSessionId
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split("\n")
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue
+          try {
+            const data = JSON.parse(line.slice(6))
+
+            if (data.type === "session") {
+              streamSessionId = data.session_id
+              sessionSources = data.sources || []
+              if (!currentSessionId) {
+                setCurrentSessionId(data.session_id)
+                fetchSessions()
+              }
+            } else if (data.type === "chunk") {
+              fullText += data.text
+              setStreamingText(fullText)
+            } else if (data.type === "error") {
+              fullText = data.error || "An error occurred."
+            }
+          } catch {
+            // skip malformed JSON
+          }
+        }
       }
 
+      // Finalize: add assistant message and clear streaming state
       const assistantMsg: ChatMessage = {
         id: `assistant-${Date.now()}`,
-        session_id: data.session_id,
+        session_id: streamSessionId || "",
         role: "assistant",
-        content: data.message,
-        sources: data.sources?.map((s: ChatSource) => s.id) || null,
+        content: fullText.trim(),
+        sources: sessionSources.map((s) => s.id),
         created_at: new Date().toISOString(),
       }
       setMessages((prev) => [...prev, assistantMsg])
+      setStreamingText("")
 
-      // Store sources for this message
-      if (data.sources?.length > 0) {
+      if (sessionSources.length > 0) {
         setSourcesMap((prev) => ({
           ...prev,
-          [assistantMsg.id]: data.sources,
+          [assistantMsg.id]: sessionSources,
         }))
       }
     } catch {
@@ -181,6 +256,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
       setMessages((prev) => [...prev, errorMsg])
     } finally {
       setLoading(false)
+      setStreamingText("")
     }
   }
 
@@ -194,6 +270,218 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   function formatTime(dateStr: string) {
     const d = new Date(dateStr)
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  }
+
+  function renderMessageContent(msg: ChatMessage) {
+    const suggestions = parseSuggestions(msg.content)
+    // Remove suggestion lines from display text
+    const cleanContent = msg.content
+      .replace(/> \*\*할 일 제안\*\*: .+/g, "")
+      .replace(/> \*\*메모 제안\*\*: .+/g, "")
+      .trim()
+
+    return (
+      <>
+        <p className="whitespace-pre-wrap">{cleanContent}</p>
+        {suggestions.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            {suggestions.map((s, i) => {
+              const key = `${s.type}:${s.text}`
+              const isAdded = addedSuggestions.has(key)
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 rounded-lg bg-background/60 border border-border/30 px-3 py-2"
+                >
+                  {s.type === "todo" ? (
+                    <ListTodo className="h-3.5 w-3.5 mt-0.5 text-primary shrink-0" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5 mt-0.5 text-blue-500 shrink-0" />
+                  )}
+                  <span className="flex-1 text-xs text-foreground/80">{s.text}</span>
+                  <button
+                    onClick={() => handleAddSuggestion(s.type, s.text)}
+                    disabled={isAdded}
+                    className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md transition-colors ${
+                      isAdded
+                        ? "bg-green-500/10 text-green-600"
+                        : "bg-primary/10 text-primary hover:bg-primary/20"
+                    }`}
+                  >
+                    {isAdded ? "추가됨" : "추가"}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </>
+    )
+  }
+
+  // Shared message rendering
+  function renderMessages() {
+    return (
+      <>
+        {messages.length === 0 && !streamingText && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-4" />
+            <p className="text-sm text-muted-foreground/50 italic">
+              저장된 지식에 대해 무엇이든 물어보세요
+            </p>
+            <p className="text-xs text-muted-foreground/30 mt-2">
+              AI가 저장된 항목에서 관련 내용을 찾아드려요
+            </p>
+          </div>
+        )}
+
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-primary/10 text-foreground rounded-br-md"
+                  : "bg-muted text-foreground rounded-bl-md"
+              }`}
+            >
+              {msg.role === "assistant" ? renderMessageContent(msg) : (
+                <p className="whitespace-pre-wrap">{msg.content}</p>
+              )}
+              <p
+                className={`text-[10px] mt-1.5 ${
+                  msg.role === "user"
+                    ? "text-primary/40 text-right"
+                    : "text-muted-foreground/40"
+                }`}
+              >
+                {formatTime(msg.created_at)}
+              </p>
+
+              {/* Source chips for assistant messages */}
+              {msg.role === "assistant" &&
+                sourcesMap[msg.id] &&
+                sourcesMap[msg.id].length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/20">
+                    {sourcesMap[msg.id].map((source, idx) => (
+                      <button
+                        key={source.id}
+                        onClick={() => setChatOpen(false)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background border border-border/40 text-[10px] text-muted-foreground/70 hover:text-primary hover:border-primary/30 transition-colors"
+                        title={source.summary || source.content.slice(0, 100)}
+                      >
+                        <ExternalLink className="h-2.5 w-2.5" />
+                        <span className="truncate max-w-[120px]">
+                          [{idx + 1}]{" "}
+                          {source.summary || source.content.slice(0, 30)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+            </div>
+          </div>
+        ))}
+
+        {/* Streaming text (real-time typing) */}
+        {streamingText && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] bg-muted rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed text-foreground">
+              <p className="whitespace-pre-wrap">{streamingText}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Loading indicator (only when no streaming text yet) */}
+        {loading && !streamingText && (
+          <div className="flex justify-start">
+            <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+              <div className="flex items-center gap-2 text-muted-foreground/50">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span className="text-xs italic">생각하는 중...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </>
+    )
+  }
+
+  // Shared session list rendering
+  function renderSessionList() {
+    if (sessions.length === 0) return null
+    return (
+      <div className="border-b border-border/20">
+        <button
+          onClick={() => setSessionsExpanded(!sessionsExpanded)}
+          className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+        >
+          <span className="tracking-wide uppercase">
+            최근 대화 ({sessions.length})
+          </span>
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${
+              sessionsExpanded ? "" : "-rotate-90"
+            }`}
+          />
+        </button>
+        {sessionsExpanded && (
+          <div className="px-3 pb-2 max-h-48 overflow-y-auto">
+            {sessions.map((session) => (
+              <button
+                key={session.id}
+                onClick={() => loadSession(session.id)}
+                className={`w-full text-left rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
+                  currentSessionId === session.id
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/70 hover:bg-accent"
+                }`}
+              >
+                <p className="truncate">{session.title}</p>
+                <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                  {new Date(session.created_at).toLocaleDateString()}
+                </p>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Shared input bar rendering
+  function renderInputBar() {
+    return (
+      <footer className="px-4 py-3 border-t border-border/40">
+        <div className="flex items-center gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary/30 focus-within:border-primary/30 transition-all">
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={fullScreen ? () => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 300) : undefined}
+            placeholder="무엇이든 물어보세요..."
+            disabled={loading}
+            className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || loading}
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10 transition-all duration-200 disabled:opacity-30 disabled:hover:bg-transparent"
+            aria-label="Send message"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
+          저장된 항목을 기반으로 AI가 답변합니다
+        </p>
+      </footer>
+    )
   }
 
   // Full-screen mode for mobile tab
@@ -214,100 +502,15 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </button>
         </header>
 
-        {sessions.length > 0 && (
-          <div className="border-b border-border/20">
-            <button
-              onClick={() => setSessionsExpanded(!sessionsExpanded)}
-              className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-            >
-              <span className="tracking-wide uppercase">최근 대화 ({sessions.length})</span>
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${sessionsExpanded ? "" : "-rotate-90"}`} />
-            </button>
-            {sessionsExpanded && (
-              <div className="px-3 pb-2 max-h-48 overflow-y-auto">
-                {sessions.map((session) => (
-                  <button
-                    key={session.id}
-                    onClick={() => loadSession(session.id)}
-                    className={`w-full text-left rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
-                      currentSessionId === session.id ? "bg-primary/10 text-primary" : "text-foreground/70 hover:bg-accent"
-                    }`}
-                  >
-                    <p className="truncate">{session.title}</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-0.5">{new Date(session.created_at).toLocaleDateString()}</p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {renderSessionList()}
 
         <ScrollArea className="flex-1">
           <div className="px-4 py-4 space-y-4">
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-4" />
-                <p className="text-sm text-muted-foreground/50 italic">저장된 지식에 대해 무엇이든 물어보세요</p>
-                <p className="text-xs text-muted-foreground/30 mt-2">AI가 저장된 항목에서 관련 내용을 찾아드려요</p>
-              </div>
-            )}
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                  msg.role === "user" ? "bg-primary/10 text-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"
-                }`}>
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-[10px] mt-1.5 ${msg.role === "user" ? "text-primary/40 text-right" : "text-muted-foreground/40"}`}>
-                    {formatTime(msg.created_at)}
-                  </p>
-                  {msg.role === "assistant" && sourcesMap[msg.id] && sourcesMap[msg.id].length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/20">
-                      {sourcesMap[msg.id].map((source, idx) => (
-                        <span key={source.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background border border-border/40 text-[10px] text-muted-foreground/70">
-                          <ExternalLink className="h-2.5 w-2.5" />
-                          <span className="truncate max-w-[120px]">[{idx + 1}] {source.summary || source.content.slice(0, 30)}</span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex items-center gap-2 text-muted-foreground/50">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span className="text-xs italic">생각하는 중...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+            {renderMessages()}
           </div>
         </ScrollArea>
 
-        <footer className="px-4 py-3 border-t border-border/40">
-          <div className="flex items-center gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary/30">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 300)}
-              placeholder="무엇이든 물어보세요..."
-              disabled={loading}
-              className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 disabled:opacity-50"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10 disabled:opacity-30"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-        </footer>
+        {renderInputBar()}
       </div>
     )
   }
@@ -354,151 +557,16 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         </header>
 
-        {/* Session list (collapsible) */}
-        {sessions.length > 0 && (
-          <div className="border-b border-border/20">
-            <button
-              onClick={() => setSessionsExpanded(!sessionsExpanded)}
-              className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-            >
-              <span className="tracking-wide uppercase">
-                최근 대화 ({sessions.length})
-              </span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 transition-transform duration-200 ${
-                  sessionsExpanded ? "" : "-rotate-90"
-                }`}
-              />
-            </button>
-            {sessionsExpanded && (
-              <div className="px-3 pb-2 max-h-48 overflow-y-auto">
-                {sessions.map((session) => (
-                  <button
-                    key={session.id}
-                    onClick={() => loadSession(session.id)}
-                    className={`w-full text-left rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
-                      currentSessionId === session.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-foreground/70 hover:bg-accent"
-                    }`}
-                  >
-                    <p className="truncate">{session.title}</p>
-                    <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                      {new Date(session.created_at).toLocaleDateString()}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {renderSessionList()}
 
         {/* Messages */}
         <ScrollArea className="flex-1">
           <div className="px-4 py-4 space-y-4">
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-4" />
-                <p className="text-sm text-muted-foreground/50 italic">
-                  저장된 지식에 대해 무엇이든 물어보세요
-                </p>
-                <p className="text-xs text-muted-foreground/30 mt-2">
-                  AI가 저장된 항목에서 관련 내용을 찾아드려요
-                </p>
-              </div>
-            )}
-
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary/10 text-foreground rounded-br-md"
-                      : "bg-muted text-foreground rounded-bl-md"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  <p
-                    className={`text-[10px] mt-1.5 ${
-                      msg.role === "user"
-                        ? "text-primary/40 text-right"
-                        : "text-muted-foreground/40"
-                    }`}
-                  >
-                    {formatTime(msg.created_at)}
-                  </p>
-
-                  {/* Source chips for assistant messages */}
-                  {msg.role === "assistant" &&
-                    sourcesMap[msg.id] &&
-                    sourcesMap[msg.id].length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/20">
-                        {sourcesMap[msg.id].map((source, idx) => (
-                          <button
-                            key={source.id}
-                            onClick={() => setChatOpen(false)}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background border border-border/40 text-[10px] text-muted-foreground/70 hover:text-primary hover:border-primary/30 transition-colors"
-                            title={source.summary || source.content.slice(0, 100)}
-                          >
-                            <ExternalLink className="h-2.5 w-2.5" />
-                            <span className="truncate max-w-[120px]">
-                              [{idx + 1}]{" "}
-                              {source.summary || source.content.slice(0, 30)}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              </div>
-            ))}
-
-            {/* Loading indicator */}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                  <div className="flex items-center gap-2 text-muted-foreground/50">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span className="text-xs italic">생각하는 중...</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
+            {renderMessages()}
           </div>
         </ScrollArea>
 
-        {/* Input bar */}
-        <footer className="px-4 py-3 border-t border-border/40">
-          <div className="flex items-center gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary/30 focus-within:border-primary/30 transition-all">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="무엇이든 물어보세요..."
-              disabled={loading}
-              className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10 transition-all duration-200 disabled:opacity-30 disabled:hover:bg-transparent"
-              aria-label="Send message"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-          <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
-            저장된 항목을 기반으로 AI가 답변합니다
-          </p>
-        </footer>
+        {renderInputBar()}
       </div>
     </>
   )

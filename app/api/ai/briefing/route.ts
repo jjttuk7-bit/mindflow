@@ -60,6 +60,15 @@ export async function GET() {
       .eq("user_id", user.id)
       .gte("created_at", weekStart.toISOString())
 
+    // 7. Streak data
+    const { data: streakData } = await supabase
+      .from("user_streaks")
+      .select("current_streak, longest_streak, last_active_date")
+      .eq("user_id", user.id)
+      .single()
+
+    const streak = streakData || { current_streak: 0, longest_streak: 0, last_active_date: null }
+
     // Build type counts
     const yesterdayCounts: Record<string, number> = {}
     for (const item of yesterdayItems || []) {
@@ -77,12 +86,23 @@ export async function GET() {
       text: item.summary || item.content?.slice(0, 80),
     }))
 
-    // Generate greeting based on time
+    // Generate personalized greeting
     const hour = now.getHours()
     let greeting: string
-    if (hour < 12) greeting = "좋은 아침이에요"
-    else if (hour < 18) greeting = "좋은 오후에요"
-    else greeting = "좋은 저녁이에요"
+
+    if (streak.current_streak >= 7) {
+      greeting = `🔥 ${streak.current_streak}일 연속 사용 중! 대단해요`
+    } else if (yesterdayItems && yesterdayItems.length >= 5) {
+      greeting = "어제 정말 활발했어요! 오늘도 화이팅"
+    } else if (todayItems && todayItems.length === 0 && hour < 12) {
+      greeting = "좋은 아침이에요! 오늘의 첫 기록을 남겨볼까요?"
+    } else if (hour < 12) {
+      greeting = "좋은 아침이에요"
+    } else if (hour < 18) {
+      greeting = "좋은 오후에요"
+    } else {
+      greeting = "좋은 저녁이에요"
+    }
 
     // Build briefing message
     const yesterdayTotal = yesterdayItems?.length || 0
@@ -111,6 +131,10 @@ export async function GET() {
         counts: weekCounts,
       },
       totalItems: totalItems || 0,
+      streak: {
+        current: streak.current_streak,
+        longest: streak.longest_streak,
+      },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)

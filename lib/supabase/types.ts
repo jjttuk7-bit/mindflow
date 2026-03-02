@@ -163,6 +163,16 @@ export interface ItemConnection {
   created_at: string
 }
 
+export interface UserStreak {
+  id: string
+  user_id: string
+  current_streak: number
+  longest_streak: number
+  last_active_date: string | null
+  created_at: string
+  updated_at: string
+}
+
 export type NudgeType = "connection" | "resurface" | "trend" | "action"
 
 export interface Nudge {

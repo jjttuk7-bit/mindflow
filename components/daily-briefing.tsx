@@ -35,6 +35,10 @@ interface BriefingData {
     counts: Record<string, number>
   }
   totalItems: number
+  streak?: {
+    current: number
+    longest: number
+  }
 }
 
 export function DailyBriefing() {
@@ -69,9 +73,8 @@ export function DailyBriefing() {
 
   const hour = new Date().getHours()
   const TimeIcon = hour < 12 ? Sun : hour < 18 ? Cloud : Moon
-  const greeting = hour < 12 ? "좋은 아침이에요" : hour < 18 ? "좋은 오후에요" : "좋은 저녁이에요"
 
-  const { yesterday, todos, week, totalItems } = data
+  const { yesterday, todos, week, totalItems, streak } = data
 
   return (
     <div className="relative rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-amber-accent/5 px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -83,19 +86,25 @@ export function DailyBriefing() {
         <X className="h-3.5 w-3.5" />
       </button>
 
-      {/* Greeting */}
+      {/* Greeting + Streak */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
           <TimeIcon className="h-4 w-4 text-primary" />
         </div>
-        <div>
+        <div className="flex-1">
           <span className="text-[13px] font-semibold text-foreground/90">
-            {greeting}
+            {data.greeting}
           </span>
           <span className="text-[11px] text-muted-foreground/50 ml-2">
             총 {totalItems}개의 기억
           </span>
         </div>
+        {streak && streak.current >= 2 && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-500/10">
+            <span className="text-sm">🔥</span>
+            <span className="text-xs font-bold text-orange-500">{streak.current}일</span>
+          </div>
+        )}
       </div>
 
       {/* Stats row */}

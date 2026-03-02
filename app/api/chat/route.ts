@@ -68,16 +68,56 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: userMsgError.message }, { status: 400 })
   }
 
+  // 3-1: Fetch conversation history (last 10 messages = 5 pairs)
+  const { data: historyMessages } = await supabase
+    .from("chat_messages")
+    .select("role, content")
+    .eq("session_id", currentSessionId)
+    .order("created_at", { ascending: true })
+    .limit(10)
+
+  // Build Gemini contents array from history
+  const conversationHistory = (historyMessages || [])
+    .slice(0, -1) // exclude the just-inserted user message (we add it separately)
+    .map((msg: { role: string; content: string }) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    }))
+
   // RAG: generate embedding and search for relevant items
   const embedding = await generateEmbedding(message)
 
-  const { data: matchedItems } = await supabase.rpc("match_items", {
-    query_embedding: JSON.stringify(embedding),
-    match_threshold: 0.3,
-    match_count: 10,
-  })
+  // 3-2: Parallel fetch — RAG items, todos, projects, recent items
+  const [matchResult, todosResult, projectsResult, recentResult] = await Promise.all([
+    supabase.rpc("match_items", {
+      query_embedding: JSON.stringify(embedding),
+      match_threshold: 0.3,
+      match_count: 10,
+    }),
+    supabase
+      .from("todos")
+      .select("content, is_completed, due_date, project_id")
+      .eq("user_id", user.id)
+      .eq("is_completed", false)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("projects")
+      .select("name, description, color")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("items")
+      .select("type, content, summary, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ])
 
-  const relevantItems = matchedItems || []
+  const relevantItems = matchResult.data || []
+  const pendingTodos = todosResult.data || []
+  const projects = projectsResult.data || []
+  const recentItems = recentResult.data || []
 
   // Build context string from relevant items
   const context = relevantItems
@@ -90,7 +130,20 @@ export async function POST(req: NextRequest) {
   // Collect source IDs
   const sourceIds = relevantItems.map((item: { id: string }) => item.id)
 
-  // Call Gemini
+  // Build rich context sections
+  const todoSection = pendingTodos.length > 0
+    ? `\n[현재 할 일 목록]\n${pendingTodos.map((t: { content: string; due_date: string | null }) => `- ${t.content}${t.due_date ? ` (기한: ${t.due_date})` : ""}`).join("\n")}`
+    : ""
+
+  const projectSection = projects.length > 0
+    ? `\n[프로젝트]\n${projects.map((p: { name: string; description: string | null }) => `- ${p.name}${p.description ? `: ${p.description}` : ""}`).join("\n")}`
+    : ""
+
+  const recentSection = recentItems.length > 0
+    ? `\n[최근 저장한 항목]\n${recentItems.map((i: { type: string; summary: string | null; content: string }) => `- [${i.type}] ${i.summary || i.content.slice(0, 100)}`).join("\n")}`
+    : ""
+
+  // Call Gemini with streaming
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
@@ -109,34 +162,73 @@ export async function POST(req: NextRequest) {
 - 간결하고 실용적으로 답변하세요.
 - 할 일이나 행동 항목이 있으면 체크리스트 형태로 제시하세요.
 
-${context ? `컨텍스트:\n${context}` : "지식 베이스에서 관련 컨텍스트를 찾지 못했습니다."}`
+제안 형식 (할 일이나 메모를 제안할 때 반드시 아래 형식을 사용하세요):
+- 할 일 제안: > **할 일 제안**: 할 일 내용
+- 메모 제안: > **메모 제안**: 메모 내용
 
-  const result = await model.generateContent([
-    { text: systemPrompt },
-    { text: message },
-  ])
+${context ? `검색된 컨텍스트:\n${context}` : "지식 베이스에서 관련 컨텍스트를 찾지 못했습니다."}${todoSection}${projectSection}${recentSection}`
 
-  const reply = result.response.text().trim()
+  // 3-3: Streaming response via SSE
+  const encoder = new TextEncoder()
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Send session info first
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ type: "session", session_id: currentSessionId, sources: relevantItems })}\n\n`)
+        )
 
-  // Save assistant message with sources
-  const { error: assistantMsgError } = await supabase
-    .from("chat_messages")
-    .insert({
-      session_id: currentSessionId,
-      role: "assistant",
-      content: reply,
-      sources: sourceIds.length > 0 ? sourceIds : null,
-      user_id: user.id,
-    })
+        const result = await model.generateContentStream({
+          contents: [
+            ...conversationHistory,
+            { role: "user", parts: [{ text: message }] },
+          ],
+          systemInstruction: { role: "user", parts: [{ text: systemPrompt }] },
+        })
 
-  if (assistantMsgError) {
-    return NextResponse.json({ error: assistantMsgError.message }, { status: 400 })
-  }
+        let fullReply = ""
 
-  log.success({ sources: relevantItems.length })
-  return NextResponse.json({
-    session_id: currentSessionId,
-    message: reply,
-    sources: relevantItems,
+        for await (const chunk of result.stream) {
+          const text = chunk.text()
+          if (text) {
+            fullReply += text
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ type: "chunk", text })}\n\n`)
+            )
+          }
+        }
+
+        // Save complete assistant message to DB
+        await supabase
+          .from("chat_messages")
+          .insert({
+            session_id: currentSessionId,
+            role: "assistant",
+            content: fullReply.trim(),
+            sources: sourceIds.length > 0 ? sourceIds : null,
+            user_id: user.id,
+          })
+
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`)
+        )
+        controller.close()
+        log.success({ sources: relevantItems.length, streamed: true })
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Stream error"
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ type: "error", error: errMsg })}\n\n`)
+        )
+        controller.close()
+      }
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
   })
 }

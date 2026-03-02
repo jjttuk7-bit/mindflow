@@ -22,6 +22,7 @@ const Onboarding = dynamic(() => import("@/components/onboarding").then(m => m.O
 const TodoList = dynamic(() => import("@/components/todo-list").then(m => m.TodoList))
 const MoreMenu = dynamic(() => import("@/components/more-menu").then(m => m.MoreMenu))
 const MobileProjectList = dynamic(() => import("@/components/mobile-project-list").then(m => m.MobileProjectList))
+const PushPrompt = dynamic(() => import("@/components/push-prompt").then(m => m.PushPrompt), { ssr: false })
 
 export function Dashboard() {
   const { refetch, loading, loadMore, loadingMore, hasMore } = useItems()
@@ -94,6 +95,7 @@ export function Dashboard() {
       {/* Mobile layout */}
       <div className="md:hidden flex flex-col w-full h-screen">
         <MobileHeader />
+        {activeTab === "feed" && <PushPrompt />}
         {activeTab === "feed" && <FilterChips />}
         <div className="flex-1 overflow-hidden">
           {renderMobileContent()}

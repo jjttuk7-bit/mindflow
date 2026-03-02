@@ -35,6 +35,18 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/png",
       },
     ],
+    // @ts-expect-error -- share_target is valid PWA manifest but not in Next.js types
+    share_target: {
+      action: "/api/share-target",
+      method: "POST",
+      enctype: "multipart/form-data",
+      params: {
+        title: "title",
+        text: "text",
+        url: "url",
+        files: [{ name: "media", accept: ["image/*"] }],
+      },
+    },
     id: "/",
   }
 }

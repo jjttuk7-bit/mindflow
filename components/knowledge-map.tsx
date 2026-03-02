@@ -37,7 +37,7 @@ interface GraphNode extends SimulationNodeDatum {
 
 interface GraphEdge extends SimulationLinkDatum<GraphNode> {
   weight: number
-  reason: "similarity" | "tag" | "project"
+  reason: "similarity" | "tag" | "project" | "ai"
 }
 
 interface Project {
@@ -299,8 +299,8 @@ export function KnowledgeMap() {
               (src.id === activeHighlight || tgt.id === activeHighlight)
 
             const opacity = activeHighlight
-              ? isHighlighted ? 0.6 : 0.05
-              : edge.reason === "similarity" ? 0.25 : 0.12
+              ? isHighlighted ? 0.7 : 0.05
+              : edge.reason === "ai" ? 0.4 : edge.reason === "similarity" ? 0.25 : 0.12
 
             return (
               <line
@@ -310,15 +310,21 @@ export function KnowledgeMap() {
                 x2={tgt.x}
                 y2={tgt.y}
                 stroke={
-                  edge.reason === "similarity"
+                  edge.reason === "ai"
+                    ? "#9B7DDB"
+                    : edge.reason === "similarity"
                     ? "#C4724A"
                     : edge.reason === "tag"
                     ? "#7B9E87"
-                    : "#999"
+                    : "#8B7355"
                 }
-                strokeWidth={edge.weight * 2}
+                strokeWidth={edge.reason === "ai" ? Math.max(edge.weight * 2.5, 1.5) : edge.weight * 2}
                 opacity={opacity}
-                strokeDasharray={edge.reason === "project" ? "4 2" : undefined}
+                strokeDasharray={
+                  edge.reason === "project" ? "4 2"
+                    : edge.reason === "ai" && edge.weight < 0.6 ? "6 3"
+                    : undefined
+                }
               />
             )
           })}
@@ -431,13 +437,16 @@ export function KnowledgeMap() {
       {/* Legend */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 text-[10px] text-muted-foreground/40">
         <span className="flex items-center gap-1">
+          <span className="w-6 h-0.5 bg-[#9B7DDB] rounded" /> AI 연결
+        </span>
+        <span className="flex items-center gap-1">
           <span className="w-6 h-0.5 bg-[#C4724A] rounded" /> 유사도
         </span>
         <span className="flex items-center gap-1">
           <span className="w-6 h-0.5 bg-[#7B9E87] rounded" /> 태그
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-6 h-0.5 border-t border-dashed border-[#999]" style={{ width: 24 }} /> 프로젝트
+          <span className="w-6 h-0.5 border-t border-dashed border-[#8B7355]" style={{ width: 24 }} /> 프로젝트
         </span>
       </div>
     </div>

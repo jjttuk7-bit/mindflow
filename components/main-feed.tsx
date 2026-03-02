@@ -6,6 +6,7 @@ import { TimelineView } from "@/components/timeline-view"
 import { SortDropdown } from "@/components/sort-dropdown"
 import { FeedSkeleton } from "@/components/feed-skeleton"
 import { PullToRefresh } from "@/components/pull-to-refresh"
+import { NudgeCards } from "@/components/nudge-card"
 import { useStore } from "@/lib/store"
 import { Archive, List, Clock } from "lucide-react"
 
@@ -86,6 +87,9 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
         onRefresh={async () => { onRefetch?.() }}
         className="flex-1 overflow-y-auto"
       >
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8">
+          <NudgeCards />
+        </div>
         <div className="max-w-2xl mx-auto">
           {loading ? (
             <div className="px-6">

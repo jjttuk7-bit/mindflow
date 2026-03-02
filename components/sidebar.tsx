@@ -29,6 +29,7 @@ import {
   Pin,
   CalendarDays,
   MessageSquare,
+  Brain,
 } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
 import { SidebarFeedbackButton } from "@/components/feedback-dialog"
@@ -530,6 +531,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <GitBranch className="h-4 w-4 text-muted-foreground/50" />
             Knowledge Map
+          </a>
+          <a
+            href="/profile/ai"
+            onClick={onClose}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+          >
+            <Brain className="h-4 w-4 text-muted-foreground/50" />
+            AI 프로필
           </a>
           <button
             onClick={() => { setChatOpen(true); onClose() }}

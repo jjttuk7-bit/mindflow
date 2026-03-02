@@ -1,0 +1,1 @@
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS ai_profile JSONB DEFAULT '{}';

@@ -155,6 +155,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // After embedding is saved, trigger auto-connect
+    fetch(`${req.nextUrl.origin}/api/ai/connect`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({ item_id }),
+    }).catch(() => {})
+
     log.success({ tags: suggestedTags.length })
     return NextResponse.json({ tags: suggestedTags, summary })
   } catch (err: unknown) {

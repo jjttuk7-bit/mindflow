@@ -181,6 +181,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const [creatingProject, setCreatingProject] = useState(false)
   const [newProjectName, setNewProjectName] = useState("")
   const [projectsExpanded, setProjectsExpanded] = useState(true)
+  const [tagsExpanded, setTagsExpanded] = useState(false)
+
+  const TAG_DISPLAY_LIMIT = 5
 
   const tagCounts = tags.map((tag) => ({
     ...tag,
@@ -432,7 +435,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             </p>
           )}
           <div className="space-y-0.5">
-            {tagCounts.map((tag) => (
+            {(tagsExpanded ? tagCounts : tagCounts.slice(0, TAG_DISPLAY_LIMIT)).map((tag) => (
               <TagItem
                 key={tag.id}
                 tag={tag}
@@ -447,6 +450,15 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 onDelete={() => handleDeleteTag(tag.id)}
               />
             ))}
+            {tagCounts.length > TAG_DISPLAY_LIMIT && (
+              <button
+                onClick={() => setTagsExpanded(!tagsExpanded)}
+                className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all duration-200"
+              >
+                <ChevronDown className={`h-3 w-3 transition-transform ${tagsExpanded ? "rotate-180" : ""}`} />
+                {tagsExpanded ? "Show less" : `+${tagCounts.length - TAG_DISPLAY_LIMIT} more`}
+              </button>
+            )}
           </div>
         </div>
 

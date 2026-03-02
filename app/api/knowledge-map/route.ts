@@ -14,7 +14,7 @@ interface GraphEdge {
   source: string
   target: string
   weight: number
-  reason: "similarity" | "tag" | "project"
+  reason: "similarity" | "tag" | "project" | "ai"
 }
 
 export async function GET() {
@@ -120,6 +120,21 @@ export async function GET() {
           if (match.id !== item.id && itemIds.has(match.id)) {
             addEdge(item.id, match.id, match.similarity, "similarity")
           }
+        }
+      }
+    }
+
+    // 4. AI auto-connect edges (from item_connections table)
+    const itemIdList = Array.from(itemIds)
+    const { data: aiConnections } = await supabase
+      .from("item_connections")
+      .select("source_id, target_id, similarity")
+      .in("source_id", itemIdList)
+
+    if (aiConnections) {
+      for (const conn of aiConnections) {
+        if (itemIds.has(conn.target_id)) {
+          addEdge(conn.source_id, conn.target_id, conn.similarity, "ai")
         }
       }
     }

@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
-import webPush from "web-push"
 
 function getServiceSupabase() {
   return createClient(
@@ -9,11 +8,7 @@ function getServiceSupabase() {
   )
 }
 
-webPush.setVapidDetails(
-  "mailto:support@mindflow.kr",
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
+export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
   // Verify cron secret
@@ -21,6 +16,14 @@ export async function GET(req: NextRequest) {
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  // Dynamic import to avoid Turbopack bundling issues with native Node.js modules
+  const webPush = (await import("web-push")).default
+  webPush.setVapidDetails(
+    "mailto:support@mindflow.kr",
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  )
 
   const supabase = getServiceSupabase()
 

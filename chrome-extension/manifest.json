@@ -3,7 +3,7 @@
   "name": "Mindflow — Save to Mindflow",
   "version": "1.0.0",
   "description": "Save any webpage to Mindflow with one click. AI auto-tags and organizes your links.",
-  "permissions": ["activeTab", "storage", "scripting"],
+  "permissions": ["activeTab", "storage", "scripting", "identity"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -18,6 +18,7 @@
     "128": "icons/icon-128.png"
   },
   "host_permissions": [
-    "https://mindflow-five-eta.vercel.app/*"
+    "https://mindflow-five-eta.vercel.app/*",
+    "https://goewynhlhlybtcsuaknk.supabase.co/*"
   ]
 }

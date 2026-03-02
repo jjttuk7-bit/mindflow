@@ -246,6 +246,55 @@ body {
   display: none;
 }
 
+/* Divider */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 14px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #E0D5C8;
+}
+
+.divider span {
+  padding: 0 10px;
+  font-size: 12px;
+  color: #9C8B7D;
+}
+
+/* Google Button */
+.btn-google {
+  width: 100%;
+  padding: 10px 16px;
+  background: #FFF;
+  color: #3D2E1F;
+  border: 1.5px solid #E0D5C8;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.btn-google:hover {
+  background: #F8F4EF;
+  border-color: #C4B5A5;
+}
+
+.btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Saved check animation */
 .saved-icon {
   display: inline-block;

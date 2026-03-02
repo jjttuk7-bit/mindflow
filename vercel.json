@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/weekly-nudge",
       "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/cron/morning-push",
+      "schedule": "0 23 * * *"
     }
   ]
 }

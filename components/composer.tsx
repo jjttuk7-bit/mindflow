@@ -224,7 +224,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       if (res.ok) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
-        toast.success("Voice memo saved!")
+        toast.success("음성 메모 저장됨!")
         onSaved?.()
       } else {
         const data = await res.json().catch(() => ({}))
@@ -276,7 +276,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
 
         setContent("")
         clearFile()
-        toast.success("Saved!")
+        toast.success("저장됨!")
         onSaved?.()
 
         if (savedFile) {
@@ -364,7 +364,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="Paste a URL..."
+          placeholder="URL을 붙여넣으세요..."
           className="w-full bg-transparent px-5 py-4 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
           disabled={isSubmitting}
         />
@@ -416,7 +416,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                     className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   >
                     <Camera className="h-4 w-4" />
-                    Take Photo
+                    촬영
                   </button>
                 )}
                 <button
@@ -425,11 +425,11 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                   className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                 >
                   <Upload className="h-4 w-4" />
-                  Upload
+                  업로드
                 </button>
               </div>
               <p className="text-xs text-muted-foreground/40">
-                or drag & drop an image here
+                또는 여기에 이미지를 드래그하세요
               </p>
             </div>
           )}
@@ -453,7 +453,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                   className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   <Camera className="h-4 w-4" />
-                  Capture
+                  저장
                 </button>
                 <button
                   type="button"
@@ -461,7 +461,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                   className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
                 >
                   <X className="h-4 w-4" />
-                  Cancel
+                  취소
                 </button>
               </div>
             </div>
@@ -498,7 +498,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder={isAnalyzing ? "분석 중..." : "Add a caption..."}
+            placeholder={isAnalyzing ? "분석 중..." : "설명을 추가하세요..."}
             className="w-full min-h-[44px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
             disabled={isSubmitting}
           />
@@ -510,7 +510,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          placeholder="What's on your mind?"
+          placeholder="무엇을 기록할까요?"
           className="w-full min-h-[88px] resize-none bg-transparent px-5 pt-4 pb-2 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
           disabled={isSubmitting}
         />
@@ -555,7 +555,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           ) : (
             <>
               <ArrowUp className="h-3.5 w-3.5" />
-              Save
+              저장
             </>
           )}
         </button>

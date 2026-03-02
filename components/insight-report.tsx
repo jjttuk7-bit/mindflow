@@ -61,12 +61,12 @@ function ProGate({ children }: { children: React.ReactNode }) {
     <div className="relative">
       <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] z-10 rounded-xl flex flex-col items-center justify-center gap-2">
         <Lock className="h-5 w-5 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground/70 font-medium">Pro feature</p>
+        <p className="text-sm text-muted-foreground/70 font-medium">Pro 기능</p>
         <a
           href="/settings"
           className="text-xs text-primary hover:underline"
         >
-          Upgrade to unlock
+          업그레이드하여 잠금 해제
         </a>
       </div>
       <div className="opacity-30 pointer-events-none">{children}</div>
@@ -143,20 +143,20 @@ export function InsightReport({
   return (
     <div className="space-y-6">
       {/* Stats Section */}
-      <SectionCard title="Activity" icon={<BarChart3 className="h-4 w-4 text-primary" />}>
+      <SectionCard title="활동" icon={<BarChart3 className="h-4 w-4 text-primary" />}>
         {/* Total captures hero */}
         <div className="text-center mb-6">
           <p className="text-5xl font-display text-primary tabular-nums">
             {stats.total_captures}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">Total captures this month</p>
+          <p className="text-sm text-muted-foreground mt-1">이번 달 총 기록</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* By Type */}
           {typeData.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-3">By Type</p>
+              <p className="text-xs font-medium text-muted-foreground mb-3">유형별</p>
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={typeData}>
                   <XAxis
@@ -187,7 +187,7 @@ export function InsightReport({
           {/* By Source */}
           {sourceData.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-muted-foreground mb-3">By Source</p>
+              <p className="text-xs font-medium text-muted-foreground mb-3">소스별</p>
               <div className="flex items-center justify-center">
                 <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
@@ -233,7 +233,7 @@ export function InsightReport({
         {/* Daily Heatmap */}
         {calendarCells.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs font-medium text-muted-foreground mb-3">Daily Activity</p>
+            <p className="text-xs font-medium text-muted-foreground mb-3">일별 활동</p>
             <div className="grid grid-cols-7 gap-1">
               {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
                 <div key={i} className="text-[10px] text-muted-foreground/50 text-center font-medium">
@@ -258,7 +258,7 @@ export function InsightReport({
         {/* Top Projects */}
         {stats.top_projects.length > 0 && (
           <div className="mt-6">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Top Projects</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">주요 프로젝트</p>
             <div className="flex flex-wrap gap-2">
               {stats.top_projects.map((name) => (
                 <span
@@ -275,7 +275,7 @@ export function InsightReport({
         {/* TODO Stats */}
         {todoTotal > 0 && (
           <div className="mt-6">
-            <p className="text-xs font-medium text-muted-foreground mb-2">TODO Progress</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">할 일 진행</p>
             <div className="flex items-center gap-3">
               <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                 <div
@@ -290,11 +290,11 @@ export function InsightReport({
             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3 text-sage" />
-                {stats.todos.completed} completed
+                {stats.todos.completed} 완료
               </span>
               <span className="flex items-center gap-1">
                 <Circle className="h-3 w-3" />
-                {stats.todos.pending} pending
+                {stats.todos.pending} 진행 중
               </span>
             </div>
           </div>
@@ -303,10 +303,10 @@ export function InsightReport({
 
       {/* Interests Section (Pro only) */}
       {isPro ? (
-        <SectionCard title="Interests" icon={<Lightbulb className="h-4 w-4 text-amber-accent" />}>
+        <SectionCard title="관심사" icon={<Lightbulb className="h-4 w-4 text-amber-accent" />}>
           {interests.top_topics.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Top Topics</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">주요 토픽</p>
               <div className="flex flex-wrap gap-2">
                 {interests.top_topics.map((topic) => (
                   <span
@@ -325,7 +325,7 @@ export function InsightReport({
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3 text-sage" />
-                  Trending Up
+                  상승 중
                 </p>
                 <ul className="space-y-1">
                   {interests.trending_up.map((item) => (
@@ -341,7 +341,7 @@ export function InsightReport({
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
                   <TrendingDown className="h-3 w-3 text-dusty-rose" />
-                  Trending Down
+                  하락 중
                 </p>
                 <ul className="space-y-1">
                   {interests.trending_down.map((item) => (
@@ -361,7 +361,7 @@ export function InsightReport({
         </SectionCard>
       ) : (
         <ProGate>
-          <SectionCard title="Interests" icon={<Lightbulb className="h-4 w-4 text-amber-accent" />}>
+          <SectionCard title="관심사" icon={<Lightbulb className="h-4 w-4 text-amber-accent" />}>
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-muted">Topic 1</span>
@@ -419,7 +419,7 @@ export function InsightReport({
 
       {/* Digest Section (Pro only) */}
       {isPro ? (
-        <SectionCard title="Monthly Digest" icon={<Sparkles className="h-4 w-4 text-primary" />}>
+        <SectionCard title="월간 다이제스트" icon={<Sparkles className="h-4 w-4 text-primary" />}>
           {digest.one_liner && (
             <p className="text-lg font-display text-foreground mb-4 leading-snug">
               &ldquo;{digest.one_liner}&rdquo;
@@ -428,7 +428,7 @@ export function InsightReport({
 
           {digest.key_insights.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Key Insights</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">주요 인사이트</p>
               <ul className="space-y-2">
                 {digest.key_insights.map((insight, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-foreground/70">
@@ -446,7 +446,7 @@ export function InsightReport({
         </SectionCard>
       ) : (
         <ProGate>
-          <SectionCard title="Monthly Digest" icon={<Sparkles className="h-4 w-4 text-primary" />}>
+          <SectionCard title="월간 다이제스트" icon={<Sparkles className="h-4 w-4 text-primary" />}>
             <div className="space-y-3">
               <p className="text-lg font-display text-muted-foreground">
                 &ldquo;Your monthly highlight goes here&rdquo;

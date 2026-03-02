@@ -226,16 +226,16 @@ export function FeedCard({
         className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
       >
         <Check className="h-3 w-3" />
-        Save
+        저장
       </button>
       <button
         onClick={handleEditCancel}
         className="flex items-center gap-1 px-2.5 py-1 rounded-md text-muted-foreground text-xs font-medium hover:bg-muted transition-colors"
       >
         <X className="h-3 w-3" />
-        Cancel
+        취소
       </button>
-      <span className="text-[10px] text-muted-foreground/40 ml-auto hidden sm:inline">Ctrl+Enter to save</span>
+      <span className="text-[10px] text-muted-foreground/40 ml-auto hidden sm:inline">Ctrl+Enter로 저장</span>
     </div>
   )
 
@@ -322,12 +322,12 @@ export function FeedCard({
             {expanded ? (
               <>
                 <ChevronUp className="h-3 w-3" />
-                Show summary
+                요약 보기
               </>
             ) : (
               <>
                 <ChevronDown className="h-3 w-3" />
-                Show full text
+                전체 보기
               </>
             )}
           </button>
@@ -387,7 +387,7 @@ export function FeedCard({
             ) : (
               <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/50 italic">
                 <span className="h-1 w-1 rounded-full bg-amber-accent animate-pulse" />
-                Analyzing
+                분석 중
               </span>
             )}
             <span className="text-[11px] text-muted-foreground/40 ml-auto tabular-nums">
@@ -399,7 +399,7 @@ export function FeedCard({
           {related.length > 0 && (
             <div className="pt-2 border-t border-border/30">
               <p className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/40 mb-1.5">
-                Related
+                관련
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {related.map((r) => (

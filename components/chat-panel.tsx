@@ -30,6 +30,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [loading, setLoading] = useState(false)
   const [sessionsExpanded, setSessionsExpanded] = useState(false)
   const [sourcesMap, setSourcesMap] = useState<Record<string, ChatSource[]>>({})
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -44,6 +45,21 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
       setTimeout(() => inputRef.current?.focus(), 300)
     }
   }, [chatOpen, fullScreen])
+
+  // Mobile keyboard detection via visualViewport API
+  useEffect(() => {
+    if (!fullScreen) return
+    const viewport = window.visualViewport
+    if (!viewport) return
+
+    function onResize() {
+      const kbHeight = window.innerHeight - viewport!.height
+      setKeyboardHeight(kbHeight > 0 ? kbHeight : 0)
+    }
+
+    viewport.addEventListener("resize", onResize)
+    return () => viewport.removeEventListener("resize", onResize)
+  }, [fullScreen])
 
   // Fetch sessions when panel opens
   useEffect(() => {
@@ -183,7 +199,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   // Full-screen mode for mobile tab
   if (fullScreen) {
     return (
-      <div className="flex flex-col h-full bg-background pb-16">
+      <div className="flex flex-col bg-background pb-16" style={{ height: keyboardHeight > 0 ? `calc(100dvh - ${keyboardHeight}px)` : '100dvh' }}>
         <header className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <MessageSquare className="h-5 w-5 text-primary" />
@@ -204,7 +220,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               onClick={() => setSessionsExpanded(!sessionsExpanded)}
               className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
-              <span className="tracking-wide uppercase">Recent Chats ({sessions.length})</span>
+              <span className="tracking-wide uppercase">최근 대화 ({sessions.length})</span>
               <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${sessionsExpanded ? "" : "-rotate-90"}`} />
             </button>
             {sessionsExpanded && (
@@ -231,8 +247,8 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-4" />
-                <p className="text-sm text-muted-foreground/50 italic">Ask anything about your knowledge base</p>
-                <p className="text-xs text-muted-foreground/30 mt-2">AI will search your saved items for relevant context</p>
+                <p className="text-sm text-muted-foreground/50 italic">저장된 지식에 대해 무엇이든 물어보세요</p>
+                <p className="text-xs text-muted-foreground/30 mt-2">AI가 저장된 항목에서 관련 내용을 찾아드려요</p>
               </div>
             )}
             {messages.map((msg) => (
@@ -262,7 +278,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex items-center gap-2 text-muted-foreground/50">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span className="text-xs italic">Thinking...</span>
+                    <span className="text-xs italic">생각하는 중...</span>
                   </div>
                 </div>
               </div>
@@ -278,7 +294,8 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about your knowledge..."
+              onFocus={() => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 300)}
+              placeholder="무엇이든 물어보세요..."
               disabled={loading}
               className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 disabled:opacity-50"
             />
@@ -345,7 +362,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
               <span className="tracking-wide uppercase">
-                Recent Chats ({sessions.length})
+                최근 대화 ({sessions.length})
               </span>
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform duration-200 ${
@@ -383,10 +400,10 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <MessageSquare className="h-10 w-10 text-muted-foreground/20 mb-4" />
                 <p className="text-sm text-muted-foreground/50 italic">
-                  Ask anything about your knowledge base
+                  저장된 지식에 대해 무엇이든 물어보세요
                 </p>
                 <p className="text-xs text-muted-foreground/30 mt-2">
-                  AI will search your saved items for relevant context
+                  AI가 저장된 항목에서 관련 내용을 찾아드려요
                 </p>
               </div>
             )}
@@ -447,7 +464,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex items-center gap-2 text-muted-foreground/50">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    <span className="text-xs italic">Thinking...</span>
+                    <span className="text-xs italic">생각하는 중...</span>
                   </div>
                 </div>
               </div>
@@ -465,7 +482,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask about your knowledge..."
+              placeholder="무엇이든 물어보세요..."
               disabled={loading}
               className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
             />
@@ -479,7 +496,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
-            AI answers based on your saved items
+            저장된 항목을 기반으로 AI가 답변합니다
           </p>
         </footer>
       </div>

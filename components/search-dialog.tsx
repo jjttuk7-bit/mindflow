@@ -106,7 +106,7 @@ export function SearchDialog() {
           <div className="flex items-center gap-3 px-5 border-b border-border/40">
             <Search className="h-4 w-4 text-muted-foreground/40 shrink-0" />
             <input
-              placeholder={mode === "semantic" ? "Ask anything about your thoughts..." : "Search your thoughts..."}
+              placeholder={mode === "semantic" ? "저장된 내용에 대해 물어보세요..." : "생각을 검색하세요..."}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="flex-1 bg-transparent py-4 text-[15px] focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
@@ -148,8 +148,8 @@ export function SearchDialog() {
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground/50 italic">
                 {mode === "semantic"
-                  ? "No semantically similar thoughts found"
-                  : "No thoughts matched your search"}
+                  ? "의미적으로 유사한 기록을 찾지 못했어요"
+                  : "검색 결과가 없어요"}
               </p>
             </div>
           )}
@@ -178,7 +178,7 @@ export function SearchDialog() {
                   ))}
                   {"similarity" in item && typeof item.similarity === "number" && (
                     <span className="text-[10px] text-primary/50 ml-auto tabular-nums">
-                      {Math.round(Number(item.similarity) * 100)}% match
+                      {Math.round(Number(item.similarity) * 100)}% 일치
                     </span>
                   )}
                 </div>

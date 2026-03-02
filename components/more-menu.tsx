@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/use-theme"
 import { ExportMenu } from "@/components/export-menu"
 import { FeedbackButton } from "@/components/feedback-dialog"
 import {
-  CalendarDays, Pin, Archive, BarChart3, GitBranch, Settings, Sun, Moon,
+  CalendarDays, Pin, Archive, BarChart3, GitBranch, Settings, Sun, Moon, Brain,
 } from "lucide-react"
 
 export function MoreMenu() {
@@ -36,11 +36,11 @@ export function MoreMenu() {
   return (
     <main className="flex-1 flex flex-col h-full overflow-hidden bg-background">
       <div className="px-4 pt-4 pb-3">
-        <h2 className="font-display text-xl tracking-tight text-foreground">More</h2>
+        <h2 className="font-display text-xl tracking-tight text-foreground">더보기</h2>
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-1">
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
-          Smart Folders
+          스마트 폴더
         </p>
         <button
           onClick={() => goToSmartFolder("this-week")}
@@ -50,7 +50,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <CalendarDays className="h-5 w-5 text-muted-foreground/60" />
-            This Week
+            이번 주
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{thisWeekCount}</span>
         </button>
@@ -62,7 +62,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <Pin className="h-5 w-5 text-muted-foreground/60" />
-            Pinned
+            고정됨
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{pinnedCount}</span>
         </button>
@@ -74,25 +74,29 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <Archive className="h-5 w-5 text-muted-foreground/60" />
-            Archive
+            보관함
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{archivedCount}</span>
         </button>
 
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
-          Settings
+          설정
         </p>
+        <a href="/profile/ai" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
+          <Brain className="h-5 w-5 text-muted-foreground/60" />
+          AI Profile
+        </a>
         <a href="/insights" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <BarChart3 className="h-5 w-5 text-muted-foreground/60" />
           Insights
         </a>
         <a href="/knowledge-map" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <GitBranch className="h-5 w-5 text-muted-foreground/60" />
-          Knowledge Map
+          지식 맵
         </a>
         <a href="/settings" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <Settings className="h-5 w-5 text-muted-foreground/60" />
-          Settings
+          설정
         </a>
         <FeedbackButton />
         <button
@@ -100,7 +104,7 @@ export function MoreMenu() {
           className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors"
         >
           {dark ? <Sun className="h-5 w-5 text-muted-foreground/60" /> : <Moon className="h-5 w-5 text-muted-foreground/60" />}
-          {dark ? "Light Mode" : "Dark Mode"}
+          {dark ? "라이트 모드" : "다크 모드"}
         </button>
         <div className="px-1 pt-2">
           <ExportMenu />

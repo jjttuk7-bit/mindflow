@@ -20,10 +20,10 @@ export async function GET(
     return NextResponse.json([])
   }
 
-  // Find similar items using pgvector
+  // Find similar items using pgvector (threshold 0.6 for high relevance only)
   const { data, error } = await supabase.rpc("match_items", {
     query_embedding: item.embedding,
-    match_threshold: 0.5,
+    match_threshold: 0.6,
     match_count: 4,
   })
 

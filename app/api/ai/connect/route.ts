@@ -38,11 +38,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ connections: [] })
     }
 
-    // Find similar items via RPC
+    // Find similar items via RPC (threshold 0.55 to filter out weak matches)
     const { data: similar } = await supabase.rpc("find_similar_items", {
       query_embedding: item.embedding,
       query_item_id: item_id,
-      match_threshold: 0.35,
+      match_threshold: 0.55,
       match_count: 5,
     })
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Create nudge for high-similarity connections
     const topMatch = similar[0]
-    if (topMatch && topMatch.similarity > 0.5) {
+    if (topMatch && topMatch.similarity > 0.65) {
       const matchTitle = topMatch.summary || topMatch.content?.slice(0, 40)
       await supabase.from("nudges").insert({
         user_id: user.id,

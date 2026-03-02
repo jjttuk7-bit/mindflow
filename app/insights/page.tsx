@@ -103,7 +103,7 @@ export default function InsightsPage() {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            돌아가기
           </a>
           <div className="h-4 w-px bg-border/60" />
           <div className="flex items-center gap-2">
@@ -121,10 +121,10 @@ export default function InsightsPage() {
         ) : reports.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <h2 className="font-display text-xl text-foreground mb-2">No insights yet</h2>
+            <h2 className="font-display text-xl text-foreground mb-2">아직 인사이트가 없어요</h2>
             <p className="text-sm text-muted-foreground max-w-md">
-              Monthly insight reports are generated automatically on the 1st of each month.
-              Keep capturing your thoughts and they will appear here.
+              월간 인사이트 리포트는 매월 1일에 자동으로 생성됩니다.
+              기록을 계속하면 여기에 표시됩니다.
             </p>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export default function InsightsPage() {
             {/* Report list sidebar */}
             <div className="w-full md:w-56 flex-shrink-0">
               <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 mb-3">
-                Monthly Reports
+                월간 리포트
               </p>
               <ScrollArea className="max-h-[calc(100vh-12rem)]">
                 <div className="space-y-1.5 pr-2">
@@ -188,7 +188,7 @@ export default function InsightsPage() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-                  Select a report to view
+                  리포트를 선택하세요
                 </div>
               )}
             </div>

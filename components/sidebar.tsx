@@ -144,7 +144,7 @@ function TagItem({
             className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-foreground/70 hover:bg-accent transition-colors"
           >
             <Pencil className="h-3 w-3" />
-            Rename
+            이름 변경
           </button>
           {!confirming ? (
             <button
@@ -152,7 +152,7 @@ function TagItem({
               className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-destructive/70 hover:bg-destructive/5 transition-colors"
             >
               <Trash2 className="h-3 w-3" />
-              Delete
+              삭제
             </button>
           ) : (
             <button
@@ -160,7 +160,7 @@ function TagItem({
               className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-destructive font-medium bg-destructive/5 hover:bg-destructive/10 transition-colors"
             >
               <Trash2 className="h-3 w-3" />
-              Confirm delete
+              삭제 확인
             </button>
           )}
         </div>
@@ -256,7 +256,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           Mindflow
         </h1>
         <p className="text-[11px] tracking-[0.15em] uppercase text-muted-foreground mt-1 font-medium">
-          Personal Knowledge
+          나만의 지식 관리
         </p>
       </div>
 
@@ -271,7 +271,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               className="flex items-center gap-1 text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70"
             >
               <ChevronDown className={`h-3 w-3 transition-transform ${projectsExpanded ? "" : "-rotate-90"}`} />
-              Projects
+              프로젝트
             </button>
             <button
               onClick={() => setCreatingProject(true)}
@@ -284,7 +284,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             <div className="space-y-0.5">
               {projects.length === 0 && !creatingProject && (
                 <p className="text-xs text-muted-foreground/50 px-2 italic">
-                  No projects yet
+                  프로젝트가 없습니다
                 </p>
               )}
               {projects.map((project) => (
@@ -331,7 +331,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                       if (e.key === "Enter") handleCreateProject()
                       if (e.key === "Escape") { setCreatingProject(false); setNewProjectName("") }
                     }}
-                    placeholder="Project name..."
+                    placeholder="프로젝트 이름..."
                     className="flex-1 min-w-0 bg-muted/50 border border-border/60 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30"
                   />
                   <button
@@ -357,7 +357,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Smart Folders */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Smart Folders
+            스마트 폴더
           </p>
           <div className="space-y-0.5">
             <button
@@ -381,7 +381,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             >
               <span className="flex items-center gap-2.5">
                 <CalendarDays className={`h-4 w-4 ${smartFolder === "this-week" ? "text-primary" : "text-muted-foreground/50"}`} />
-                This Week
+                이번 주
               </span>
               <span className={`text-[11px] tabular-nums ${
                 smartFolder === "this-week" ? "text-primary/70" : "text-muted-foreground/50"
@@ -410,7 +410,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             >
               <span className="flex items-center gap-2.5">
                 <Pin className={`h-4 w-4 ${smartFolder === "pinned" ? "text-primary" : "text-muted-foreground/50"}`} />
-                Pinned
+                고정됨
               </span>
               {pinnedCount > 0 && (
                 <span className={`text-[11px] tabular-nums ${
@@ -428,11 +428,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Tags */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Collections
+            컬렉션
           </p>
           {tagCounts.length === 0 && (
             <p className="text-xs text-muted-foreground/50 px-2 italic">
-              Tags appear here as AI organizes your thoughts
+              AI가 기록을 정리하면 태그가 여기에 표시됩니다
             </p>
           )}
           <div className="space-y-0.5">
@@ -457,7 +457,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all duration-200"
               >
                 <ChevronDown className={`h-3 w-3 transition-transform ${tagsExpanded ? "rotate-180" : ""}`} />
-                {tagsExpanded ? "Show less" : `+${tagCounts.length - TAG_DISPLAY_LIMIT} more`}
+                {tagsExpanded ? "접기" : `+${tagCounts.length - TAG_DISPLAY_LIMIT}개 더보기`}
               </button>
             )}
           </div>
@@ -468,7 +468,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Type Filters */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Type
+            유형
           </p>
           <div className="space-y-0.5">
             {filters.map((f) => (
@@ -530,7 +530,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <GitBranch className="h-4 w-4 text-muted-foreground/50" />
-            Knowledge Map
+            지식 맵
           </a>
           <a
             href="/profile/ai"
@@ -538,7 +538,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <Brain className="h-4 w-4 text-muted-foreground/50" />
-            AI 프로필
+            AI Profile
           </a>
           <button
             onClick={() => { setChatOpen(true); onClose() }}
@@ -558,7 +558,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <span className="flex items-center gap-2.5">
               <Archive className={`h-4 w-4 ${showArchived ? "text-primary" : "text-muted-foreground/50"}`} />
-              Archive
+              보관함
             </span>
             {archivedCount > 0 && (
               <span className={`text-[11px] tabular-nums ${
@@ -582,7 +582,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-muted-foreground/40 tracking-wide">
             <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>
-            <span className="ml-2">to search</span>
+            <span className="ml-2">검색</span>
           </p>
           <div className="flex items-center gap-1">
             <a

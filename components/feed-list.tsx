@@ -128,12 +128,12 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
         </div>
         <div className="text-center space-y-1.5">
           <p className="font-display text-lg text-foreground/60">
-            {showArchived ? "No archived thoughts" : "Begin your stream of thought"}
+            {showArchived ? "보관된 기록이 없어요" : "생각의 흐름을 시작하세요"}
           </p>
           <p className="text-sm text-muted-foreground/50 max-w-[260px]">
             {showArchived
-              ? "Archived items will appear here."
-              : "Capture ideas, links, and inspirations. AI will organize them for you."}
+              ? "보관된 항목이 여기에 표시됩니다."
+              : "아이디어, 링크, 영감을 기록하세요. AI가 자동으로 정리해드려요."}
           </p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
           <div className="flex items-center gap-2 px-1 mb-1">
             <Pin className="h-3 w-3 text-primary/50 fill-primary/50" />
             <span className="text-[10px] tracking-[0.15em] uppercase font-semibold text-primary/50">
-              Pinned
+              고정됨
             </span>
           </div>
           {pinned.map((item) => (
@@ -184,7 +184,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
         </div>
       )}
       {hasMore === false && unpinned.length > 0 && (
-        <p className="text-center text-xs text-muted-foreground/40 py-4">You've seen it all</p>
+        <p className="text-center text-xs text-muted-foreground/40 py-4">모든 항목을 확인했어요</p>
       )}
 
       {/* Long-press context menu */}

@@ -149,6 +149,7 @@ export interface UserSettings {
   telegram_chat_id?: string | null
   telegram_linked_at?: string | null
   preferences: Record<string, unknown>
+  ai_profile?: Record<string, unknown>
   created_at: string
   updated_at: string
 }

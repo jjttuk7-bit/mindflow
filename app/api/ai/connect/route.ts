@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
+import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
@@ -8,6 +9,23 @@ export async function POST(req: NextRequest) {
 
     const { item_id } = await req.json()
     if (!item_id) return NextResponse.json({ error: "item_id required" }, { status: 400 })
+
+    const plan = await getUserPlan(user.id)
+    const limit = PLAN_LIMITS[plan].ai_connections_per_day as number
+
+    if (limit !== Infinity) {
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const { count } = await supabase
+        .from("item_connections")
+        .select("*", { count: "exact", head: true })
+        .eq("source_id", item_id)
+        .gte("created_at", todayStart.toISOString())
+
+      if ((count || 0) >= limit) {
+        return NextResponse.json({ connections: [], limited: true })
+      }
+    }
 
     // Get the item's embedding
     const { data: item } = await supabase

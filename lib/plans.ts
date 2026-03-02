@@ -12,6 +12,9 @@ export const PLAN_LIMITS = {
     ai_project_classification: false,
     insight_ai_analysis: false,
     telegram_notifications: false,
+    ai_profile: false,
+    ai_nudges: 2,
+    ai_connections_per_day: 5,
   },
   pro: {
     telegram_captures_per_month: Infinity,
@@ -24,6 +27,9 @@ export const PLAN_LIMITS = {
     ai_project_classification: true,
     insight_ai_analysis: true,
     telegram_notifications: true,
+    ai_profile: true,
+    ai_nudges: Infinity,
+    ai_connections_per_day: Infinity,
   },
 } as const
 

@@ -33,7 +33,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/api/share") ||
     request.nextUrl.pathname.startsWith("/api/telegram/webhook") ||
     request.nextUrl.pathname.startsWith("/api/stripe/webhook") ||
-    request.nextUrl.pathname.startsWith("/api/cron")
+    request.nextUrl.pathname.startsWith("/api/cron") ||
+    request.nextUrl.pathname.startsWith("/api/extension")
 
   // For public routes, just refresh the session without blocking
   if (isPublicRoute) {

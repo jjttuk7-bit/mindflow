@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5z" fill="#8B4F35"/>
+          <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#8B4F35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Mindflow
+      </div>
+      <button class="btn-logout" id="btnLogout" style="display:none;">Logout</button>
+    </div>
+
+    <!-- Login Screen -->
+    <div class="login-screen" id="loginScreen">
+      <h2>Mindflow</h2>
+      <p>Save and organize pages with AI</p>
+      <div class="login-error" id="loginError"></div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="btnLogin">Login</button>
+    </div>
+
+    <!-- Save Screen -->
+    <div class="save-screen" id="saveScreen">
+      <div class="page-info">
+        <div class="page-title" id="pageTitle">Loading...</div>
+        <div class="page-url" id="pageUrl"></div>
+      </div>
+      <div class="note-group">
+        <label for="note">Memo (optional)</label>
+        <textarea id="note" placeholder="Add a note about this page..." rows="2"></textarea>
+      </div>
+      <div class="status" id="status"></div>
+      <button class="btn-primary" id="btnSave">Save to Mindflow</button>
+      <div class="user-info" id="userInfo"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

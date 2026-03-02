@@ -29,8 +29,10 @@ import {
   X,
   CheckCircle2,
   Info,
+  Bell,
 } from "lucide-react"
 import Link from "next/link"
+import { toast } from "sonner"
 
 const PRO_FEATURES = [
   "무제한 Telegram 캡처",
@@ -65,6 +67,9 @@ function SettingsContent() {
   const [copied, setCopied] = useState(false)
   const [billingLoading, setBillingLoading] = useState(false)
   const [billingBanner, setBillingBanner] = useState<"success" | "cancel" | null>(null)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushLoading, setPushLoading] = useState(false)
+  const [pushSupported, setPushSupported] = useState(false)
 
   const supabase = createClient()
 
@@ -106,6 +111,63 @@ function SettingsContent() {
       window.history.replaceState({}, "", "/settings")
     }
   }, [searchParams, fetchSettings])
+
+  useEffect(() => {
+    async function checkPush() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return
+      setPushSupported(true)
+      const reg = await navigator.serviceWorker.ready
+      const sub = await reg.pushManager.getSubscription()
+      setPushEnabled(!!sub)
+    }
+    checkPush()
+  }, [])
+
+  async function togglePush() {
+    setPushLoading(true)
+    try {
+      const reg = await navigator.serviceWorker.ready
+      if (pushEnabled) {
+        const sub = await reg.pushManager.getSubscription()
+        if (sub) {
+          await fetch("/api/push/unsubscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          })
+          await sub.unsubscribe()
+        }
+        setPushEnabled(false)
+        toast.success("모닝 브리핑 알림이 해제되었습니다")
+      } else {
+        const permission = await Notification.requestPermission()
+        if (permission !== "granted") {
+          toast.error("알림 권한이 거부되었습니다. 브라우저 설정에서 허용해주세요.")
+          return
+        }
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        })
+        const json = sub.toJSON()
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+            keys: json.keys,
+          }),
+        })
+        setPushEnabled(true)
+        toast.success("매일 아침 모닝 브리핑을 받게 됩니다!")
+      }
+    } catch (err) {
+      console.error("Push toggle error:", err)
+      toast.error("알림 설정에 실패했습니다")
+    } finally {
+      setPushLoading(false)
+    }
+  }
 
   async function handleLinkTelegram() {
     setLinkLoading(true)
@@ -495,6 +557,35 @@ function SettingsContent() {
               )}
             </CardContent>
           </Card>
+
+          {/* Notification Section */}
+          {pushSupported && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Bell className="h-4 w-4" />
+                  알림 설정
+                </CardTitle>
+                <CardDescription>푸시 알림으로 모닝 브리핑을 받아보세요</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">모닝 브리핑 알림</p>
+                    <p className="text-xs text-muted-foreground">매일 오전 8시에 어제 활동 요약을 받습니다</p>
+                  </div>
+                  <Button
+                    variant={pushEnabled ? "default" : "outline"}
+                    size="sm"
+                    onClick={togglePush}
+                    disabled={pushLoading}
+                  >
+                    {pushLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : pushEnabled ? "ON" : "OFF"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Data Section */}
           <Card>

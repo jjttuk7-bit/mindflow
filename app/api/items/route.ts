@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/supabase/server"
 import { validate, itemCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
+import { after } from "next/server"
 import ogs from "open-graph-scraper"
 
 async function scrapeOg(url: string) {
@@ -72,14 +73,23 @@ export async function POST(req: NextRequest) {
       tagContent = parts.filter(Boolean).join(" — ")
     }
   }
-  fetch(`${req.nextUrl.origin}/api/ai/tag`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      cookie: cookieHeader,
-    },
-    body: JSON.stringify({ item_id: item.id, content: tagContent, type }),
-  }).catch(() => {})
+  const tagOrigin = req.nextUrl.origin
+  const tagBody = JSON.stringify({ item_id: item.id, content: tagContent, type })
+
+  after(async () => {
+    try {
+      await fetch(`${tagOrigin}/api/ai/tag`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: cookieHeader,
+        },
+        body: tagBody,
+      })
+    } catch (e) {
+      console.error("AI tag fire-and-forget failed:", e)
+    }
+  })
 
   return NextResponse.json(item, { status: 201 })
 }

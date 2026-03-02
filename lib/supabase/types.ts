@@ -161,3 +161,16 @@ export interface ItemConnection {
   ai_reason?: string | null
   created_at: string
 }
+
+export type NudgeType = "connection" | "resurface" | "trend" | "action"
+
+export interface Nudge {
+  id: string
+  user_id: string
+  type: NudgeType
+  title: string
+  content: string
+  related_item_ids: string[]
+  is_read: boolean
+  created_at: string
+}

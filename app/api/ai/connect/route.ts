@@ -43,6 +43,19 @@ export async function POST(req: NextRequest) {
       .from("item_connections")
       .upsert(connections, { onConflict: "source_id,target_id" })
 
+    // Create nudge for high-similarity connections
+    const topMatch = similar[0]
+    if (topMatch && topMatch.similarity > 0.5) {
+      const matchTitle = topMatch.summary || topMatch.content?.slice(0, 40)
+      await supabase.from("nudges").insert({
+        user_id: user.id,
+        type: "connection",
+        title: "관련 항목을 발견했어요",
+        content: `방금 저장한 항목이 "${matchTitle}"과(와) 연결됩니다.`,
+        related_item_ids: [item_id, topMatch.id],
+      })
+    }
+
     return NextResponse.json({ connections: similar })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)

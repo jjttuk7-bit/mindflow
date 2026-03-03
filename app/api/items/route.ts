@@ -1,5 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
-import { generateTags, generateSummary, generateEmbedding, generateInsight } from "@/lib/ai"
+import { generateTags, generateSummary, generateEmbedding, generateInsight, generateLinkAnalysis } from "@/lib/ai"
 import { validate, itemCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 import { after } from "next/server"
@@ -106,13 +106,23 @@ export async function POST(req: NextRequest) {
         .map(([name, count]) => `${name} (${count})`)
       const tagNames = [...tagFreqMap.keys()]
 
-      // Run AI tasks in parallel
-      const [suggestedTags, summary, embedding, insight] = await Promise.all([
+      // Run AI tasks in parallel (+ link analysis for links)
+      const aiTasks = [
         generateTags(tagContent, itemType, tagNames, tagNamesWithFreq),
         generateSummary(tagContent),
         generateEmbedding(tagContent),
         generateInsight(tagContent, itemType),
-      ])
+      ] as const
+
+      const [suggestedTags, summary, embedding, insight] = await Promise.all(aiTasks)
+
+      // Generate link analysis separately for link type
+      let linkAnalysis: string | null = null
+      if (itemType === "link") {
+        const ogTitle = (meta as Record<string, string>)?.og_title
+        const ogDesc = (meta as Record<string, string>)?.og_description
+        linkAnalysis = await generateLinkAnalysis(tagContent, ogTitle, ogDesc).catch(() => null)
+      }
 
       // Upsert tags and create relations
       for (const tagName of suggestedTags) {
@@ -147,6 +157,7 @@ export async function POST(req: NextRequest) {
         time_of_day: timeOfDay,
         day_of_week: days[now.getDay()],
         ...(insight ? { ai_comment: insight } : {}),
+        ...(linkAnalysis ? { link_analysis: linkAnalysis } : {}),
       }
 
       if (Object.keys(updates).length > 0) {

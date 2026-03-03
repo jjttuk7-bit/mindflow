@@ -62,6 +62,7 @@ export interface ItemContext {
   day_of_week: string
   topic_cluster?: string
   ai_comment?: string
+  link_analysis?: string
 }
 
 export type ItemSource = "web" | "telegram" | "api"

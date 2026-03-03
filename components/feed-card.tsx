@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Item, LinkMeta, ImageMeta } from "@/lib/supabase/types"
+import { Item, LinkMeta, ImageMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
@@ -259,7 +259,19 @@ export function FeedCard({
 
   const renderContent = () => {
     if (item.type === "link" && isLinkMeta(meta)) {
-      return <LinkCard url={item.content} meta={meta} />
+      return (
+        <div className="space-y-2">
+          <LinkCard url={item.content} meta={meta} />
+          {item.context?.link_analysis && (
+            <div className="flex items-start gap-2 rounded-lg bg-blue-500/5 border border-blue-500/10 px-3 py-2">
+              <Sparkles className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+              <p className="text-xs text-foreground/70 leading-relaxed whitespace-pre-wrap">
+                {item.context.link_analysis}
+              </p>
+            </div>
+          )}
+        </div>
+      )
     }
 
     if (item.type === "image" && isImageMeta(meta)) {

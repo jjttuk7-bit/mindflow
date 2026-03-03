@@ -162,6 +162,43 @@ export async function generateInsight(content: string, type: string): Promise<st
   return result.response.text().trim() || null
 }
 
+export async function generateLinkAnalysis(
+  url: string,
+  ogTitle?: string,
+  ogDescription?: string
+): Promise<string | null> {
+  const context = [ogTitle, ogDescription, url].filter(Boolean).join(" — ")
+  if (!context || context.length < 10) return null
+
+  const model = getGenAI().getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: { temperature: 0.5 },
+  })
+
+  const result = await model.generateContent(
+    `URL과 메타데이터를 분석하여 이 링크의 핵심 내용을 정리해주세요.
+
+정보:
+- URL: ${url}
+${ogTitle ? `- 제목: ${ogTitle}` : ""}
+${ogDescription ? `- 설명: ${ogDescription}` : ""}
+
+아래 형식으로 작성:
+- 한 줄 요약 (이 링크가 무엇인지)
+- 핵심 포인트 1~2개 (왜 읽어볼 만한지)
+- 활용 팁 (나중에 어떻게 써먹을 수 있는지)
+
+규칙:
+- 전체 3~4줄, 최대 150자
+- 한국어로 작성
+- 친근한 톤 ("~이에요/~해요")
+- 마크다운 없이 플레인 텍스트만
+- 정보가 부족하면 URL 도메인과 경로에서 추론
+- 내용만 반환. 라벨("한 줄 요약:", "핵심:") 붙이지 마세요.`)
+
+  return result.response.text().trim() || null
+}
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-embedding-001" })
 

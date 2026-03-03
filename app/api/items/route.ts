@@ -3,7 +3,15 @@ import { generateTags, generateSummary, generateEmbedding, generateInsight } fro
 import { validate, itemCreateSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
 import { after } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 import ogs from "open-graph-scraper"
+
+function getServiceSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 async function scrapeOg(url: string) {
   try {
@@ -79,8 +87,11 @@ export async function POST(req: NextRequest) {
 
   after(async () => {
     try {
+      // Use service role client — user-scoped client loses auth after response
+      const supa = getServiceSupabase()
+
       // Get existing tags for reuse
-      const { data: userTagRows } = await supabase
+      const { data: userTagRows } = await supa
         .from("item_tags")
         .select("tag_id, tags(name), items!inner(user_id)")
         .eq("items.user_id", userId)
@@ -105,14 +116,14 @@ export async function POST(req: NextRequest) {
 
       // Upsert tags and create relations
       for (const tagName of suggestedTags) {
-        const { data: tag } = await supabase
+        const { data: tag } = await supa
           .from("tags")
           .upsert({ name: tagName }, { onConflict: "name" })
           .select()
           .single()
 
         if (tag) {
-          await supabase
+          await supa
             .from("item_tags")
             .upsert(
               { item_id: itemId, tag_id: tag.id },
@@ -139,12 +150,12 @@ export async function POST(req: NextRequest) {
       }
 
       if (Object.keys(updates).length > 0) {
-        await supabase.from("items").update(updates).eq("id", itemId)
+        await supa.from("items").update(updates).eq("id", itemId)
       }
 
       // Trigger auto-connect (fire-and-forget within after is OK)
       if (embedding) {
-        const { data: similar } = await supabase.rpc("find_similar_items", {
+        const { data: similar } = await supa.rpc("find_similar_items", {
           query_embedding: JSON.stringify(embedding),
           query_item_id: itemId,
           match_threshold: 0.55,
@@ -157,7 +168,7 @@ export async function POST(req: NextRequest) {
             target_id: s.id,
             similarity: s.similarity,
           }))
-          await supabase
+          await supa
             .from("item_connections")
             .upsert(connections, { onConflict: "source_id,target_id" })
         }

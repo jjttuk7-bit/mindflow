@@ -405,14 +405,17 @@ export function FeedCard({
             </div>
           )}
 
-          {/* Related items */}
+          {/* Related items (exclude self, deduplicate) */}
           {related.length > 0 && (
             <div className="pt-2 border-t border-border/30">
               <p className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/40 mb-1.5">
-                관련
+                Related
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {related.map((r) => (
+                {related
+                  .filter((r) => r.id !== item.id)
+                  .filter((r, i, arr) => arr.findIndex((x) => x.id === r.id) === i)
+                  .map((r) => (
                   <span
                     key={r.id}
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-[11px] text-muted-foreground/70 hover:bg-muted/70 transition-colors cursor-default"

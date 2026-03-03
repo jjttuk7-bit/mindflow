@@ -467,7 +467,7 @@ export function FeedCard({
           >
             <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
           </button>
-          <ShareButton itemId={item.id} />
+          <ShareButton item={item} />
           <div className="relative" ref={projectMenuRef}>
             <button
               onClick={() => setShowProjectMenu(!showProjectMenu)}

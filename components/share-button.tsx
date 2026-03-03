@@ -1,69 +1,77 @@
 "use client"
 
 import { useState } from "react"
-import { Share2, Check, Loader2 } from "lucide-react"
+import { Share2, Check } from "lucide-react"
+import { Item, LinkMeta } from "@/lib/supabase/types"
 import { toast } from "sonner"
 
-export function ShareButton({ itemId }: { itemId: string }) {
-  const [state, setState] = useState<"idle" | "loading" | "copied">("idle")
+function buildShareText(item: Item): string {
+  const parts: string[] = []
+
+  if (item.type === "link") {
+    const meta = item.metadata as LinkMeta | undefined
+    if (meta?.og_title) parts.push(meta.og_title)
+    if (meta?.og_description) parts.push(meta.og_description)
+    parts.push(item.content) // URL
+  } else if (item.type === "voice") {
+    const meta = item.metadata as { transcript?: string } | undefined
+    parts.push(meta?.transcript || item.content)
+  } else {
+    // text, image
+    parts.push(item.content)
+  }
+
+  // Add AI comment if available
+  if (item.context?.ai_comment) {
+    parts.push(`\n💡 ${item.context.ai_comment}`)
+  }
+
+  // Add tags
+  if (item.tags && item.tags.length > 0) {
+    parts.push(`\n${item.tags.map((t) => `#${t.name}`).join(" ")}`)
+  }
+
+  return parts.filter(Boolean).join("\n")
+}
+
+export function ShareButton({ item }: { item: Item }) {
+  const [state, setState] = useState<"idle" | "copied">("idle")
 
   async function handleShare() {
-    setState("loading")
-    try {
-      const res = await fetch("/api/share", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemId }),
-      })
-      if (!res.ok) {
-        setState("idle")
-        toast.error("공유 링크 생성에 실패했습니다")
+    const text = buildShareText(item)
+
+    // Mobile: use native Web Share API
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.summary || item.content.slice(0, 50),
+          text,
+        })
         return
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return
+        // Fallback to clipboard
       }
+    }
 
-      const { token } = await res.json()
-      const url = `${window.location.origin}/share/${token}`
-
-      // Mobile: use native Web Share API
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: "Mindflow",
-            text: "Mindflow에서 공유된 항목입니다",
-            url,
-          })
-          setState("idle")
-          return
-        } catch (e) {
-          // User cancelled or share failed — fallback to clipboard
-          if ((e as Error).name === "AbortError") {
-            setState("idle")
-            return
-          }
-        }
-      }
-
-      // Desktop: copy to clipboard + toast
-      await navigator.clipboard.writeText(url)
+    // Desktop: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(text)
       setState("copied")
-      toast.success("공유 링크가 복사되었습니다")
+      toast.success("내용이 복사되었습니다")
       setTimeout(() => setState("idle"), 2000)
     } catch {
-      setState("idle")
-      toast.error("공유에 실패했습니다")
+      toast.error("복사에 실패했습니다")
     }
   }
 
   return (
     <button
       onClick={handleShare}
-      disabled={state === "loading"}
       className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-sage hover:bg-sage/8 transition-all duration-200"
       aria-label="Share item"
     >
-      {state === "loading" ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
-      ) : state === "copied" ? (
+      {state === "copied" ? (
         <Check className="h-3 w-3 text-sage" />
       ) : (
         <Share2 className="h-3 w-3" />

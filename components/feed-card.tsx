@@ -5,7 +5,7 @@ import { Item, LinkMeta, ImageMeta } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen } from "lucide-react"
+import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
 import { VoiceCard } from "@/components/voice-card"
 import { VoiceMeta } from "@/lib/supabase/types"
@@ -394,6 +394,16 @@ export function FeedCard({
               {timeAgo(item.created_at)}
             </span>
           </div>
+
+          {/* AI Comment */}
+          {item.context?.ai_comment && (
+            <div className="flex items-start gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2">
+              <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+              <p className="text-xs text-foreground/70 leading-relaxed">
+                {item.context.ai_comment}
+              </p>
+            </div>
+          )}
 
           {/* Related items */}
           {related.length > 0 && (

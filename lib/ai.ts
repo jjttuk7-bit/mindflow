@@ -129,6 +129,39 @@ export async function generateSummary(content: string): Promise<string | null> {
   return result.response.text().trim() || null
 }
 
+export async function generateInsight(content: string, type: string): Promise<string | null> {
+  if (!content || content.length < 10) return null
+
+  const model = getGenAI().getGenerativeModel({
+    model: "gemini-2.0-flash",
+    generationConfig: { temperature: 0.7 },
+  })
+
+  const result = await model.generateContent(
+    `사용자가 저장한 콘텐츠를 읽고, 짧고 임팩트 있는 AI 코멘트를 달아주세요.
+
+역할: 사용자의 지식 동반자. 공감하고, 연결하고, 격려하는 톤.
+
+코멘트 유형 (콘텐츠에 맞게 자동 선택):
+- 아이디어면: 확장 가능성이나 연결 포인트 제시 ("이 아이디어를 ~와 결합하면 더 강력해질 수 있어요")
+- 학습/기술이면: 핵심 인사이트 강조 또는 실천 팁 ("핵심은 ~이네요. 바로 적용해볼 만해요")
+- 할 일/계획이면: 우선순위나 실행 팁 ("가장 임팩트가 큰 건 ~ 부분이에요")
+- 링크/참고자료면: 왜 가치있는지, 어떻게 활용할지 ("이 자료의 핵심은 ~. 나중에 ~ 할 때 유용해요")
+- 일상/감정이면: 공감과 격려 ("좋은 기록이에요. 이런 순간을 남기는 게 중요해요")
+
+규칙:
+- 1~2문장, 최대 80자
+- 한국어로 작성
+- "~입니다" 대신 "~이에요/~해요" 친근한 톤
+- 콘텐츠만 반환. 다른 텍스트 없이.
+
+콘텐츠 유형: ${type}
+콘텐츠: ${content}`
+  )
+
+  return result.response.text().trim() || null
+}
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   const model = getGenAI().getGenerativeModel({ model: "gemini-embedding-001" })
 

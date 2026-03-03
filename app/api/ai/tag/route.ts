@@ -1,5 +1,5 @@
 import { getUser } from "@/lib/supabase/server"
-import { generateTags, generateSummary, generateEmbedding, classifyProject, extractTodos } from "@/lib/ai"
+import { generateTags, generateSummary, generateEmbedding, generateInsight, classifyProject, extractTodos } from "@/lib/ai"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
 import { logger, withLogging } from "@/lib/logger"
 import { rateLimit } from "@/lib/rate-limit"
@@ -37,11 +37,12 @@ export async function POST(req: NextRequest) {
       .map(([name, count]) => `${name} (${count})`)
     const tagNames = [...tagFreqMap.keys()]
 
-    // Run AI tasks in parallel: tags + summary + embedding
-    const [suggestedTags, summary, embedding] = await Promise.all([
+    // Run AI tasks in parallel: tags + summary + embedding + insight
+    const [suggestedTags, summary, embedding, insight] = await Promise.all([
       generateTags(content, type, tagNames, tagNamesWithFreq),
       generateSummary(content),
       generateEmbedding(content),
+      generateInsight(content, type),
     ])
 
     // Upsert tags and create relations
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest) {
       source: "web",
       time_of_day: timeOfDay,
       day_of_week: days[now.getDay()],
+      ...(insight ? { ai_comment: insight } : {}),
     }
 
     // Pro features: project classification + TODO extraction

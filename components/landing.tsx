@@ -365,13 +365,50 @@ function StreakSection() {
   )
 }
 
-function SecurityBadge() {
+const securityItems = [
+  {
+    icon: Shield,
+    title: "End-to-end 암호화",
+    description: "전송 구간 전체 HTTPS/TLS 암호화. 비밀번호는 해시 처리되어 저장됩니다.",
+  },
+  {
+    icon: Layers,
+    title: "Row-level 보안",
+    description: "Supabase RLS 정책으로 사용자별 데이터가 완전히 격리됩니다. 다른 사람이 내 데이터에 접근할 수 없습니다.",
+  },
+  {
+    icon: Share2,
+    title: "내 데이터는 내 것",
+    description: "AI 학습에 데이터를 사용하지 않습니다. 언제든 전체 데이터를 내보내거나 삭제할 수 있습니다.",
+  },
+]
+
+function SecuritySection() {
   return (
-    <section className="py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-accent/40 px-4 py-2 rounded-full">
-          <Shield className="w-4 h-4 text-sage" />
-          End-to-end 암호화 &middot; Row-level 보안 &middot; 내 데이터는 내 것
+    <section className="py-20 sm:py-28 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-1.5 text-xs font-medium text-sage bg-sage/10 px-3 py-1.5 rounded-full mb-4">
+            <Shield className="w-3.5 h-3.5" />
+            Security First
+          </div>
+          <h2 className="font-display text-3xl sm:text-4xl tracking-tight text-foreground">
+            당신의 지식은 안전합니다
+          </h2>
+          <p className="mt-4 text-muted-foreground text-lg max-w-xl mx-auto">
+            보안은 선택이 아닌 기본. 모든 데이터는 암호화되고 철저히 격리됩니다.
+          </p>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-6">
+          {securityItems.map(({ icon: Icon, title, description }) => (
+            <div key={title} className="text-center p-6 rounded-2xl border border-border/40 bg-card">
+              <div className="w-11 h-11 rounded-xl bg-sage/10 flex items-center justify-center mx-auto mb-4">
+                <Icon className="w-5 h-5 text-sage" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -502,7 +539,7 @@ export function Landing() {
         <HowItWorks />
         <StreakSection />
         <PricingSection />
-        <SecurityBadge />
+        <SecuritySection />
         <CTA />
       </main>
       <Footer />

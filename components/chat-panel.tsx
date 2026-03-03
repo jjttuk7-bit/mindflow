@@ -48,11 +48,20 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [addedSuggestions, setAddedSuggestions] = useState<Set<string>>(new Set())
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    // Try scrollIntoView first, then fallback to manual scroll
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+    // Also scroll the ScrollArea viewport directly
+    const viewport = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight
+    }
   }, [messages, streamingText])
 
   // Focus input when panel opens
@@ -504,7 +513,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
 
         {renderSessionList()}
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
           <div className="px-4 py-4 space-y-4">
             {renderMessages()}
           </div>
@@ -560,7 +569,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
         {renderSessionList()}
 
         {/* Messages */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
           <div className="px-4 py-4 space-y-4">
             {renderMessages()}
           </div>

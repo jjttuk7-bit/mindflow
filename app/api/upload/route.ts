@@ -1,10 +1,12 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
   const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
   const arrayBuffer = await file.arrayBuffer()
-  const { error } = await supabaseAdmin.storage
+  const { error } = await getSupabaseAdmin().storage
     .from(bucket)
     .upload(path, arrayBuffer, { contentType: file.type })
 
@@ -32,6 +34,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(path)
+  const { data } = getSupabaseAdmin().storage.from(bucket).getPublicUrl(path)
   return NextResponse.json({ url: data.publicUrl })
 }

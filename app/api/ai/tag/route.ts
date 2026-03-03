@@ -179,8 +179,13 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ item_id }),
     }).catch(() => {})
 
+    // Include error details in response for debugging
+    const errors = results
+      .map((r, i) => r.status === "rejected" ? { fn: ["generateTags", "generateSummary", "generateEmbedding", "generateInsight"][i], error: String(r.reason) } : null)
+      .filter(Boolean)
+
     log.success({ tags: suggestedTags.length })
-    return NextResponse.json({ tags: suggestedTags, summary })
+    return NextResponse.json({ tags: suggestedTags, summary, ...(errors.length > 0 ? { _errors: errors } : {}) })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     logger.error("/api/ai/tag failed", { error: message })

@@ -8,6 +8,30 @@ const supabaseAdmin = createAdminClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const { supabase, user } = await getUser()
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const { data, error } = await supabase
+    .from("items")
+    .select("*, item_tags(tag_id, tags(*))")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 404 })
+
+  const tags = (data.item_tags as Array<{ tags: unknown }>)
+    ?.map((it) => it.tags)
+    .filter(Boolean) || []
+
+  return NextResponse.json({ ...data, tags, item_tags: undefined })
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

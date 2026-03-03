@@ -5,8 +5,9 @@ import { useTheme } from "@/hooks/use-theme"
 import { ExportMenu } from "@/components/export-menu"
 import { FeedbackButton } from "@/components/feedback-dialog"
 import {
-  CalendarDays, Pin, Archive, Trash2, BarChart3, GitBranch, Settings, Sun, Moon, Brain,
+  CalendarDays, Pin, Archive, Trash2, BarChart3, GitBranch, Settings, Sun, Moon,
 } from "lucide-react"
+import { DotLineLogo } from "@/components/dotline-logo"
 
 export function MoreMenu() {
   const {
@@ -97,7 +98,7 @@ export function MoreMenu() {
           설정
         </p>
         <a href="/profile/ai" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
-          <Brain className="h-5 w-5 text-muted-foreground/60" />
+          <DotLineLogo className="h-5 w-5 text-muted-foreground/60" />
           AI Profile
         </a>
         <a href="/insights" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">

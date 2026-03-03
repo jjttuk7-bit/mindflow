@@ -29,9 +29,9 @@ import {
   Pin,
   CalendarDays,
   MessageSquare,
-  Brain,
 } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
+import { DotLineLogo } from "@/components/dotline-logo"
 import { SidebarFeedbackButton } from "@/components/feedback-dialog"
 import { UserMenu } from "@/components/user-menu"
 
@@ -553,7 +553,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             onClick={onClose}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
-            <Brain className="h-4 w-4 text-muted-foreground/50" />
+            <DotLineLogo className="h-4 w-4 text-muted-foreground/50" />
             AI Profile
           </a>
           <button

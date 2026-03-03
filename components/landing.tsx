@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import {
-  Brain,
   Sparkles,
   Mic,
   Image,
@@ -27,6 +26,7 @@ import {
   Layers,
 } from "lucide-react"
 import { useTheme } from "@/hooks/use-theme"
+import { DotLineLogo } from "@/components/dotline-logo"
 
 function ThemeToggle() {
   const { dark, toggle } = useTheme()
@@ -46,7 +46,7 @@ function Navbar() {
     <nav className="fixed top-0 inset-x-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Brain className="w-6 h-6 text-primary" />
+          <DotLineLogo className="w-6 h-6 text-primary" />
           <span className="font-display text-xl tracking-tight text-foreground">
             DotLine
           </span>
@@ -498,7 +498,7 @@ function Footer() {
     <footer className="border-t border-border/40 py-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Brain className="w-4 h-4" />
+          <DotLineLogo className="w-4 h-4" />
           <span className="text-sm">&copy; 2026 DotLine</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-muted-foreground">

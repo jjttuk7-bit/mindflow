@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Brain, Sparkles, TrendingUp, Clock, BarChart3, RefreshCw, ArrowLeft, Zap, FileText, Link2, Image, Mic } from "lucide-react"
+import { Sparkles, TrendingUp, Clock, BarChart3, RefreshCw, ArrowLeft, Zap, FileText, Link2, Image, Mic } from "lucide-react"
+import { DotLineLogo } from "@/components/dotline-logo"
 
 const typeLabels: Record<string, string> = {
   text: "텍스트",
@@ -77,7 +78,7 @@ export function AIProfile() {
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <Brain className="h-8 w-8 text-primary" />
+            <DotLineLogo className="h-8 w-8 text-primary" />
           </div>
           <h1 className="font-display text-2xl text-foreground mb-3">나의 AI 프로필</h1>
           <p className="text-muted-foreground mb-8">
@@ -112,7 +113,7 @@ export function AIProfile() {
             </a>
             <div>
               <h1 className="font-display text-xl text-foreground flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
+                <DotLineLogo className="h-5 w-5 text-primary" />
                 나의 AI 프로필
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">

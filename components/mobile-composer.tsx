@@ -189,28 +189,29 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         // If image saved without caption, analyze async and update
         const savedFile = activeType === "image" && !content.trim() ? selectedFile : null
 
-        // For text/link: poll for AI enrichment (tags, summary, ai_comment)
+        // For text/link: trigger AI tagging directly from client
         if (activeType !== "image") {
-          const pollAI = async () => {
-            for (let i = 0; i < 5; i++) {
-              await new Promise((r) => setTimeout(r, 2000 + i * 1000))
-              try {
-                const r = await fetch(`/api/items/${item.id}`)
-                if (!r.ok) continue
-                const updated = await r.json()
-                if (updated.context?.ai_comment || updated.summary || (updated.tags && updated.tags.length > 0)) {
-                  updateItem(item.id, {
-                    summary: updated.summary,
-                    context: updated.context,
-                    tags: updated.tags || [],
-                  })
-                  onSaved?.()
-                  break
-                }
-              } catch { /* retry */ }
-            }
-          }
-          pollAI()
+          const tagContent = activeType === "link" && item.metadata
+            ? [item.metadata.og_title, item.metadata.og_description, item.content].filter(Boolean).join(" — ")
+            : item.content
+          fetch("/api/ai/tag", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ item_id: item.id, content: tagContent, type: activeType }),
+          })
+            .then(async (r) => {
+              if (!r.ok) return
+              // Fetch the full updated item to get tags, summary, ai_comment
+              const itemRes = await fetch(`/api/items/${item.id}`)
+              if (!itemRes.ok) return
+              const updated = await itemRes.json()
+              updateItem(item.id, {
+                summary: updated.summary,
+                context: updated.context,
+                tags: updated.tags || [],
+              })
+            })
+            .catch(() => {})
         }
 
         toast.success("Captured!")

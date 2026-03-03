@@ -7,7 +7,7 @@ const tabs = [
   { id: "feed" as const, icon: Home, label: "Feed" },
   { id: "projects" as const, icon: FolderOpen, label: "Projects" },
   { id: "todos" as const, icon: ListTodo, label: "Todo" },
-  { id: "chat" as const, icon: MessageSquare, label: "Chat" },
+  { id: "chat" as const, icon: MessageSquare, label: "AI Chat" },
   { id: "more" as const, icon: MoreHorizontal, label: "More" },
 ]
 

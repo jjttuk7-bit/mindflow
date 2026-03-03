@@ -88,7 +88,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <Trash2 className="h-5 w-5 text-muted-foreground/60" />
-            휴지통
+            Trash
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{trashedCount}</span>
         </button>

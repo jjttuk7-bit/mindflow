@@ -582,7 +582,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <span className="flex items-center gap-2.5">
               <Trash2 className={`h-4 w-4 ${showTrash ? "text-destructive" : "text-muted-foreground/50"}`} />
-              휴지통
+              Trash
             </span>
             {trashedCount > 0 && (
               <span className={`text-[11px] tabular-nums ${

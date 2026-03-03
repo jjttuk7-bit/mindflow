@@ -27,13 +27,13 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
   async function handleEmptyTrash() {
     const trashedItems = items.filter((i) => !!i.deleted_at)
     if (trashedItems.length === 0) return
-    const confirmed = window.confirm(`휴지통의 ${trashedItems.length}개 항목을 영구 삭제하시겠습니까?`)
+    const confirmed = window.confirm(`Permanently delete ${trashedItems.length} items from Trash?`)
     if (!confirmed) return
     for (const item of trashedItems) {
       removeItem(item.id)
       fetch(`/api/items/${item.id}?permanent=true`, { method: "DELETE" }).catch(() => {})
     }
-    toast.success(`${trashedItems.length}개 항목 영구 삭제됨`)
+    toast.success(`${trashedItems.length} items permanently deleted`)
   }
 
   return (
@@ -66,13 +66,13 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Trash2 className="h-5 w-5 text-destructive/50" />
-              <h2 className="font-display text-xl text-foreground/70">휴지통</h2>
+              <h2 className="font-display text-xl text-foreground/70">Trash</h2>
             </div>
             <button
               onClick={handleEmptyTrash}
               className="text-xs text-destructive/70 hover:text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/5 transition-colors font-medium"
             >
-              휴지통 비우기
+              Empty Trash
             </button>
           </div>
         </div>

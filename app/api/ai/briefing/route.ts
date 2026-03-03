@@ -86,22 +86,21 @@ export async function GET() {
       text: item.summary || item.content?.slice(0, 80),
     }))
 
-    // Generate personalized greeting
-    const hour = now.getHours()
+    // Generate personalized greeting (no time-of-day expressions)
     let greeting: string
 
     if (streak.current_streak >= 7) {
       greeting = `🔥 ${streak.current_streak}일 연속 사용 중! 대단해요`
+    } else if (streak.current_streak >= 3) {
+      greeting = `${streak.current_streak}일째 함께하고 있어요! 꾸준함이 힘이에요`
     } else if (yesterdayItems && yesterdayItems.length >= 5) {
       greeting = "어제 정말 활발했어요! 오늘도 화이팅"
-    } else if (todayItems && todayItems.length === 0 && hour < 12) {
-      greeting = "좋은 아침이에요! 오늘의 첫 기록을 남겨볼까요?"
-    } else if (hour < 12) {
-      greeting = "좋은 아침이에요"
-    } else if (hour < 18) {
-      greeting = "좋은 오후에요"
+    } else if (todayItems && todayItems.length === 0) {
+      greeting = "오늘의 첫 기록을 남겨볼까요?"
+    } else if (todayItems && todayItems.length > 0) {
+      greeting = `오늘 벌써 ${todayItems.length}개 기록했어요!`
     } else {
-      greeting = "좋은 저녁이에요"
+      greeting = "무엇이든 기록해보세요"
     }
 
     // Build briefing message

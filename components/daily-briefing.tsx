@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sun, Moon, Cloud, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, X, ChevronDown, ChevronUp } from "lucide-react"
+import { Sparkles, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, X, ChevronDown, ChevronUp } from "lucide-react"
 
 const typeLabels: Record<string, string> = {
   text: "텍스트",
@@ -71,9 +71,6 @@ export function DailyBriefing() {
 
   if (loading || dismissed || !data) return null
 
-  const hour = new Date().getHours()
-  const TimeIcon = hour < 12 ? Sun : hour < 18 ? Cloud : Moon
-
   const { yesterday, todos, week, totalItems, streak } = data
 
   return (
@@ -89,7 +86,7 @@ export function DailyBriefing() {
       {/* Greeting + Streak */}
       <div className="flex items-center gap-2.5 mb-3">
         <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10">
-          <TimeIcon className="h-4 w-4 text-primary" />
+          <Sparkles className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1">
           <span className="text-[13px] font-semibold text-foreground/90">

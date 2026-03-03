@@ -151,7 +151,7 @@ function CaptureSection() {
   )
 }
 
-const features = [
+const coreFeatures = [
   {
     icon: Layers,
     title: "다차원 스마트 태깅",
@@ -174,63 +174,22 @@ const features = [
     badge: "New",
   },
   {
-    icon: TrendingUp,
-    title: "트렌드 분석",
-    description:
-      "저장 패턴에서 관심 분야의 변화를 감지하고, 새로운 기회를 발견해 줍니다. 주간/월간 인사이트를 받아보세요.",
-    badge: "New",
-  },
-  {
-    icon: Briefcase,
-    title: "비즈니스 지원",
-    description:
-      "미팅 정리, 제안서 초안, 프로젝트 현황 보고 — 업무에 필요한 문서를 저장된 자료를 기반으로 작성합니다.",
-    badge: "New",
-  },
-  {
-    icon: Flame,
-    title: "스트릭 & 습관 형성",
-    description:
-      "매일 접속하면 연속 사용일이 카운트됩니다. 스마트 인사말과 데일리 브리핑으로 꾸준한 기록 습관을 만들어 줍니다.",
-    badge: "New",
-  },
-  {
-    icon: MessageSquare,
-    title: "스트리밍 AI 응답",
-    description:
-      "AI가 실시간으로 타이핑하듯 답변합니다. 대화 맥락을 기억하고, 할 일이나 메모를 '추가' 버튼으로 즉시 저장할 수 있습니다.",
-    badge: "New",
-  },
-  {
-    icon: Network,
-    title: "지식 맵 & 연결",
-    description:
-      "저장된 항목 간의 관계를 네트워크 그래프로 시각화. AI가 유사한 항목을 자동으로 발견하고 연결합니다.",
-  },
-  {
-    icon: CheckSquare,
-    title: "스마트 할 일 관리",
-    description:
-      "콘텐츠에서 AI가 액션 아이템을 자동 추출하고, 프로젝트에 연결된 할 일을 한 곳에서 관리합니다.",
-  },
-  {
-    icon: Tag,
-    title: "AI 프로젝트 분류",
-    description:
-      "AI가 콘텐츠의 주제를 분석해 기존 프로젝트에 자동 분류하거나, 새 프로젝트를 만들어 줍니다.",
-  },
-  {
-    icon: Zap,
-    title: "인사이트 리포트",
-    description:
-      "월간 자동 생성되는 분석 리포트 — 관심사 트렌드, 활동 히트맵, 미뤄둔 할 일 리마인더까지 한눈에.",
-  },
-  {
     icon: Globe,
     title: "어디서나 수집",
     description:
       "웹 앱, 크롬 확장, 텔레그램 봇, 모바일 공유 — 4가지 방법으로 언제 어디서든 바로 저장하세요.",
   },
+]
+
+const moreFeatures = [
+  { icon: TrendingUp, title: "트렌드 분석", description: "저장 패턴에서 관심 분야 변화를 감지하고 새로운 기회를 발견합니다." },
+  { icon: Briefcase, title: "비즈니스 지원", description: "미팅 정리, 제안서 초안, 프로젝트 현황 보고를 자동 작성합니다." },
+  { icon: Flame, title: "스트릭 & 습관", description: "연속 사용일 카운트와 데일리 브리핑으로 기록 습관을 만듭니다." },
+  { icon: MessageSquare, title: "스트리밍 AI 응답", description: "실시간 타이핑 답변, 대화 맥락 기억, 즉시 메모 저장." },
+  { icon: Network, title: "지식 맵 & 연결", description: "네트워크 그래프로 항목 간 관계를 시각화합니다." },
+  { icon: CheckSquare, title: "스마트 할 일", description: "AI가 액션 아이템을 자동 추출, 프로젝트별 관리." },
+  { icon: Tag, title: "AI 프로젝트 분류", description: "콘텐츠 주제를 분석해 프로젝트에 자동 분류합니다." },
+  { icon: Zap, title: "인사이트 리포트", description: "월간 트렌드, 활동 히트맵, 리마인더를 한눈에." },
 ]
 
 function FeaturesSection() {
@@ -245,23 +204,43 @@ function FeaturesSection() {
             기록과 정리는 기본. AI가 지식을 블로그 글, 제안서, 인사이트로 전환해 줍니다.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {features.map(({ icon: Icon, title, description, badge }) => (
-            <div key={title} className="group relative p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
+
+        {/* Core features — large 2x2 grid */}
+        <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 mb-16">
+          {coreFeatures.map(({ icon: Icon, title, description, badge }) => (
+            <div key={title} className="group relative p-8 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
               {badge && (
-                <span className={`absolute top-4 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                <span className={`absolute top-5 right-5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   badge === "New" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-600"
                 }`}>
                   {badge}
                 </span>
               )}
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
-                <Icon className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 transition-colors">
+                <Icon className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-base font-semibold text-foreground mb-2">{title}</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
             </div>
           ))}
+        </div>
+
+        {/* More features — compact 2x4 grid */}
+        <div>
+          <p className="text-center text-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/60 mb-6">
+            더 많은 기능
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {moreFeatures.map(({ icon: Icon, title, description }) => (
+              <div key={title} className="group p-4 rounded-xl bg-card border border-border/40 hover:border-border/60 transition-all duration-200">
+                <div className="w-8 h-8 rounded-lg bg-primary/8 flex items-center justify-center mb-3 group-hover:bg-primary/12 transition-colors">
+                  <Icon className="w-4 h-4 text-primary/80" />
+                </div>
+                <h3 className="text-sm font-medium text-foreground mb-1">{title}</h3>
+                <p className="text-xs text-muted-foreground/70 leading-relaxed">{description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -56,7 +56,7 @@ export const tagUpdateSchema = z.object({
 
 export const chatSchema = z.object({
   message: z.string().min(1).max(10000),
-  session_id: z.string().uuid().optional(),
+  session_id: z.string().uuid().nullable().optional(),
 })
 
 export const searchSchema = z.object({

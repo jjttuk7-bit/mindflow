@@ -59,43 +59,58 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  // Fetch item to get storage file paths before deleting
-  const { data: item } = await supabase
-    .from("items")
-    .select("metadata, type")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single()
+  const permanent = req.nextUrl.searchParams.get("permanent") === "true"
 
-  // Delete from database
-  const { error } = await supabase.from("items").delete().eq("id", id).eq("user_id", user.id)
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (permanent) {
+    // Permanent delete: hard delete + storage cleanup
+    const { data: item } = await supabase
+      .from("items")
+      .select("metadata, type")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single()
 
-  // Clean up storage files (fire and forget)
-  if (item?.metadata) {
-    const meta = item.metadata as Record<string, string>
-    try {
-      if (meta.image_url) {
-        const path = extractStoragePath(meta.image_url, "items-images")
-        if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
+    const { error } = await supabase.from("items").delete().eq("id", id).eq("user_id", user.id)
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+    // Clean up storage files (fire and forget)
+    if (item?.metadata) {
+      const meta = item.metadata as Record<string, string>
+      try {
+        if (meta.image_url) {
+          const path = extractStoragePath(meta.image_url, "items-images")
+          if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
+        }
+        if (meta.file_url) {
+          const path = extractStoragePath(meta.file_url, "items-audio")
+          if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
+        }
+      } catch {
+        // Storage cleanup is best-effort
       }
-      if (meta.file_url) {
-        const path = extractStoragePath(meta.file_url, "items-audio")
-        if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
-      }
-    } catch {
-      // Storage cleanup is best-effort
     }
+
+    return NextResponse.json({ success: true })
   }
 
-  return NextResponse.json({ success: true })
+  // Soft delete: move to trash by setting deleted_at
+  const { data, error } = await supabase
+    .from("items")
+    .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json(data)
 }
 
 function extractStoragePath(url: string, bucket: string): string | null {

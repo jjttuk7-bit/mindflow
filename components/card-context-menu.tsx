@@ -1,7 +1,7 @@
 "use client"
 
 import { Item } from "@/lib/supabase/types"
-import { Pin, Archive, Trash2, Copy, Share2 } from "lucide-react"
+import { Pin, Archive, Trash2, Copy, Share2, Undo2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface CardContextMenuProps {
@@ -10,9 +10,11 @@ interface CardContextMenuProps {
   onPin: (item: Item) => void
   onArchive: (item: Item) => void
   onDelete: (id: string) => void
+  onRestore?: (id: string) => void
+  showTrash?: boolean
 }
 
-export function CardContextMenu({ item, onClose, onPin, onArchive, onDelete }: CardContextMenuProps) {
+export function CardContextMenu({ item, onClose, onPin, onArchive, onDelete, onRestore, showTrash }: CardContextMenuProps) {
   if (!item) return null
 
   function handleCopy() {
@@ -37,41 +39,69 @@ export function CardContextMenu({ item, onClose, onPin, onArchive, onDelete }: C
         <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto mb-4" />
         <p className="text-sm text-muted-foreground mb-4 line-clamp-2 px-2">{item.content}</p>
         <div className="space-y-1">
-          <button
-            onClick={() => { onPin(item); onClose() }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
-          >
-            <Pin className={`h-4 w-4 ${item.is_pinned ? "fill-primary text-primary" : ""}`} />
-            {item.is_pinned ? "Unpin" : "Pin to top"}
-          </button>
-          <button
-            onClick={() => { onArchive(item); onClose() }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
-          >
-            <Archive className="h-4 w-4" />
-            {item.is_archived ? "Unarchive" : "Archive"}
-          </button>
-          <button
-            onClick={handleCopy}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
-          >
-            <Copy className="h-4 w-4" />
-            Copy text
-          </button>
-          <button
-            onClick={handleShare}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
-          >
-            <Share2 className="h-4 w-4" />
-            Share
-          </button>
-          <button
-            onClick={() => { onDelete(item.id); onClose() }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </button>
+          {showTrash ? (
+            <>
+              <button
+                onClick={() => { onRestore?.(item.id); onClose() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Undo2 className="h-4 w-4" />
+                복원
+              </button>
+              <button
+                onClick={handleCopy}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Copy className="h-4 w-4" />
+                Copy text
+              </button>
+              <button
+                onClick={() => { onDelete(item.id); onClose() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                영구 삭제
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => { onPin(item); onClose() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Pin className={`h-4 w-4 ${item.is_pinned ? "fill-primary text-primary" : ""}`} />
+                {item.is_pinned ? "Unpin" : "Pin to top"}
+              </button>
+              <button
+                onClick={() => { onArchive(item); onClose() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Archive className="h-4 w-4" />
+                {item.is_archived ? "Unarchive" : "Archive"}
+              </button>
+              <button
+                onClick={handleCopy}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Copy className="h-4 w-4" />
+                Copy text
+              </button>
+              <button
+                onClick={handleShare}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
+              >
+                <Share2 className="h-4 w-4" />
+                Share
+              </button>
+              <button
+                onClick={() => { onDelete(item.id); onClose() }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+                삭제
+              </button>
+            </>
+          )}
         </div>
         <button
           onClick={onClose}

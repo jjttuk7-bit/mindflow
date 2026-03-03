@@ -8,7 +8,8 @@ import { FeedSkeleton } from "@/components/feed-skeleton"
 import { PullToRefresh } from "@/components/pull-to-refresh"
 import { NudgeCards } from "@/components/nudge-card"
 import { useStore } from "@/lib/store"
-import { Archive, List, Clock } from "lucide-react"
+import { Archive, List, Clock, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface MainFeedProps {
   onRefetch?: () => void
@@ -21,12 +22,24 @@ interface MainFeedProps {
 }
 
 export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, loadingMore, hasMore }: MainFeedProps) {
-  const { showArchived, viewMode, setViewMode } = useStore()
+  const { showArchived, showTrash, items, removeItem, viewMode, setViewMode } = useStore()
+
+  async function handleEmptyTrash() {
+    const trashedItems = items.filter((i) => !!i.deleted_at)
+    if (trashedItems.length === 0) return
+    const confirmed = window.confirm(`휴지통의 ${trashedItems.length}개 항목을 영구 삭제하시겠습니까?`)
+    if (!confirmed) return
+    for (const item of trashedItems) {
+      removeItem(item.id)
+      fetch(`/api/items/${item.id}?permanent=true`, { method: "DELETE" }).catch(() => {})
+    }
+    toast.success(`${trashedItems.length}개 항목 영구 삭제됨`)
+  }
 
   return (
     <main className={`flex-1 flex flex-col h-full overflow-hidden bg-background ${mobile ? "pb-16" : ""}`}>
-      {/* Composer area (hidden in archive mode; hidden on mobile where FAB is used) */}
-      {!showArchived && !mobile && (
+      {/* Composer area (hidden in archive/trash mode; hidden on mobile where FAB is used) */}
+      {!showArchived && !showTrash && !mobile && (
         <>
           <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-6">
             <div className="max-w-2xl mx-auto">
@@ -43,6 +56,24 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
           <div className="max-w-2xl mx-auto flex items-center gap-2.5">
             <Archive className="h-5 w-5 text-muted-foreground/50" />
             <h2 className="font-display text-xl text-foreground/70">Archive</h2>
+          </div>
+        </div>
+      )}
+
+      {/* Trash header */}
+      {showTrash && (
+        <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Trash2 className="h-5 w-5 text-destructive/50" />
+              <h2 className="font-display text-xl text-foreground/70">휴지통</h2>
+            </div>
+            <button
+              onClick={handleEmptyTrash}
+              className="text-xs text-destructive/70 hover:text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/5 transition-colors font-medium"
+            >
+              휴지통 비우기
+            </button>
           </div>
         </div>
       )}

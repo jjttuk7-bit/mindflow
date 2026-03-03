@@ -172,7 +172,7 @@ function TagItem({
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const {
     tags, items, activeFilter, setActiveFilter, activeTag, setActiveTag,
-    showArchived, setShowArchived, removeTag, renameTag,
+    showArchived, setShowArchived, showTrash, setShowTrash, removeTag, renameTag,
     projects, activeProject, setActiveProject, addProject, removeProject,
     todos, sidebarView, setSidebarView, setChatOpen,
     smartFolder, setSmartFolder,
@@ -193,12 +193,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     ).length,
   }))
 
-  const archivedCount = items.filter((i) => i.is_archived).length
-  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived).length
+  const archivedCount = items.filter((i) => i.is_archived && !i.deleted_at).length
+  const trashedCount = items.filter((i) => !!i.deleted_at).length
+  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived && !i.deleted_at).length
   const thisWeekCount = (() => {
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
-    return items.filter((i) => !i.is_archived && new Date(i.created_at) >= weekAgo).length
+    return items.filter((i) => !i.is_archived && !i.deleted_at && new Date(i.created_at) >= weekAgo).length
   })()
   const pendingTodoCount = todos.filter((t) => !t.is_completed).length
 
@@ -371,6 +372,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   setActiveTag(null)
                   setActiveProject(null)
                   if (showArchived) setShowArchived(false)
+                  if (showTrash) setShowTrash(false)
                 }
               }}
               className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
@@ -400,6 +402,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   setActiveTag(null)
                   setActiveProject(null)
                   if (showArchived) setShowArchived(false)
+                  if (showTrash) setShowTrash(false)
                 }
               }}
               className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
@@ -445,6 +448,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 onToggle={() => {
                   setActiveTag(activeTag === tag.name ? null : tag.name)
                   if (showArchived) setShowArchived(false)
+                  if (showTrash) setShowTrash(false)
                   setSmartFolder(null)
                 }}
                 onRename={(name) => handleRenameTag(tag.id, name)}
@@ -474,7 +478,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             {filters.map((f) => (
               <button
                 key={f.value}
-                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false); setSmartFolder(null) }}
+                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false); if (showTrash) setShowTrash(false); setSmartFolder(null) }}
                 className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                   activeFilter === f.value && !showArchived
                     ? "bg-primary/10 text-primary font-medium"
@@ -549,7 +553,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </button>
           <SidebarFeedbackButton onClose={onClose} />
           <button
-            onClick={() => { setShowArchived(!showArchived); setSmartFolder(null) }}
+            onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false) }}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
               showArchived
                 ? "bg-primary/10 text-primary font-medium"
@@ -565,6 +569,26 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 showArchived ? "text-primary/70" : "text-muted-foreground/50"
               }`}>
                 {archivedCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => { setShowTrash(!showTrash); setSmartFolder(null); if (!showTrash && showArchived) setShowArchived(false) }}
+            className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
+              showTrash
+                ? "bg-destructive/10 text-destructive font-medium"
+                : "text-foreground/70 hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            <span className="flex items-center gap-2.5">
+              <Trash2 className={`h-4 w-4 ${showTrash ? "text-destructive" : "text-muted-foreground/50"}`} />
+              휴지통
+            </span>
+            {trashedCount > 0 && (
+              <span className={`text-[11px] tabular-nums ${
+                showTrash ? "text-destructive/70" : "text-muted-foreground/50"
+              }`}>
+                {trashedCount}
               </span>
             )}
           </button>

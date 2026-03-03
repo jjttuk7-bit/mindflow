@@ -208,6 +208,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const type = searchParams.get("type")
   const projectId = searchParams.get("project_id")
+  const trash = searchParams.get("trash")
   const limit = parseInt(searchParams.get("limit") || "50")
   const offset = parseInt(searchParams.get("offset") || "0")
 
@@ -217,6 +218,13 @@ export async function GET(req: NextRequest) {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1)
+
+  // Trash filter: show only trashed or only non-trashed items
+  if (trash === "true") {
+    query = query.not("deleted_at", "is", null)
+  } else {
+    query = query.is("deleted_at", null)
+  }
 
   if (type && type !== "all") {
     query = query.eq("type", type)

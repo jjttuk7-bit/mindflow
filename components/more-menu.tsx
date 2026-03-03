@@ -5,23 +5,24 @@ import { useTheme } from "@/hooks/use-theme"
 import { ExportMenu } from "@/components/export-menu"
 import { FeedbackButton } from "@/components/feedback-dialog"
 import {
-  CalendarDays, Pin, Archive, BarChart3, GitBranch, Settings, Sun, Moon, Brain,
+  CalendarDays, Pin, Archive, Trash2, BarChart3, GitBranch, Settings, Sun, Moon, Brain,
 } from "lucide-react"
 
 export function MoreMenu() {
   const {
-    showArchived, setShowArchived, smartFolder, setSmartFolder,
+    showArchived, setShowArchived, showTrash, setShowTrash, smartFolder, setSmartFolder,
     setActiveFilter, setActiveTag, setActiveProject, setActiveTab,
     items,
   } = useStore()
   const { dark, toggle } = useTheme()
 
-  const archivedCount = items.filter((i) => i.is_archived).length
-  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived).length
+  const archivedCount = items.filter((i) => i.is_archived && !i.deleted_at).length
+  const trashedCount = items.filter((i) => !!i.deleted_at).length
+  const pinnedCount = items.filter((i) => i.is_pinned && !i.is_archived && !i.deleted_at).length
   const thisWeekCount = (() => {
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
-    return items.filter((i) => !i.is_archived && new Date(i.created_at) >= weekAgo).length
+    return items.filter((i) => !i.is_archived && !i.deleted_at && new Date(i.created_at) >= weekAgo).length
   })()
 
   function goToSmartFolder(folder: string) {
@@ -30,6 +31,7 @@ export function MoreMenu() {
     setActiveTag(null)
     setActiveProject(null)
     if (showArchived) setShowArchived(false)
+    if (showTrash) setShowTrash(false)
     setActiveTab("feed")
   }
 
@@ -67,7 +69,7 @@ export function MoreMenu() {
           <span className="text-xs text-muted-foreground/50 tabular-nums">{pinnedCount}</span>
         </button>
         <button
-          onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); setActiveTab("feed") }}
+          onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false); setActiveTab("feed") }}
           className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
             showArchived ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
           }`}
@@ -77,6 +79,18 @@ export function MoreMenu() {
             보관함
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{archivedCount}</span>
+        </button>
+        <button
+          onClick={() => { setShowTrash(!showTrash); setSmartFolder(null); if (!showTrash && showArchived) setShowArchived(false); setActiveTab("feed") }}
+          className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
+            showTrash ? "bg-destructive/10 text-destructive font-medium" : "hover:bg-accent"
+          }`}
+        >
+          <span className="flex items-center gap-3">
+            <Trash2 className="h-5 w-5 text-muted-foreground/60" />
+            휴지통
+          </span>
+          <span className="text-xs text-muted-foreground/50 tabular-nums">{trashedCount}</span>
         </button>
 
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">

@@ -7,6 +7,7 @@ export interface Item {
   summary?: string | null
   is_pinned?: boolean
   is_archived?: boolean
+  deleted_at?: string | null
   user_id?: string
   metadata: LinkMeta | ImageMeta | VoiceMeta | Record<string, never>
   created_at: string

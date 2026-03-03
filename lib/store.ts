@@ -26,6 +26,8 @@ interface MindflowStore {
   setSortBy: (sort: SortBy) => void
   showArchived: boolean
   setShowArchived: (show: boolean) => void
+  showTrash: boolean
+  setShowTrash: (show: boolean) => void
 
   searchQuery: string
   setSearchQuery: (query: string) => void
@@ -94,6 +96,8 @@ export const useStore = create<MindflowStore>((set) => ({
   setSortBy: (sortBy) => set({ sortBy }),
   showArchived: false,
   setShowArchived: (showArchived) => set({ showArchived }),
+  showTrash: false,
+  setShowTrash: (showTrash) => set({ showTrash }),
 
   searchQuery: "",
   setSearchQuery: (searchQuery) => set({ searchQuery }),

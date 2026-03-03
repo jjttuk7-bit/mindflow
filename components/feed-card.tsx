@@ -5,7 +5,7 @@ import { Item, LinkMeta, ImageMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles } from "lucide-react"
+import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2 } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
 import { VoiceCard } from "@/components/voice-card"
 import { VoiceMeta } from "@/lib/supabase/types"
@@ -78,10 +78,14 @@ export function FeedCard({
   item,
   onDelete,
   onUpdate,
+  onRestore,
+  showTrash,
 }: {
   item: Item
   onDelete: (id: string) => void
   onUpdate: (id: string, updates: Partial<Item>) => void
+  onRestore?: (id: string) => void
+  showTrash?: boolean
 }) {
   const [hovered, setHovered] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -447,95 +451,116 @@ export function FeedCard({
         <div className={`shrink-0 flex flex-col gap-0.5 transition-all duration-200 ${
           hovered ? "opacity-100" : "opacity-0 md:opacity-0"
         } max-md:opacity-100`}>
-          {item.type !== "link" && !editing && (
-            <button
-              onClick={() => { setEditContent(item.content); setEditing(true) }}
-              className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
-              aria-label="Edit item"
-            >
-              <Pencil className="h-3 w-3" />
-            </button>
-          )}
-          <button
-            onClick={handlePin}
-            className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
-              item.is_pinned
-                ? "text-primary bg-primary/8"
-                : "text-muted-foreground/40 hover:text-primary hover:bg-primary/8"
-            }`}
-            aria-label={item.is_pinned ? "Unpin item" : "Pin item"}
-          >
-            <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
-          </button>
-          <ShareButton item={item} />
-          <div className="relative" ref={projectMenuRef}>
-            <button
-              onClick={() => setShowProjectMenu(!showProjectMenu)}
-              className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                item.project_id
-                  ? "text-sage bg-sage/10"
-                  : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
-              }`}
-              aria-label="Move to project"
-            >
-              <FolderOpen className="h-3 w-3" />
-            </button>
-            {showProjectMenu && (
-              <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-border/60 bg-popover shadow-lg z-50 py-1">
-                <p className="px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
-                  Move to
-                </p>
-                {item.project_id && (
-                  <button
-                    onClick={() => handleMoveToProject(null)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
-                  >
-                    <X className="h-3 w-3" />
-                    Remove from project
-                  </button>
-                )}
-                {projects.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => handleMoveToProject(p.id)}
-                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
-                      item.project_id === p.id
-                        ? "text-primary bg-primary/5 font-medium"
-                        : "text-foreground/70 hover:bg-accent"
-                    }`}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: p.color }}
-                    />
-                    <span className="truncate">{p.name}</span>
-                    {item.project_id === p.id && <Check className="h-3 w-3 ml-auto shrink-0" />}
-                  </button>
-                ))}
-                {projects.length === 0 && (
-                  <p className="px-3 py-1.5 text-xs text-muted-foreground/50 italic">No projects</p>
+          {showTrash ? (
+            <>
+              <button
+                onClick={() => onRestore?.(item.id)}
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                aria-label="복원"
+              >
+                <Undo2 className="h-3 w-3" />
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                aria-label="영구 삭제"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </>
+          ) : (
+            <>
+              {item.type !== "link" && !editing && (
+                <button
+                  onClick={() => { setEditContent(item.content); setEditing(true) }}
+                  className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                  aria-label="Edit item"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              )}
+              <button
+                onClick={handlePin}
+                className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                  item.is_pinned
+                    ? "text-primary bg-primary/8"
+                    : "text-muted-foreground/40 hover:text-primary hover:bg-primary/8"
+                }`}
+                aria-label={item.is_pinned ? "Unpin item" : "Pin item"}
+              >
+                <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
+              </button>
+              <ShareButton item={item} />
+              <div className="relative" ref={projectMenuRef}>
+                <button
+                  onClick={() => setShowProjectMenu(!showProjectMenu)}
+                  className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                    item.project_id
+                      ? "text-sage bg-sage/10"
+                      : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
+                  }`}
+                  aria-label="Move to project"
+                >
+                  <FolderOpen className="h-3 w-3" />
+                </button>
+                {showProjectMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-border/60 bg-popover shadow-lg z-50 py-1">
+                    <p className="px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
+                      Move to
+                    </p>
+                    {item.project_id && (
+                      <button
+                        onClick={() => handleMoveToProject(null)}
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                        Remove from project
+                      </button>
+                    )}
+                    {projects.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleMoveToProject(p.id)}
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
+                          item.project_id === p.id
+                            ? "text-primary bg-primary/5 font-medium"
+                            : "text-foreground/70 hover:bg-accent"
+                        }`}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: p.color }}
+                        />
+                        <span className="truncate">{p.name}</span>
+                        {item.project_id === p.id && <Check className="h-3 w-3 ml-auto shrink-0" />}
+                      </button>
+                    ))}
+                    {projects.length === 0 && (
+                      <p className="px-3 py-1.5 text-xs text-muted-foreground/50 italic">No projects</p>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-          <button
-            onClick={handleArchive}
-            className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"
-            aria-label={item.is_archived ? "Restore item" : "Archive item"}
-          >
-            {item.is_archived ? (
-              <ArchiveRestore className="h-3 w-3" />
-            ) : (
-              <Archive className="h-3 w-3" />
-            )}
-          </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
-            aria-label="Delete item"
-          >
-            <Trash2 className="h-3 w-3" />
-          </button>
+              <button
+                onClick={handleArchive}
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"
+                aria-label={item.is_archived ? "Restore item" : "Archive item"}
+              >
+                {item.is_archived ? (
+                  <ArchiveRestore className="h-3 w-3" />
+                ) : (
+                  <Archive className="h-3 w-3" />
+                )}
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                aria-label="Delete item"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </article>

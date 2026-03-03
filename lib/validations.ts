@@ -14,6 +14,7 @@ export const itemUpdateSchema = z.object({
   summary: z.string().max(500).optional(),
   is_pinned: z.boolean().optional(),
   is_archived: z.boolean().optional(),
+  deleted_at: z.string().datetime().nullable().optional(),
   project_id: z.string().uuid().nullable().optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 }).strict()

@@ -3,10 +3,12 @@ import { validate, itemUpdateSchema } from "@/lib/validations"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(
   _req: NextRequest,
@@ -82,11 +84,11 @@ export async function DELETE(
     try {
       if (meta.image_url) {
         const path = extractStoragePath(meta.image_url, "items-images")
-        if (path) await supabaseAdmin.storage.from("items-images").remove([path])
+        if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
       }
       if (meta.file_url) {
         const path = extractStoragePath(meta.file_url, "items-audio")
-        if (path) await supabaseAdmin.storage.from("items-audio").remove([path])
+        if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
       }
     } catch {
       // Storage cleanup is best-effort

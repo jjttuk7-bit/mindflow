@@ -106,15 +106,24 @@ export async function POST(req: NextRequest) {
         .map(([name, count]) => `${name} (${count})`)
       const tagNames = [...tagFreqMap.keys()]
 
-      // Run AI tasks in parallel (+ link analysis for links)
-      const aiTasks = [
+      // Run AI tasks in parallel — use allSettled so one failure doesn't block others
+      const results = await Promise.allSettled([
         generateTags(tagContent, itemType, tagNames, tagNamesWithFreq),
         generateSummary(tagContent),
         generateEmbedding(tagContent),
         generateInsight(tagContent, itemType),
-      ] as const
+      ])
+      const suggestedTags = results[0].status === "fulfilled" ? results[0].value : []
+      const summary = results[1].status === "fulfilled" ? results[1].value : null
+      const embedding = results[2].status === "fulfilled" ? results[2].value : null
+      const insight = results[3].status === "fulfilled" ? results[3].value : null
 
-      const [suggestedTags, summary, embedding, insight] = await Promise.all(aiTasks)
+      results.forEach((r, i) => {
+        if (r.status === "rejected") {
+          const names = ["generateTags", "generateSummary", "generateEmbedding", "generateInsight"]
+          console.error(`AI enrichment: ${names[i]} failed:`, r.reason)
+        }
+      })
 
       // Generate link analysis separately for link type
       let linkAnalysis: string | null = null

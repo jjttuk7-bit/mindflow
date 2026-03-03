@@ -200,7 +200,10 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
             body: JSON.stringify({ item_id: item.id, content: tagContent, type: activeType }),
           })
             .then(async (r) => {
-              if (!r.ok) return
+              if (!r.ok) {
+                console.error("AI tag failed:", r.status, await r.text().catch(() => ""))
+                return
+              }
               // Fetch the full updated item to get tags, summary, ai_comment
               const itemRes = await fetch(`/api/items/${item.id}`)
               if (!itemRes.ok) return
@@ -211,7 +214,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
                 tags: updated.tags || [],
               })
             })
-            .catch(() => {})
+            .catch((err) => console.error("AI tag error:", err))
         }
 
         toast.success("Captured!")

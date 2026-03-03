@@ -37,13 +37,25 @@ export async function POST(req: NextRequest) {
       .map(([name, count]) => `${name} (${count})`)
     const tagNames = [...tagFreqMap.keys()]
 
-    // Run AI tasks in parallel: tags + summary + embedding + insight
-    const [suggestedTags, summary, embedding, insight] = await Promise.all([
+    // Run AI tasks in parallel — use allSettled so one failure doesn't block others
+    const results = await Promise.allSettled([
       generateTags(content, type, tagNames, tagNamesWithFreq),
       generateSummary(content),
       generateEmbedding(content),
       generateInsight(content, type),
     ])
+    const suggestedTags = results[0].status === "fulfilled" ? results[0].value : []
+    const summary = results[1].status === "fulfilled" ? results[1].value : null
+    const embedding = results[2].status === "fulfilled" ? results[2].value : null
+    const insight = results[3].status === "fulfilled" ? results[3].value : null
+
+    // Log any failures for debugging
+    results.forEach((r, i) => {
+      if (r.status === "rejected") {
+        const names = ["generateTags", "generateSummary", "generateEmbedding", "generateInsight"]
+        logger.error(`${names[i]} failed`, { error: String(r.reason) })
+      }
+    })
 
     // Upsert tags and create relations
     for (const tagName of suggestedTags) {

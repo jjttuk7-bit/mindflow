@@ -46,7 +46,7 @@ export function CardContextMenu({ item, onClose, onPin, onArchive, onDelete, onR
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-accent transition-colors"
               >
                 <Undo2 className="h-4 w-4" />
-                Restore
+                복원
               </button>
               <button
                 onClick={handleCopy}
@@ -60,7 +60,7 @@ export function CardContextMenu({ item, onClose, onPin, onArchive, onDelete, onR
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
-                Delete permanently
+                영구 삭제
               </button>
             </>
           ) : (

@@ -27,13 +27,13 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
   async function handleEmptyTrash() {
     const trashedItems = items.filter((i) => !!i.deleted_at)
     if (trashedItems.length === 0) return
-    const confirmed = window.confirm(`Permanently delete ${trashedItems.length} items from Trash?`)
+    const confirmed = window.confirm(`휴지통의 ${trashedItems.length}개 항목을 영구 삭제하시겠습니까?`)
     if (!confirmed) return
     for (const item of trashedItems) {
       removeItem(item.id)
       fetch(`/api/items/${item.id}?permanent=true`, { method: "DELETE" }).catch(() => {})
     }
-    toast.success(`${trashedItems.length} items permanently deleted`)
+    toast.success(`${trashedItems.length}개 항목 영구 삭제됨`)
   }
 
   return (

@@ -456,14 +456,14 @@ export function FeedCard({
               <button
                 onClick={() => onRestore?.(item.id)}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
-                aria-label="Restore"
+                aria-label="복원"
               >
                 <Undo2 className="h-3 w-3" />
               </button>
               <button
                 onClick={() => onDelete(item.id)}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
-                aria-label="Delete permanently"
+                aria-label="영구 삭제"
               >
                 <Trash2 className="h-3 w-3" />
               </button>

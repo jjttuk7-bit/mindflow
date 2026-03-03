@@ -78,22 +78,22 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
     if (showTrash) {
       // In trash view, delete permanently
       removeItem(id)
-      toast.success("Permanently deleted")
+      toast.success("영구 삭제됨")
       try {
         const res = await fetch(`/api/items/${id}?permanent=true`, { method: "DELETE" })
         if (!res.ok) throw new Error()
       } catch {
         if (prev) addItem(prev)
-        toast.error("Failed to delete")
+        toast.error("삭제에 실패했습니다")
       }
       return
     }
     // Soft delete: move to trash
     const now = new Date().toISOString()
     updateItem(id, { deleted_at: now })
-    toast.success("Moved to Trash", {
+    toast.success("휴지통으로 이동", {
       action: {
-        label: "Undo",
+        label: "되돌리기",
         onClick: () => handleRestore(id),
       },
     })
@@ -102,13 +102,13 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
       if (!res.ok) throw new Error()
     } catch {
       updateItem(id, { deleted_at: null })
-      toast.error("Failed to delete")
+      toast.error("삭제에 실패했습니다")
     }
   }
 
   async function handleRestore(id: string) {
     updateItem(id, { deleted_at: null })
-    toast.success("Restored")
+    toast.success("복원됨")
     try {
       const res = await fetch(`/api/items/${id}`, {
         method: "PATCH",
@@ -118,7 +118,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
       if (!res.ok) throw new Error()
     } catch {
       updateItem(id, { deleted_at: new Date().toISOString() })
-      toast.error("Failed to restore")
+      toast.error("복원에 실패했습니다")
     }
   }
 
@@ -167,11 +167,11 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
         </div>
         <div className="text-center space-y-1.5">
           <p className="font-display text-lg text-foreground/60">
-            {showTrash ? "Trash is empty" : showArchived ? "보관된 기록이 없어요" : "생각의 흐름을 시작하세요"}
+            {showTrash ? "휴지통이 비었어요" : showArchived ? "보관된 기록이 없어요" : "생각의 흐름을 시작하세요"}
           </p>
           <p className="text-sm text-muted-foreground/50 max-w-[260px]">
             {showTrash
-              ? "Deleted items will appear here."
+              ? "삭제된 항목이 여기에 표시됩니다."
               : showArchived
               ? "보관된 항목이 여기에 표시됩니다."
               : "아이디어, 링크, 영감을 기록하세요. AI가 자동으로 정리해드려요."}

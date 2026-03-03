@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useStore } from "@/lib/store"
-import { ScrollArea } from "@/components/ui/scroll-area"
+// Using native overflow scroll instead of Radix ScrollArea for reliable flex layout scrolling
 import { ChatSession, ChatMessage } from "@/lib/supabase/types"
 import {
   X,
@@ -48,19 +48,13 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [addedSuggestions, setAddedSuggestions] = useState<Set<string>>(new Set())
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    // Try scrollIntoView first, then fallback to manual scroll
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-    // Also scroll the ScrollArea viewport directly
-    const viewport = scrollAreaRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null
-    if (viewport) {
-      viewport.scrollTop = viewport.scrollHeight
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
     }
   }, [messages, streamingText])
 
@@ -513,11 +507,11 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
 
         {renderSessionList()}
 
-        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <div className="flex-1 min-h-0 overflow-y-auto" ref={scrollContainerRef}>
           <div className="px-4 py-4 space-y-4">
             {renderMessages()}
           </div>
-        </ScrollArea>
+        </div>
 
         {renderInputBar()}
       </div>
@@ -569,11 +563,11 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
         {renderSessionList()}
 
         {/* Messages */}
-        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <div className="flex-1 min-h-0 overflow-y-auto" ref={scrollContainerRef}>
           <div className="px-4 py-4 space-y-4">
             {renderMessages()}
           </div>
-        </ScrollArea>
+        </div>
 
         {renderInputBar()}
       </div>

@@ -456,6 +456,7 @@ export function FeedCard({
               <button
                 onClick={() => onRestore?.(item.id)}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                title="복원"
                 aria-label="복원"
               >
                 <Undo2 className="h-3 w-3" />
@@ -463,6 +464,7 @@ export function FeedCard({
               <button
                 onClick={() => onDelete(item.id)}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                title="영구 삭제"
                 aria-label="영구 삭제"
               >
                 <Trash2 className="h-3 w-3" />
@@ -474,6 +476,7 @@ export function FeedCard({
                 <button
                   onClick={() => { setEditContent(item.content); setEditing(true) }}
                   className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                  title="수정"
                   aria-label="Edit item"
                 >
                   <Pencil className="h-3 w-3" />
@@ -486,6 +489,7 @@ export function FeedCard({
                     ? "text-primary bg-primary/8"
                     : "text-muted-foreground/40 hover:text-primary hover:bg-primary/8"
                 }`}
+                title={item.is_pinned ? "고정 해제" : "고정"}
                 aria-label={item.is_pinned ? "Unpin item" : "Pin item"}
               >
                 <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
@@ -499,6 +503,7 @@ export function FeedCard({
                       ? "text-sage bg-sage/10"
                       : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
                   }`}
+                  title="프로젝트 이동"
                   aria-label="Move to project"
                 >
                   <FolderOpen className="h-3 w-3" />
@@ -544,6 +549,7 @@ export function FeedCard({
               <button
                 onClick={handleArchive}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"
+                title={item.is_archived ? "보관 해제" : "보관"}
                 aria-label={item.is_archived ? "Restore item" : "Archive item"}
               >
                 {item.is_archived ? (
@@ -555,6 +561,7 @@ export function FeedCard({
               <button
                 onClick={() => onDelete(item.id)}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                title="삭제"
                 aria-label="Delete item"
               >
                 <Trash2 className="h-3 w-3" />

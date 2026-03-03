@@ -388,7 +388,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
               ref={textareaRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="What's on your mind?"
+              placeholder="무엇을 기록할까요?"
               className="w-full min-h-[200px] resize-none bg-transparent text-[16px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
               autoFocus
             />

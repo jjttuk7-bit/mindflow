@@ -78,9 +78,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-4xl tracking-tight text-foreground">
-            Mindflow
-          </h1>
+          <a href="/" className="inline-block">
+            <h1 className="font-display text-4xl tracking-tight text-foreground hover:text-primary transition-colors cursor-pointer">
+              Mindflow
+            </h1>
+          </a>
           <p className="text-sm text-muted-foreground mt-2">
             기록은 내가, 정리는 AI가
           </p>

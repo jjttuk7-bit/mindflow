@@ -15,7 +15,7 @@ import {
 const steps = [
   {
     icon: Sparkles,
-    title: "Mindflow에 오신 것을 환영합니다!",
+    title: "DotLine에 오신 것을 환영합니다!",
     description:
       "기록은 내가, 정리는 AI가. 아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리해 드립니다.",
     color: "text-primary",

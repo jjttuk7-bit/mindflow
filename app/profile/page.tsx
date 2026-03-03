@@ -49,7 +49,7 @@ export default function ProfilePage() {
       <header className="border-b border-border/40 px-6 py-8">
         <div className="max-w-4xl mx-auto text-center space-y-2">
           <h1 className="font-display text-3xl tracking-tight text-foreground">
-            Mindflow
+            DotLine
           </h1>
           <p className="text-sm text-muted-foreground/60">
             A curated collection of shared thoughts

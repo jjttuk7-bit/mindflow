@@ -1,6 +1,6 @@
 import { Resend } from "resend"
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Mindflow <onboarding@resend.dev>"
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "DotLine <onboarding@resend.dev>"
 
 export async function sendWelcomeEmail(email: string) {
   if (!process.env.RESEND_API_KEY) return
@@ -11,7 +11,7 @@ export async function sendWelcomeEmail(email: string) {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: "Mindflow에 오신 것을 환영합니다! 🎉",
+      subject: "DotLine에 오신 것을 환영합니다! 🎉",
       html: `
 <!DOCTYPE html>
 <html>
@@ -27,7 +27,7 @@ export async function sendWelcomeEmail(email: string) {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#C4724A,#8B4F35);padding:32px 24px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:28px;font-family:Georgia,serif;letter-spacing:-1px;">Mindflow</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:28px;font-family:Georgia,serif;letter-spacing:-1px;">DotLine</h1>
               <p style="margin:8px 0 0;color:rgba(255,255,255,0.7);font-size:12px;letter-spacing:2px;">PERSONAL KNOWLEDGE</p>
             </td>
           </tr>
@@ -36,7 +36,7 @@ export async function sendWelcomeEmail(email: string) {
             <td style="padding:32px 24px;">
               <h2 style="margin:0 0 16px;color:#1a1a1a;font-size:20px;font-weight:600;">환영합니다!</h2>
               <p style="margin:0 0 20px;color:#666;font-size:14px;line-height:1.7;">
-                Mindflow에 가입해 주셔서 감사합니다.<br>
+                DotLine에 가입해 주셔서 감사합니다.<br>
                 이제 아이디어, 링크, 이미지, 음성 메모를 한곳에 모으고<br>
                 AI가 자동으로 정리해 드립니다.
               </p>
@@ -59,7 +59,7 @@ export async function sendWelcomeEmail(email: string) {
                 <tr>
                   <td style="background:#8B4F35;border-radius:8px;">
                     <a href="https://mindflow-five-eta.vercel.app" style="display:block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;text-align:center;">
-                      Mindflow 시작하기
+                      DotLine 시작하기
                     </a>
                   </td>
                 </tr>
@@ -75,7 +75,7 @@ export async function sendWelcomeEmail(email: string) {
           <tr>
             <td style="padding:16px 24px;border-top:1px solid #f0ebe6;text-align:center;">
               <p style="margin:0;color:#bbb;font-size:11px;">
-                Mindflow — 기록은 내가, 정리는 AI가
+                DotLine — 기록은 내가, 정리는 AI가
               </p>
             </td>
           </tr>

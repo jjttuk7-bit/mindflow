@@ -1,4 +1,4 @@
-const CACHE_NAME = "mindflow-v2"
+const CACHE_NAME = "dotline-v1"
 const STATIC_ASSETS = ["/", "/login"]
 
 self.addEventListener("install", (event) => {
@@ -23,10 +23,24 @@ self.addEventListener("fetch", (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // Skip non-GET and API requests
-  if (request.method !== "GET" || url.pathname.startsWith("/api/")) return
+  // Skip non-GET requests
+  if (request.method !== "GET") return
 
-  // Network-first for pages, cache-first for static assets
+  // API requests: don't cache in SW (IndexedDB handles data caching).
+  // But intercept offline failures so the app can handle them gracefully.
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ error: "offline" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        })
+      )
+    )
+    return
+  }
+
+  // Cache-first for static assets
   if (
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/icon") ||
@@ -46,6 +60,7 @@ self.addEventListener("fetch", (event) => {
       )
     )
   } else {
+    // Network-first for pages, fall back to cached shell
     event.respondWith(
       fetch(request)
         .then((response) => {
@@ -55,7 +70,9 @@ self.addEventListener("fetch", (event) => {
           }
           return response
         })
-        .catch(() => caches.match(request))
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match("/"))
+        )
     )
   }
 })
@@ -63,13 +80,13 @@ self.addEventListener("fetch", (event) => {
 // --- Web Push Notifications ---
 self.addEventListener("push", (event) => {
   const data = event.data ? event.data.json() : {}
-  const title = data.title || "Mindflow"
+  const title = data.title || "DotLine"
   const options = {
     body: data.body || "",
     icon: "/icon-192",
     badge: "/icon-192",
     data: { url: data.url || "/" },
-    tag: "mindflow-briefing",
+    tag: "dotline-briefing",
     renotify: true,
   }
   event.waitUntil(self.registration.showNotification(title, options))

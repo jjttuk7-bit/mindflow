@@ -1,11 +1,12 @@
 import { create } from "zustand"
 import { Item, Tag, ContentType, Project, Todo } from "@/lib/supabase/types"
+import { setCachedItems } from "@/lib/offline-store"
 
 export type SortBy = "newest" | "oldest" | "type"
 export type ViewMode = "list" | "timeline"
 export type SidebarView = "feed" | "todos" | "insights"
 
-interface MindflowStore {
+interface DotLineStore {
   items: Item[]
   setItems: (items: Item[]) => void
   addItem: (item: Item) => void
@@ -61,11 +62,17 @@ interface MindflowStore {
   setComposerOpen: (open: boolean) => void
   activeTab: "feed" | "projects" | "todos" | "chat" | "more"
   setActiveTab: (tab: "feed" | "projects" | "todos" | "chat" | "more") => void
+
+  isOffline: boolean
+  setIsOffline: (offline: boolean) => void
 }
 
-export const useStore = create<MindflowStore>((set) => ({
+export const useStore = create<DotLineStore>((set) => ({
   items: [],
-  setItems: (items) => set({ items }),
+  setItems: (items) => {
+    set({ items })
+    setCachedItems(items).catch(() => {})
+  },
   addItem: (item) => set((s) => ({ items: [item, ...s.items] })),
   updateItem: (id, updates) =>
     set((s) => ({
@@ -139,4 +146,7 @@ export const useStore = create<MindflowStore>((set) => ({
   setComposerOpen: (composerOpen) => set({ composerOpen }),
   activeTab: "feed",
   setActiveTab: (activeTab) => set({ activeTab }),
+
+  isOffline: false,
+  setIsOffline: (isOffline) => set({ isOffline }),
 }))

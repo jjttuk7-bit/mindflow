@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         <section>
           <p className="text-sm text-muted-foreground mb-6">시행일: 2026년 3월 1일</p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Mindflow(이하 &quot;서비스&quot;)는 이용자의 개인정보를 중요하게 생각하며,
+            DotLine(이하 &quot;서비스&quot;)는 이용자의 개인정보를 중요하게 생각하며,
             「개인정보 보호법」 등 관련 법령을 준수합니다.
             이 개인정보처리방침은 서비스가 수집하는 개인정보의 항목, 목적, 보관 기간 등을 안내합니다.
           </p>
@@ -170,7 +170,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">9. 개인정보 보호책임자</h2>
           <ul className="text-sm text-muted-foreground leading-relaxed space-y-1 ml-2">
-            <li>담당: Mindflow 운영팀</li>
+            <li>담당: DotLine 운영팀</li>
             <li>이메일: mindflow.app@gmail.com</li>
           </ul>
         </section>

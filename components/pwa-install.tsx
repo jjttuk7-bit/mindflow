@@ -76,7 +76,7 @@ export function PWAInstallPrompt() {
             <Download className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground">Mindflow 앱 설치</p>
+            <p className="text-sm font-medium text-foreground">DotLine 앱 설치</p>
             {isIOS ? (
               <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                 하단 공유 버튼 <span className="text-base leading-none align-middle">⬆</span> → &quot;홈 화면에 추가&quot;를 눌러주세요

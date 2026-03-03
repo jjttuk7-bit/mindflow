@@ -109,7 +109,7 @@ export default function AdminPage() {
           </Link>
           <div>
             <h1 className="font-display text-2xl tracking-tight text-foreground">관리자 대시보드</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Mindflow 서비스 현황</p>
+            <p className="text-sm text-muted-foreground mt-0.5">DotLine 서비스 현황</p>
           </div>
         </div>
 

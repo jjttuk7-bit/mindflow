@@ -80,7 +80,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-lg tracking-tight text-foreground">Mindflow</h1>
+        <h1 className="font-display text-lg tracking-tight text-foreground">DotLine</h1>
       </div>
 
       <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">

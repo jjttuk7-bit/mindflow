@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Mindflow — Save to Mindflow",
+  "name": "DotLine — Save to DotLine",
   "version": "1.0.0",
-  "description": "Save any webpage to Mindflow with one click. AI auto-tags and organizes your links.",
+  "description": "Save any webpage to DotLine with one click. AI auto-tags and organizes your links.",
   "permissions": ["activeTab", "storage", "scripting", "identity"],
   "action": {
     "default_popup": "popup.html",

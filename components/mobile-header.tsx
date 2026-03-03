@@ -20,7 +20,7 @@ export function MobileHeader() {
   return (
     <div className="flex items-center justify-between px-4 pt-3 pb-1 md:hidden safe-area-top">
       <div className="flex items-center gap-2">
-        <h1 className="font-display text-xl tracking-tight text-foreground">Mindflow</h1>
+        <h1 className="font-display text-xl tracking-tight text-foreground">DotLine</h1>
         {streak >= 2 && (
           <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-orange-500/10 text-xs font-semibold text-orange-500 animate-in fade-in duration-300">
             🔥 {streak}

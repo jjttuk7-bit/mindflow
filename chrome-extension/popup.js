@@ -1,4 +1,4 @@
-// Mindflow Chrome Extension - Popup Script
+// DotLine Chrome Extension - Popup Script
 
 const CONFIG = {
   SUPABASE_URL: "https://goewynhlhlybtcsuaknk.supabase.co",
@@ -321,7 +321,7 @@ btnSave.addEventListener("click", async () => {
 
   btnSave.disabled = true;
   btnSave.textContent = "Saving...";
-  showStatus("Saving to Mindflow...", "loading");
+  showStatus("Saving to DotLine...", "loading");
 
   try {
     // Ensure fresh token
@@ -359,7 +359,7 @@ btnSave.addEventListener("click", async () => {
     setTimeout(() => window.close(), 2000);
   } catch (err) {
     showStatus(err.message, "error");
-    btnSave.textContent = "Save to Mindflow";
+    btnSave.textContent = "Save to DotLine";
     btnSave.disabled = false;
   }
 });

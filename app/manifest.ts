@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next"
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Mindflow — AI 지식 관리",
-    short_name: "Mindflow",
+    name: "DotLine — AI 지식 관리",
+    short_name: "DotLine",
     description: "기록은 내가, 정리는 AI가. 아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
     start_url: "/",
     scope: "/",

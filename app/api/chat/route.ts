@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
-  const systemPrompt = `당신은 Mindflow의 AI 지식 동반자입니다. 사용자의 개인 지식 베이스를 기반으로 정보 검색부터 콘텐츠 생성, 비즈니스 지원까지 도움을 제공합니다.
+  const systemPrompt = `당신은 DotLine의 AI 지식 동반자입니다. 사용자의 개인 지식 베이스를 기반으로 정보 검색부터 콘텐츠 생성, 비즈니스 지원까지 도움을 제공합니다.
 
 핵심 역할:
 1. 지식 검색: 저장된 항목에서 관련 내용을 찾아 답변합니다. [1], [2] 등으로 출처를 표시하세요.

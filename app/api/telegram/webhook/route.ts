@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       }
       await sendTelegramMessage(
         chatId,
-        "Welcome to Mindflow! Link your account from the Settings page in the app."
+        "Welcome to DotLine! Link your account from the Settings page in the app."
       )
       return NextResponse.json({ ok: true })
     }
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     if (!settings) {
       await sendTelegramMessage(
         chatId,
-        "Please link your account first. Go to Mindflow Settings and click 'Link Telegram'."
+        "Please link your account first. Go to DotLine Settings and click 'Link Telegram'."
       )
       return NextResponse.json({ ok: true })
     }
@@ -143,7 +143,7 @@ async function handleStartCommand(supabase: any, chatId: string, token: string) 
   if (!matchingSettings) {
     await sendTelegramMessage(
       chatId,
-      "Invalid or expired link token. Please generate a new link from the Mindflow Settings page."
+      "Invalid or expired link token. Please generate a new link from the DotLine Settings page."
     )
     return NextResponse.json({ ok: true })
   }
@@ -164,7 +164,7 @@ async function handleStartCommand(supabase: any, chatId: string, token: string) 
 
   await sendTelegramMessage(
     chatId,
-    "Account linked successfully! You can now send messages, photos, and voice notes to capture them in Mindflow."
+    "Account linked successfully! You can now send messages, photos, and voice notes to capture them in DotLine."
   )
   return NextResponse.json({ ok: true })
 }

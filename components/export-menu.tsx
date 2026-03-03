@@ -23,7 +23,7 @@ function downloadFile(content: string, filename: string, type: string) {
 
 function itemsToMarkdown(items: ReturnType<typeof useStore.getState>["items"]): string {
   const lines: string[] = [
-    "# Mindflow Export",
+    "# DotLine Export",
     "",
     `> Exported on ${new Date().toLocaleDateString()}`,
     "",
@@ -138,7 +138,7 @@ function AISummaryDialog({
   }
 
   function handleDownload() {
-    downloadFile(markdown, `mindflow-summary-${Date.now()}.md`, "text/markdown")
+    downloadFile(markdown, `dotline-summary-${Date.now()}.md`, "text/markdown")
   }
 
   // Reset state when dialog closes
@@ -286,13 +286,13 @@ export function ExportMenu() {
 
   function handleExportMarkdown() {
     const md = itemsToMarkdown(items)
-    downloadFile(md, `mindflow-export-${Date.now()}.md`, "text/markdown")
+    downloadFile(md, `dotline-export-${Date.now()}.md`, "text/markdown")
     setOpen(false)
   }
 
   function handleExportJson() {
     const json = itemsToJson(items)
-    downloadFile(json, `mindflow-export-${Date.now()}.json`, "application/json")
+    downloadFile(json, `dotline-export-${Date.now()}.json`, "application/json")
     setOpen(false)
   }
 

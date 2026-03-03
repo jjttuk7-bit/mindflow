@@ -72,7 +72,7 @@ export default async function SharePage({
       <header className="border-b border-border/40 px-6 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <h1 className="font-display text-xl tracking-tight text-foreground">
-            Mindflow
+            DotLine
           </h1>
           <span className="text-[11px] text-muted-foreground/50">Shared thought</span>
         </div>

@@ -16,6 +16,7 @@ import {
   FileText,
   Copy,
   Check,
+  Trash2,
 } from "lucide-react"
 import { ChatExportMenu } from "@/components/chat-export-menu"
 
@@ -124,6 +125,21 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     setAddedSuggestions(new Set())
     setInput("")
     inputRef.current?.focus()
+  }
+
+  async function handleDeleteSession(sessionId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    try {
+      const res = await fetch(`/api/chat/sessions/${sessionId}`, { method: "DELETE" })
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+        if (currentSessionId === sessionId) {
+          handleNewChat()
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
 
   async function handleAddSuggestion(type: "todo" | "memo", text: string) {
@@ -458,20 +474,35 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
         {sessionsExpanded && (
           <div className="px-3 pb-2 max-h-48 overflow-y-auto">
             {sessions.map((session) => (
-              <button
+              <div
                 key={session.id}
-                onClick={() => loadSession(session.id)}
-                className={`w-full text-left rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
+                className={`group flex items-center gap-1 rounded-md transition-colors duration-150 ${
                   currentSessionId === session.id
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground/70 hover:bg-accent"
+                    ? "bg-primary/10"
+                    : "hover:bg-accent"
                 }`}
               >
-                <p className="truncate">{session.title}</p>
-                <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                  {new Date(session.created_at).toLocaleDateString()}
-                </p>
-              </button>
+                <button
+                  onClick={() => loadSession(session.id)}
+                  className={`flex-1 text-left px-3 py-2 text-sm min-w-0 ${
+                    currentSessionId === session.id
+                      ? "text-primary"
+                      : "text-foreground/70"
+                  }`}
+                >
+                  <p className="truncate">{session.title}</p>
+                  <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                    {new Date(session.created_at).toLocaleDateString()}
+                  </p>
+                </button>
+                <button
+                  onClick={(e) => handleDeleteSession(session.id, e)}
+                  className="h-6 w-6 mr-2 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0"
+                  aria-label="대화 삭제"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             ))}
           </div>
         )}

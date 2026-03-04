@@ -46,9 +46,27 @@ export async function PATCH(
   const parsed = validate(itemUpdateSchema, raw)
   if (!parsed.success) return parsed.error
 
+  // If metadata contains screenshot.expiry, extract to top-level metadata.expiry
+  const updateData = { ...parsed.data, updated_at: new Date().toISOString() }
+  if (updateData.metadata) {
+    const meta = updateData.metadata as Record<string, unknown>
+    const screenshot = meta.screenshot as Record<string, unknown> | undefined
+    const expiry = screenshot?.expiry as Record<string, unknown> | undefined
+    if (expiry?.detected && expiry.expiry_date) {
+      meta.expiry = {
+        expiry_date: expiry.expiry_date as string,
+        expiry_type: (expiry.expiry_type as string) || "other",
+        vendor: (expiry.vendor as string) || undefined,
+        amount: (expiry.amount as string) || undefined,
+        barcode: (expiry.barcode as string) || undefined,
+      }
+      updateData.metadata = meta
+    }
+  }
+
   const { data, error } = await supabase
     .from("items")
-    .update({ ...parsed.data, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq("id", id)
     .eq("user_id", user.id)
     .select()

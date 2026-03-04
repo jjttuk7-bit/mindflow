@@ -55,8 +55,14 @@ function timeAgo(dateStr: string) {
 }
 
 function getExpiryBadge(meta: unknown): React.ReactNode {
-  if (!meta || typeof meta !== "object" || !("expiry" in meta)) return null
-  const expiry = (meta as { expiry?: ExpiryMeta }).expiry
+  if (!meta || typeof meta !== "object") return null
+  const m = meta as { expiry?: ExpiryMeta; screenshot?: { expiry?: { detected?: boolean; expiry_date?: string } } }
+  // Check top-level expiry first, fallback to screenshot.expiry
+  const expiry = m.expiry?.expiry_date ? m.expiry : (
+    m.screenshot?.expiry?.detected && m.screenshot.expiry.expiry_date
+      ? { expiry_date: m.screenshot.expiry.expiry_date } as ExpiryMeta
+      : null
+  )
   if (!expiry?.expiry_date) return null
   const today = new Date()
   today.setHours(0, 0, 0, 0)

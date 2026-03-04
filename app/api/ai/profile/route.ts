@@ -82,8 +82,8 @@ export async function GET() {
 
   const profile = data?.ai_profile as AIProfileData | null
 
-  // Free user: return basic stats only
-  if (plan === "free") {
+  // Return basic stats only if plan doesn't include ai_profile
+  if (!PLAN_LIMITS[plan].ai_profile) {
     return NextResponse.json({
       interests: profile?.interests?.slice(0, 3) || [],
       patterns: profile?.patterns || null,

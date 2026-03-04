@@ -41,7 +41,7 @@ const steps = [
     icon: MessageSquare,
     title: "AI에게 질문하세요",
     description:
-      "오른쪽 AI Chat에서 저장한 지식에 대해 자유롭게 질문하세요. 내 노트를 기반으로 답변을 제공합니다.",
+      "오른쪽 DL Agent에서 저장한 지식에 대해 자유롭게 질문하세요. 내 노트를 기반으로 답변을 제공합니다.",
     color: "text-sage",
     bg: "bg-sage/10",
   },

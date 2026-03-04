@@ -34,7 +34,7 @@ export function ChatExportMenu({ messages, session, disabled }: ChatExportMenuPr
 
     try {
       const data: ChatExportData = {
-        title: session?.title || "AI Chat",
+        title: session?.title || "DL Agent",
         messages,
         exportedAt: new Date(),
       }

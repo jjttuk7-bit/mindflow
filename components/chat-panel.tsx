@@ -519,7 +519,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
         <header className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <MessageSquare className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-lg tracking-tight text-foreground">AI Chat</h2>
+            <h2 className="font-display text-lg tracking-tight text-foreground">DL Agent</h2>
           </div>
           <div className="flex items-center gap-1">
             <ChatExportMenu messages={messages} session={currentSession} disabled={loading} />
@@ -567,7 +567,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           <div className="flex items-center gap-2.5">
             <MessageSquare className="h-5 w-5 text-primary" />
             <h2 className="font-display text-lg tracking-tight text-foreground">
-              AI Chat
+              DL Agent
             </h2>
           </div>
           <div className="flex items-center gap-1">

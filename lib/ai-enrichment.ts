@@ -64,6 +64,32 @@ export async function enrichItem(
     .map(([name, count]) => `${name} (${count})`)
   const tagNames = [...tagFreqMap.keys()]
 
+  // Detect recent topic patterns — last 5 items' tags
+  let detectedTopics = recentTopics
+  if (!detectedTopics) {
+    const { data: recentItemTags } = await supabase
+      .from("items")
+      .select("item_tags(tags(name))")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(5)
+
+    if (recentItemTags?.length) {
+      const recentTagCounts = new Map<string, number>()
+      for (const item of recentItemTags) {
+        const tags = item.item_tags as unknown as Array<{ tags: { name: string } | null }>
+        for (const it of tags || []) {
+          const name = it.tags?.name
+          if (name) recentTagCounts.set(name, (recentTagCounts.get(name) || 0) + 1)
+        }
+      }
+      // Tags appearing in 2+ of last 5 items = active topic
+      detectedTopics = [...recentTagCounts.entries()]
+        .filter(([, count]) => count >= 2)
+        .map(([name]) => name)
+    }
+  }
+
   // Build insight context
   const now = new Date()
   const hour = now.getHours()
@@ -72,7 +98,7 @@ export async function enrichItem(
 
   const insightContext: InsightContext = {
     timeOfDay,
-    recentTopics,
+    recentTopics: detectedTopics?.length ? detectedTopics : undefined,
   }
 
   // Run AI tasks in parallel

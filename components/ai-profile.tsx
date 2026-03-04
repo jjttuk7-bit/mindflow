@@ -376,14 +376,16 @@ export function AIProfile() {
     setAnalyzing(true)
     try {
       const res = await fetch("/api/ai/profile", { method: "POST" })
-      if (res.status === 403) {
-        // Free user tried to analyze
+      if (!res.ok) {
         return
       }
       const data = await res.json()
       if (data && data.interests) setProfile(data)
-    } catch {}
-    setAnalyzing(false)
+    } catch {
+      // ignore
+    } finally {
+      setAnalyzing(false)
+    }
   }
 
   if (loading) {
@@ -426,8 +428,7 @@ export function AIProfile() {
     )
   }
 
-  // TODO: 테스트 후 플랜 체크 복원
-  const isFree = false // "_plan" in profile && profile._plan === "free"
+  const isFree = "_plan" in profile && (profile as FreeProfileData)._plan === "free"
   const full = (isFullProfile(profile) ? profile : null) as AIProfileData | null
 
   const interests = profile.interests || []

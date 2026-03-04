@@ -475,23 +475,22 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
     "people": ["언급된 사람/이름"],
     "key_info": ["핵심 정보 (가격, 장소, 전화번호 등)"],
     "expiry": {
-      "detected": true/false,
-      "expiry_date": "YYYY-MM-DD",
-      "expiry_type": "coupon|gift_card|ticket|membership|warranty|other",
-      "vendor": "브랜드명",
-      "amount": "금액",
-      "barcode": "바코드/일련번호"
+      "detected": true 또는 false,
+      "expiry_date": "YYYY-MM-DD 또는 빈 문자열",
+      "expiry_type": "coupon 또는 gift_card 또는 ticket 또는 membership 또는 warranty 또는 other",
+      "vendor": "브랜드명 또는 빈 문자열",
+      "amount": "금액 또는 빈 문자열",
+      "barcode": "바코드/일련번호 또는 빈 문자열"
     }
   }
 }
 
 규칙:
-- is_screenshot=false이면 일반 사진: content에 짧은 설명, extracted는 모두 빈 배열
+- is_screenshot=false이면 일반 사진: content에 짧은 설명, extracted는 모두 빈 배열, expiry.detected=false
 - is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출
 - type은 스크린샷일 때만 유의미, 일반 사진이면 "other"
 - summary는 항상 한국어로 1~2문장
-- expiry: 기프티콘, 쿠폰, 할인권, 상품권, 티켓, 바우처, 멤버십, 보증서 등 유효기간이 있는 콘텐츠를 감지.
-  detected=true이면 나머지 필드를 최대한 추출. 날짜를 찾을 수 없으면 expiry_date는 빈 문자열.
+- expiry: 기프티콘, 쿠폰, 할인권, 상품권, 티켓, 바우처, 멤버십, 보증서 등 유효기간이 있는 콘텐츠를 감지. detected=true이면 나머지 필드를 최대한 추출.
 - JSON만 반환하세요` },
       ],
     }],

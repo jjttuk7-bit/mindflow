@@ -3,11 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useStore } from "@/lib/store"
 import { toast } from "sonner"
+import { getCachedItems } from "@/lib/offline-store"
 
 const PAGE_SIZE = 20
 
 export function useItems() {
-  const { setItems, setTags, activeFilter, activeTag, activeProject } = useStore()
+  const { setItems, setTags, setIsOffline, activeFilter, activeTag, activeProject } = useStore()
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -15,6 +16,7 @@ export function useItems() {
   const offsetRef = useRef(0)
   const hasMoreRef = useRef(true)
   const loadingMoreRef = useRef(false)
+  const cacheLoadedRef = useRef(false)
 
   const buildParams = useCallback(() => {
     const params = new URLSearchParams()
@@ -25,6 +27,20 @@ export function useItems() {
   }, [activeFilter, activeTag, activeProject])
 
   const fetchItems = useCallback(async () => {
+    // Load cached items first for instant display (only on initial load)
+    if (!cacheLoadedRef.current) {
+      cacheLoadedRef.current = true
+      try {
+        const cached = await getCachedItems()
+        if (cached.length > 0) {
+          setItems(cached)
+          setLoading(false)
+        }
+      } catch {
+        // IndexedDB not available, continue with network
+      }
+    }
+
     try {
       setError(null)
       offsetRef.current = 0
@@ -37,20 +53,28 @@ export function useItems() {
       const res = await fetch(`/api/items?${params}`)
       if (!res.ok) throw new Error(`Failed to load (${res.status})`)
       const data = await res.json()
-      setItems(data)
+      setItems(data) // also caches to IndexedDB via store
+      setIsOffline(false)
       offsetRef.current = data.length
       if (data.length < PAGE_SIZE) {
         hasMoreRef.current = false
         setHasMore(false)
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to load items"
-      setError(msg)
-      toast.error(msg)
+      const hasItems = useStore.getState().items.length > 0
+      if (hasItems) {
+        // We have cached items, show offline mode silently
+        setIsOffline(true)
+        toast("Offline mode - showing cached items", { duration: 3000 })
+      } else {
+        const msg = err instanceof Error ? err.message : "Failed to load items"
+        setError(msg)
+        toast.error(msg)
+      }
     } finally {
       setLoading(false)
     }
-  }, [buildParams, setItems])
+  }, [buildParams, setItems, setIsOffline])
 
   const fetchTags = useCallback(async () => {
     try {

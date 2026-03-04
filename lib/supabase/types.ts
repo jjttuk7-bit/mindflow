@@ -16,6 +16,7 @@ export interface Item {
   project_id?: string | null
   context?: ItemContext | null
   source?: ItemSource
+  _offline?: boolean
 }
 
 export interface Tag {

@@ -9,6 +9,7 @@ import {
   FileText, Link, Image, Mic, X, Upload, Camera, ArrowUp, Loader2,
 } from "lucide-react"
 import { ScreenshotData } from "@/lib/supabase/types"
+import { addToOfflineQueue, createOfflineItem } from "@/lib/offline-store"
 
 const typeButtons: { type: ContentType; icon: React.ReactNode; label: string }[] = [
   { type: "text", icon: <FileText className="h-4 w-4" />, label: "Text" },
@@ -267,7 +268,21 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         toast.error(data.error || "Save failed")
       }
     } catch {
-      toast.error("Network error. Please try again.")
+      // Offline fallback for text/link items
+      if ((activeType === "text" || activeType === "link") && content.trim()) {
+        try {
+          const offlineItem = createOfflineItem(activeType, content.trim())
+          await addToOfflineQueue(offlineItem)
+          addItem(offlineItem)
+          toast("Saved offline. Will sync when back online.", { duration: 3000 })
+          setComposerOpen(false)
+          onSaved?.()
+        } catch {
+          toast.error("Failed to save offline. Please try again.")
+        }
+      } else {
+        toast.error("Network error. Please try again.")
+      }
     } finally {
       setIsSubmitting(false)
     }

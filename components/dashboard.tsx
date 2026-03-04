@@ -13,6 +13,7 @@ import { FilterChips } from "@/components/filter-chips"
 import { useItems } from "@/hooks/use-items"
 import { useProjects } from "@/hooks/use-projects"
 import { useTodos } from "@/hooks/use-todos"
+import { useOfflineSync } from "@/hooks/use-offline-sync"
 import { useStore } from "@/lib/store"
 
 const ChatPanel = dynamic(() => import("@/components/chat-panel").then(m => m.ChatPanel), { ssr: false })
@@ -28,9 +29,10 @@ export function Dashboard() {
   const { refetch, loading, loadMore, loadingMore, hasMore } = useItems()
   useProjects()
   useTodos()
+  useOfflineSync(refetch)
 
   const searchParams = useSearchParams()
-  const { sidebarView, activeTab, composerOpen } = useStore()
+  const { sidebarView, activeTab, composerOpen, isOffline } = useStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
@@ -74,7 +76,14 @@ export function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background flex-col">
+      {/* Offline banner */}
+      {isOffline && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-center text-xs font-medium text-amber-700 dark:text-amber-400 shrink-0">
+          You&apos;re offline — cached content is shown. New items will sync when reconnected.
+        </div>
+      )}
+      <div className="flex flex-1 min-h-0">
       {/* Desktop layout */}
       <div className="hidden md:contents">
         {sidebarOpen && (
@@ -108,6 +117,7 @@ export function Dashboard() {
       <SearchDialog />
       {composerOpen && <MobileComposer onSaved={refetch} />}
       {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+      </div>
     </div>
   )
 }

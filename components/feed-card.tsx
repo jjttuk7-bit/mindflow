@@ -5,7 +5,7 @@ import { Item, LinkMeta, ImageMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2 } from "lucide-react"
+import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
 import { VoiceCard } from "@/components/voice-card"
 import { VoiceMeta } from "@/lib/supabase/types"
@@ -99,6 +99,7 @@ export function FeedCard({
   const { projects } = useStore()
   const config = typeConfig[item.type] ?? typeConfig.text
   const meta = item.metadata
+  const isOfflineItem = item._offline === true
 
   const hasSummary = item.summary && item.content.length > 100
   const displayText = hasSummary && !expanded ? item.summary : item.content
@@ -355,9 +356,11 @@ export function FeedCard({
   return (
     <article
       className={`group relative rounded-xl border bg-card px-5 py-4 transition-all duration-300 ${
-        hovered
-          ? "shadow-[0_2px_16px_-4px_oklch(0.5_0.05_55/0.08)] border-border"
-          : "border-border/40 shadow-none"
+        isOfflineItem
+          ? "border-dashed border-muted-foreground/30 opacity-80"
+          : hovered
+            ? "shadow-[0_2px_16px_-4px_oklch(0.5_0.05_55/0.08)] border-border"
+            : "border-border/40 shadow-none"
       } ${item.is_pinned ? "ring-1 ring-primary/20" : ""}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -404,6 +407,12 @@ export function FeedCard({
               <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/50 italic">
                 <span className="h-1 w-1 rounded-full bg-amber-accent animate-pulse" />
                 분석 중
+              </span>
+            )}
+            {isOfflineItem && (
+              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-600">
+                <CloudOff className="h-3 w-3" />
+                Sync pending
               </span>
             )}
             <span className="text-[11px] text-muted-foreground/40 ml-auto tabular-nums">

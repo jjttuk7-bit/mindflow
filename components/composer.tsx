@@ -5,6 +5,7 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { useStore } from "@/lib/store"
 import { toast } from "sonner"
 import { ContentType } from "@/lib/supabase/types"
+import { addToOfflineQueue, createOfflineItem } from "@/lib/offline-store"
 import { VoiceRecorder } from "@/components/voice-recorder"
 import { FileText, Link, Image, Mic, ArrowUp, Upload, X, Camera, Loader2 } from "lucide-react"
 import { ScreenshotData } from "@/lib/supabase/types"
@@ -353,7 +354,21 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         setError(data.error || `Save failed (${res.status})`)
       }
     } catch (err) {
-      setError("Network error. Please try again.")
+      // Offline fallback for text/link items
+      if ((activeType === "text" || activeType === "link") && content.trim()) {
+        try {
+          const offlineItem = createOfflineItem(activeType, content.trim())
+          await addToOfflineQueue(offlineItem)
+          addItem(offlineItem)
+          setContent("")
+          toast("Saved offline. Will sync when back online.", { duration: 3000 })
+          onSaved?.()
+        } catch {
+          setError("Failed to save offline. Please try again.")
+        }
+      } else {
+        setError("Network error. Please try again.")
+      }
     } finally {
       setIsSubmitting(false)
     }

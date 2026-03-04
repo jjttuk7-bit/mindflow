@@ -3,6 +3,7 @@ import { generateEmbedding } from "@/lib/ai"
 import { rateLimit } from "@/lib/rate-limit"
 import { validate, searchSchema } from "@/lib/validations"
 import { NextRequest, NextResponse } from "next/server"
+import { SIMILARITY_THRESHOLDS } from "@/lib/constants"
 
 export async function POST(req: NextRequest) {
   const limited = rateLimit(req, { maxRequests: 20, windowMs: 60_000 })
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
   // Search by cosine similarity using pgvector
   const { data, error } = await supabase.rpc("match_items", {
     query_embedding: JSON.stringify(embedding),
-    match_threshold: 0.1,
+    match_threshold: SIMILARITY_THRESHOLDS.SEARCH,
     match_count: limit,
   })
 

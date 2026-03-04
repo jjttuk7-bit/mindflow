@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { SIMILARITY_THRESHOLDS } from "@/lib/constants"
 
 export async function GET() {
   try {
@@ -24,7 +25,7 @@ export async function GET() {
 
       const { data: matches } = await supabase.rpc("match_items", {
         query_embedding: seed.embedding,
-        match_threshold: 0.4,
+        match_threshold: SIMILARITY_THRESHOLDS.RESURFACE,
         match_count: 10,
       })
 

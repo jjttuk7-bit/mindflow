@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
+import { SIMILARITY_THRESHOLDS } from "@/lib/constants"
 
 export async function GET(
   _req: NextRequest,
@@ -20,10 +21,10 @@ export async function GET(
     return NextResponse.json([])
   }
 
-  // Find similar items using pgvector (threshold 0.6 for high relevance only)
+  // Find similar items using pgvector (high relevance only)
   const { data, error } = await supabase.rpc("match_items", {
     query_embedding: item.embedding,
-    match_threshold: 0.6,
+    match_threshold: SIMILARITY_THRESHOLDS.RELATED,
     match_count: 4,
   })
 

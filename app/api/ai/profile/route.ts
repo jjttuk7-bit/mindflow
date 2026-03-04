@@ -72,8 +72,7 @@ export async function GET() {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  // TODO: 테스트 후 플랜 체크 복원
-  // const plan = await getUserPlan(user.id)
+  const plan = await getUserPlan(user.id)
 
   const { data } = await supabase
     .from("user_settings")
@@ -83,24 +82,18 @@ export async function GET() {
 
   const profile = data?.ai_profile as AIProfileData | null
 
-  // 테스트: 모든 유저에게 전체 프로필 반환
-  return NextResponse.json(profile || {})
-
-  /* TODO: 테스트 후 Free 유저 기본 통계 로직 복원
   // Free user: return basic stats only
-  if (profile) {
+  if (plan === "free") {
     return NextResponse.json({
-      interests: profile.interests?.slice(0, 3) || [],
-      patterns: profile.patterns || null,
-      total_items: profile.total_items || 0,
-      updated_at: profile.updated_at || null,
+      interests: profile?.interests?.slice(0, 3) || [],
+      patterns: profile?.patterns || null,
+      total_items: profile?.total_items || 0,
+      updated_at: profile?.updated_at || null,
       _plan: "free",
     })
   }
 
-  // Free user with no profile: compute basic stats on the fly
-  ...
-  */
+  return NextResponse.json(profile || {})
 }
 
 // ─── POST: Trigger re-analysis (Pro only) ───────────────────────────
@@ -109,11 +102,10 @@ export async function POST() {
   const { supabase, user } = await getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  // TODO: 테스트 후 플랜 체크 복원
-  // const plan = await getUserPlan(user.id)
-  // if (!PLAN_LIMITS[plan].ai_profile) {
-  //   return NextResponse.json({ error: "Pro 플랜에서 사용할 수 있습니다", upgrade: true }, { status: 403 })
-  // }
+  const plan = await getUserPlan(user.id)
+  if (!PLAN_LIMITS[plan].ai_profile) {
+    return NextResponse.json({ error: "Pro 플랜에서 사용할 수 있습니다", upgrade: true }, { status: 403 })
+  }
 
   // Get items from last 90 days
   const ninetyDaysAgo = new Date()

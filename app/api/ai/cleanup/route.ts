@@ -1,28 +1,17 @@
 import { getUser } from "@/lib/supabase/server"
 import { getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { NextResponse } from "next/server"
+import { fetchStaleItems } from "@/lib/zombie-detection"
 
 export async function GET() {
   try {
     const { supabase, user } = await getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    // Fetch stale items using shared utility
+    const staleItems = await fetchStaleItems(supabase, user.id)
 
-    // Fetch stale items: links, images, text older than 30 days, unarchived
-    const { data: staleItems } = await supabase
-      .from("items")
-      .select("id, type, content, summary, created_at")
-      .eq("user_id", user.id)
-      .eq("is_archived", false)
-      .is("deleted_at", null)
-      .in("type", ["link", "image", "text"])
-      .lte("created_at", thirtyDaysAgo.toISOString())
-      .order("created_at", { ascending: true })
-      .limit(20)
-
-    if (!staleItems || staleItems.length === 0) {
+    if (staleItems.length === 0) {
       return NextResponse.json({
         items: [],
         summary: "정리할 항목이 없어요! 깔끔하게 관리하고 계시네요.",

@@ -10,7 +10,8 @@ import {
   SimulationNodeDatum,
   SimulationLinkDatum,
 } from "d3-force"
-import { FileText, Link, Image, Mic, X, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
+import { FileText, Image, Mic, X, ZoomIn, ZoomOut, Maximize2, Search, ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 const TYPE_COLORS: Record<string, string> = {
   text: "#C4724A",
@@ -57,6 +58,8 @@ export function KnowledgeMap() {
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
   const [filter, setFilter] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [threshold, setThreshold] = useState(0.3)
   const dragRef = useRef<{ dragging: boolean; startX: number; startY: number; nodeId: string | null }>({
     dragging: false, startX: 0, startY: 0, nodeId: null,
   })
@@ -94,6 +97,20 @@ export function KnowledgeMap() {
   useEffect(() => {
     if (nodes.length === 0) return
 
+    // Compute cluster centers based on project/tag
+    const clusterKeys = new Set<string>()
+    nodes.forEach(n => {
+      clusterKeys.add(n.project_id || n.tags[0] || "__none__")
+    })
+    const totalClusters = clusterKeys.size
+    const clusterMap = new Map<string, { x: number; y: number }>()
+    let clusterIdx = 0
+    for (const key of clusterKeys) {
+      const angle = (clusterIdx / totalClusters) * 2 * Math.PI
+      clusterMap.set(key, { x: Math.cos(angle) * 150, y: Math.sin(angle) * 150 })
+      clusterIdx++
+    }
+
     const sim = forceSimulation<GraphNode>(nodes)
       .force(
         "link",
@@ -110,6 +127,16 @@ export function KnowledgeMap() {
     simRef.current = sim
 
     sim.on("tick", () => {
+      // Nudge nodes toward cluster centers
+      const alpha = sim.alpha()
+      for (const n of nodes) {
+        const key = n.project_id || n.tags[0] || "__none__"
+        const center = clusterMap.get(key)
+        if (center && n.x != null && n.y != null && n.vx != null && n.vy != null) {
+          n.vx += (center.x - n.x) * 0.05 * alpha
+          n.vy += (center.y - n.y) * 0.05 * alpha
+        }
+      }
       setNodes([...nodes])
     })
 
@@ -201,6 +228,7 @@ export function KnowledgeMap() {
   const visibleNodes = filter ? nodes.filter((n) => n.type === filter) : nodes
   const visibleIds = new Set(visibleNodes.map((n) => n.id))
   const visibleEdges = edges.filter((e) => {
+    if (e.reason === "similarity" && e.weight < threshold) return false
     const src = typeof e.source === "object" ? (e.source as GraphNode).id : e.source
     const tgt = typeof e.target === "object" ? (e.target as GraphNode).id : e.target
     return visibleIds.has(src as string) && visibleIds.has(tgt as string)
@@ -247,6 +275,16 @@ export function KnowledgeMap() {
             {label}
           </button>
         ))}
+        <div className="relative ml-1">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/40" />
+          <input
+            type="text"
+            placeholder="검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-7 pr-2 py-1 w-32 rounded-full text-[11px] bg-muted/80 text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-primary/30"
+          />
+        </div>
       </div>
 
       {/* Zoom controls */}
@@ -269,6 +307,21 @@ export function KnowledgeMap() {
         >
           <Maximize2 className="h-4 w-4" />
         </button>
+      </div>
+
+      {/* Similarity threshold slider */}
+      <div className="absolute bottom-12 left-4 z-10 flex items-center gap-2">
+        <span className="text-[10px] text-muted-foreground/50">유사도</span>
+        <input
+          type="range"
+          min={0.3}
+          max={0.9}
+          step={0.05}
+          value={threshold}
+          onChange={(e) => setThreshold(parseFloat(e.target.value))}
+          className="w-24 h-1 accent-primary"
+        />
+        <span className="text-[10px] text-muted-foreground/50 tabular-nums">{threshold.toFixed(2)}</span>
       </div>
 
       {/* Stats */}
@@ -335,7 +388,8 @@ export function KnowledgeMap() {
 
             const isActive = activeHighlight === node.id
             const isConnected = highlightedConnections?.has(node.id)
-            const dimmed = activeHighlight && !isActive && !isConnected
+            const searchMatch = !searchQuery || node.label.toLowerCase().includes(searchQuery.toLowerCase())
+            const dimmed = (activeHighlight && !isActive && !isConnected) || (!!searchQuery && !searchMatch)
 
             const radius = isActive ? 10 : 7
             const color = TYPE_COLORS[node.type] || "#999"
@@ -345,7 +399,7 @@ export function KnowledgeMap() {
                 key={node.id}
                 className="graph-node"
                 transform={`translate(${node.x}, ${node.y})`}
-                style={{ cursor: "pointer", opacity: dimmed ? 0.15 : 1, transition: "opacity 0.2s" }}
+                style={{ cursor: "pointer", opacity: dimmed ? 0.1 : 1, transition: "opacity 0.2s" }}
                 onPointerDown={(e) => handleNodePointerDown(e, node.id)}
                 onPointerUp={() => handleNodeClick(node)}
                 onPointerEnter={() => setHoveredNode(node.id)}
@@ -363,7 +417,7 @@ export function KnowledgeMap() {
                   strokeWidth={2}
                 />
                 {/* Label on hover/active */}
-                {(isActive || isConnected) && (
+                {(isActive || isConnected || (searchQuery && searchMatch)) && (
                   <text
                     y={-14}
                     textAnchor="middle"
@@ -431,6 +485,14 @@ export function KnowledgeMap() {
           <div className="mt-2 text-[10px] text-muted-foreground/30">
             {connectedTo(selectedNode.id).size}개 연결
           </div>
+
+          <Link
+            href="/"
+            className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+          >
+            <ExternalLink className="h-3 w-3" />
+            원본 보기
+          </Link>
         </div>
       )}
 

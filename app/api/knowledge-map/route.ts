@@ -17,8 +17,11 @@ interface GraphEdge {
   reason: "similarity" | "tag" | "project" | "ai"
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const similarityThreshold = parseFloat(searchParams.get("similarity_threshold") || "0.3")
+
     const { supabase, user } = await getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -111,7 +114,7 @@ export async function GET() {
 
       const { data: matches } = await supabase.rpc("match_items", {
         query_embedding: item.embedding,
-        match_threshold: 0.5,
+        match_threshold: similarityThreshold,
         match_count: 6,
       })
 

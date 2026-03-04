@@ -23,7 +23,8 @@ export async function generateTags(
   tagFrequencies?: string[]
 ): Promise<string[]> {
   // Skip tagging for placeholder content
-  if (!content || content === "Image" || content === "Voice memo" || content.length < 2) {
+  const placeholders = new Set(["Image", "Voice memo", "Screenshot", "Audio recording", "이미지", "음성 메모"])
+  if (!content || placeholders.has(content.trim()) || content.length < 2) {
     return []
   }
 
@@ -83,13 +84,14 @@ ${freqSection}
 "TypeScript 5.0 새 기능 - 공식 블로그" → ["개발", "typescript", "공식문서"]
 "투자 트렌드: AI 관련주 분석" → ["재테크", "투자", "ai", "트렌드분석"]
 
-JSON 배열만 반환. 다른 텍스트 없이.
+JSON 객체로 반환: {"tags": ["태그1", "태그2", ...]}
 
 콘텐츠: ${content}`
 
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.tagging,
     temperature: 0.3,
+    response_format: { type: "json_object" },
     messages: [{ role: "user", content: prompt }],
   })
 
@@ -97,12 +99,24 @@ JSON 배열만 반환. 다른 텍스트 없이.
 
   const banned = new Set(["일반", "기타", "메모", "general", "other", "misc", "note", "stuff", "image", "link", "voice", "text", "url", "사진", "음성", "링크"])
 
+  function normalizeTag(t: unknown): string {
+    return String(t)
+      .toLowerCase()
+      .trim()
+      .replace(/^[#\-•*]+/, "")       // strip leading markers
+      .replace(/["""''`]/g, "")         // strip quotes
+      .replace(/\s+/g, "-")            // spaces → hyphens
+      .replace(/[^a-z0-9가-힣\-]/g, "") // keep only alphanumeric, Korean, hyphens
+      .replace(/^-+|-+$/g, "")         // trim leading/trailing hyphens
+  }
+
   function parseTags(raw: string): string[] {
     try {
       const parsed = JSON.parse(raw)
-      if (!Array.isArray(parsed)) return []
-      return parsed
-        .map((t: unknown) => String(t).toLowerCase().trim())
+      const arr = Array.isArray(parsed) ? parsed : (parsed?.tags ?? [])
+      if (!Array.isArray(arr)) return []
+      return arr
+        .map(normalizeTag)
         .filter((t: string) => t.length >= 1 && t.length <= 20 && !banned.has(t))
         .slice(0, 5)
     } catch { return [] }
@@ -116,31 +130,71 @@ JSON 배열만 반환. 다른 텍스트 없이.
   return tags
 }
 
-export async function generateSummary(content: string): Promise<string | null> {
+export async function generateSummary(content: string, type?: string): Promise<string | null> {
   if (content.length < 50) return null
+
+  const typeStrategy: Record<string, string> = {
+    link: "이 링크가 무엇을 다루는 글인지, 핵심 주제를 요약",
+    text: "이 메모의 핵심 메시지를 요약",
+    image: "이 이미지에서 추출된 정보의 핵심을 요약",
+    voice: "이 음성 메모의 핵심 내용을 요약",
+  }
+  const strategy = typeStrategy[type || "text"] || typeStrategy.text
 
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.summary,
+    response_format: { type: "json_object" },
     messages: [{
       role: "user",
       content: `다음 콘텐츠를 한국어로 핵심 요약하세요.
+
+요약 전략: ${strategy}
 
 규칙:
 - 1~2문장, 최대 80자
 - 콘텐츠의 핵심 가치/의미를 담아야 함
 - "~에 대한 내용" 같은 메타 설명 금지. 직접적인 요약만.
 - 원문이 한국어면 한국어로, 영어면 한국어로 번역 요약
-- 요약문만 반환. 다른 텍스트 없이.
+
+JSON 형식으로 반환: {"summary": "요약문"}
 
 콘텐츠: ${content}`,
     }],
   })
 
-  return result.choices[0].message.content?.trim() || null
+  const text = result.choices[0].message.content?.trim() || ""
+  try {
+    const parsed = JSON.parse(text)
+    return parsed.summary || null
+  } catch {
+    return text || null
+  }
 }
 
-export async function generateInsight(content: string, type: string): Promise<string | null> {
+export interface InsightContext {
+  timeOfDay?: string
+  recentTopics?: string[]
+}
+
+export async function generateInsight(content: string, type: string, context?: InsightContext): Promise<string | null> {
   if (!content || content.length < 10) return null
+
+  const contextHints: string[] = []
+  if (context?.timeOfDay) {
+    const timeComments: Record<string, string> = {
+      night: "심야 시간(0~6시)에 저장한 항목이에요. '늦은 시간까지~' 같은 공감 코멘트를 고려하세요.",
+      morning: "아침 시간에 저장한 항목이에요.",
+      evening: "저녁 시간에 저장한 항목이에요.",
+    }
+    if (timeComments[context.timeOfDay]) contextHints.push(timeComments[context.timeOfDay])
+  }
+  if (context?.recentTopics?.length) {
+    contextHints.push(`사용자가 최근 비슷한 주제를 연속 저장 중: [${context.recentTopics.join(", ")}]. "이 주제에 관심이 많으시네요" 같은 패턴 인식 코멘트를 고려하세요.`)
+  }
+
+  const contextSection = contextHints.length
+    ? `\n[맥락]\n${contextHints.join("\n")}\n`
+    : ""
 
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.summary,
@@ -150,7 +204,7 @@ export async function generateInsight(content: string, type: string): Promise<st
       content: `사용자가 저장한 콘텐츠를 읽고, 짧고 임팩트 있는 AI 코멘트를 달아주세요.
 
 역할: 사용자의 지식 동반자. 공감하고, 연결하고, 격려하는 톤.
-
+${contextSection}
 코멘트 유형 (콘텐츠에 맞게 자동 선택):
 - 아이디어면: 확장 가능성이나 연결 포인트 제시 ("이 아이디어를 ~와 결합하면 더 강력해질 수 있어요")
 - 학습/기술이면: 핵심 인사이트 강조 또는 실천 팁 ("핵심은 ~이네요. 바로 적용해볼 만해요")
@@ -180,9 +234,25 @@ export async function generateLinkAnalysis(
   const context = [ogTitle, ogDescription, url].filter(Boolean).join(" — ")
   if (!context || context.length < 10) return null
 
+  // Domain-specific analysis hints
+  let domainHint = ""
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+    if (hostname.includes("github.com")) {
+      domainHint = "GitHub 링크입니다. 레포/이슈/PR의 목적, 기술 스택, 활용 방법에 초점을 맞추세요."
+    } else if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      domainHint = "YouTube 영상입니다. 영상의 주제, 핵심 내용, 시청할 가치에 초점을 맞추세요."
+    } else if (hostname.includes("arxiv.org") || hostname.includes("scholar.google")) {
+      domainHint = "학술 논문/자료입니다. 연구 주제, 핵심 발견, 실용적 시사점에 초점을 맞추세요."
+    } else if (/news|times|post|bbc|cnn|reuters/i.test(hostname)) {
+      domainHint = "뉴스 기사입니다. 핵심 사건, 영향, 시사점에 초점을 맞추세요."
+    }
+  } catch { /* ignore invalid URL */ }
+
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.summary,
     temperature: 0.5,
+    response_format: { type: "json_object" },
     messages: [{
       role: "user",
       content: `URL과 메타데이터를 분석하여 이 링크의 핵심 내용을 정리해주세요.
@@ -191,8 +261,8 @@ export async function generateLinkAnalysis(
 - URL: ${url}
 ${ogTitle ? `- 제목: ${ogTitle}` : ""}
 ${ogDescription ? `- 설명: ${ogDescription}` : ""}
-
-아래 형식으로 작성:
+${domainHint ? `\n${domainHint}\n` : ""}
+아래 내용을 포함:
 - 한 줄 요약 (이 링크가 무엇인지)
 - 핵심 포인트 1~2개 (왜 읽어볼 만한지)
 - 활용 팁 (나중에 어떻게 써먹을 수 있는지)
@@ -203,11 +273,19 @@ ${ogDescription ? `- 설명: ${ogDescription}` : ""}
 - 친근한 톤 ("~이에요/~해요")
 - 마크다운 없이 플레인 텍스트만
 - 정보가 부족하면 URL 도메인과 경로에서 추론
-- 내용만 반환. 라벨("한 줄 요약:", "핵심:") 붙이지 마세요.`,
+- 라벨("한 줄 요약:", "핵심:") 붙이지 마세요.
+
+JSON 형식으로 반환: {"analysis": "분석 텍스트"}`,
     }],
   })
 
-  return result.choices[0].message.content?.trim() || null
+  const text = result.choices[0].message.content?.trim() || ""
+  try {
+    const parsed = JSON.parse(text)
+    return parsed.analysis || null
+  } catch {
+    return text || null
+  }
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
@@ -318,7 +396,7 @@ export async function describeImage(base64: string, mimeType: string): Promise<s
     messages: [{
       role: "user",
       content: [
-        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } },
+        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}`, detail: "low" } },
         { type: "text", text: `이미지의 캡션을 생성하세요.
 
 최우선 규칙: 이미지에 텍스트(손글씨, 인쇄, 숫자 등)가 있으면 해석하지 말고 그대로 옮겨 적으세요.
@@ -371,6 +449,7 @@ export interface ScreenshotAnalysis {
 export async function analyzeScreenshot(base64: string, mimeType: string): Promise<ScreenshotAnalysis> {
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.analysis,
+    response_format: { type: "json_object" },
     messages: [{
       role: "user",
       content: [
@@ -434,6 +513,8 @@ export async function transcribeAudio(file: File): Promise<string> {
   const result = await getOpenAI().audio.transcriptions.create({
     model: "whisper-1",
     file: audioFile,
+    language: "ko",
+    prompt: "메모, 할 일, 아이디어, 회의 내용을 기록합니다.",
   })
 
   return result.text

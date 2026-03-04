@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
-import { generateTags, generateSummary, generateEmbedding, generateInsight, classifyProject, extractTodos } from "@/lib/ai"
+import { classifyProject, extractTodos } from "@/lib/ai"
+import { enrichItem } from "@/lib/ai-enrichment"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
 import { logger, withLogging } from "@/lib/logger"
 import { rateLimit } from "@/lib/rate-limit"
@@ -19,79 +20,10 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) return parsed.error
     const { item_id, content, type } = parsed.data
 
-    // Get existing tags for reuse
-    const { data: userTagRows } = await supabase
-      .from("item_tags")
-      .select("tag_id, tags(name), items!inner(user_id)")
-      .eq("items.user_id", user.id)
-
-    // Count frequency per tag
-    const tagFreqMap = new Map<string, number>()
-    for (const row of userTagRows || []) {
-      const name = (row.tags as unknown as { name: string })?.name
-      if (name) tagFreqMap.set(name, (tagFreqMap.get(name) || 0) + 1)
-    }
-    // Sort by frequency descending, format as "tag-name (count)"
-    const tagNamesWithFreq = [...tagFreqMap.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, count]) => `${name} (${count})`)
-    const tagNames = [...tagFreqMap.keys()]
-
-    // Run AI tasks in parallel — use allSettled so one failure doesn't block others
-    const results = await Promise.allSettled([
-      generateTags(content, type, tagNames, tagNamesWithFreq),
-      generateSummary(content),
-      generateEmbedding(content),
-      generateInsight(content, type),
-    ])
-    const suggestedTags = results[0].status === "fulfilled" ? results[0].value : []
-    const summary = results[1].status === "fulfilled" ? results[1].value : null
-    const embedding = results[2].status === "fulfilled" ? results[2].value : null
-    const insight = results[3].status === "fulfilled" ? results[3].value : null
-
-    // Log any failures for debugging
-    results.forEach((r, i) => {
-      if (r.status === "rejected") {
-        const names = ["generateTags", "generateSummary", "generateEmbedding", "generateInsight"]
-        logger.error(`${names[i]} failed`, { error: String(r.reason) })
-      }
-    })
-
-    // Upsert tags and create relations
-    for (const tagName of suggestedTags) {
-      const { data: tag } = await supabase
-        .from("tags")
-        .upsert({ name: tagName }, { onConflict: "name" })
-        .select()
-        .single()
-
-      if (tag) {
-        await supabase
-          .from("item_tags")
-          .upsert(
-            { item_id, tag_id: tag.id },
-            { onConflict: "item_id,tag_id" }
-          )
-      }
-    }
-
-    // Update item with summary and embedding
-    const updates: Record<string, unknown> = {}
-    if (summary) updates.summary = summary
-    if (embedding) updates.embedding = JSON.stringify(embedding)
-
-    // Generate context metadata
-    const now = new Date()
-    const hour = now.getHours()
-    const timeOfDay =
-      hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"
-    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-    updates.context = {
+    // Shared AI enrichment (tags, summary, embedding, insight, link analysis, batch upsert)
+    const result = await enrichItem(item_id, content, type, user.id, supabase, {
       source: "web",
-      time_of_day: timeOfDay,
-      day_of_week: days[now.getDay()],
-      ...(insight ? { ai_comment: insight } : {}),
-    }
+    })
 
     // Pro features: project classification + TODO extraction
     const plan = await getUserPlan(user.id)
@@ -104,7 +36,6 @@ export async function POST(req: NextRequest) {
           .select("id, name")
           .eq("user_id", user.id)
 
-        // Fetch 3 most recent items per project for context
         const projectsWithContext = await Promise.all(
           (existingProjects || []).map(async (p) => {
             const { data: recentItems } = await supabase
@@ -119,14 +50,10 @@ export async function POST(req: NextRequest) {
           })
         )
 
-        const classification = await classifyProject(
-          content,
-          type,
-          projectsWithContext
-        )
+        const classification = await classifyProject(content, type, projectsWithContext)
 
         if (classification.action === "existing") {
-          updates.project_id = classification.project_id
+          await supabase.from("items").update({ project_id: classification.project_id }).eq("id", item_id)
         } else if (classification.action === "new") {
           const { data: newProject } = await supabase
             .from("projects")
@@ -139,7 +66,7 @@ export async function POST(req: NextRequest) {
             .select()
             .single()
           if (newProject) {
-            updates.project_id = newProject.id
+            await supabase.from("items").update({ project_id: newProject.id }).eq("id", item_id)
           }
         }
       } catch (err) {
@@ -147,11 +74,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (Object.keys(updates).length > 0) {
-      await supabase.from("items").update(updates).eq("id", item_id)
-    }
-
-    // Pro feature: TODO extraction
     if (limits.todo_auto_extract) {
       try {
         const todos = await extractTodos(content)
@@ -160,7 +82,6 @@ export async function POST(req: NextRequest) {
             content: todo,
             user_id: user.id,
             item_id,
-            project_id: (updates.project_id as string) || null,
           }))
           await supabase.from("todos").insert(todoRows)
         }
@@ -169,7 +90,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // After embedding is saved, trigger auto-connect
+    // Trigger auto-connect
     fetch(`${req.nextUrl.origin}/api/ai/connect`, {
       method: "POST",
       headers: {
@@ -179,13 +100,12 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ item_id }),
     }).catch(() => {})
 
-    // Include error details in response for debugging
-    const errors = results
-      .map((r, i) => r.status === "rejected" ? { fn: ["generateTags", "generateSummary", "generateEmbedding", "generateInsight"][i], error: String(r.reason) } : null)
-      .filter(Boolean)
-
-    log.success({ tags: suggestedTags.length })
-    return NextResponse.json({ tags: suggestedTags, summary, ...(errors.length > 0 ? { _errors: errors } : {}) })
+    log.success({ tags: result.tags.length })
+    return NextResponse.json({
+      tags: result.tags,
+      summary: result.summary,
+      ...(result.errors.length > 0 ? { _errors: result.errors } : {}),
+    })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
     logger.error("/api/ai/tag failed", { error: message })

@@ -462,10 +462,10 @@ export function AIProfile() {
             <button
               onClick={runAnalysis}
               disabled={analyzing}
-              className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground disabled:opacity-50"
-              title="재분석"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              <RefreshCw className={`h-4 w-4 ${analyzing ? "animate-spin" : ""}`} />
+              {analyzing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {analyzing ? "분석 중..." : "분석하기"}
             </button>
           )}
         </div>

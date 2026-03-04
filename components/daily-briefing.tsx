@@ -258,22 +258,37 @@ export function DailyBriefing() {
               <div className="flex gap-1">
                 {Object.entries(week.counts).map(([type, count]) => {
                   const pct = Math.round((count / week.total) * 100)
+                  const typeColors: Record<string, string> = {
+                    text: "#6366f1",   // indigo
+                    link: "#f59e0b",   // amber
+                    image: "#10b981",  // emerald
+                    voice: "#ec4899",  // pink
+                  }
                   return (
                     <div
                       key={type}
-                      className="h-1.5 rounded-full bg-primary/30 first:rounded-l-full last:rounded-r-full"
-                      style={{ width: `${pct}%`, minWidth: 8 }}
+                      className="h-1.5 rounded-full first:rounded-l-full last:rounded-r-full"
+                      style={{ width: `${pct}%`, minWidth: 8, backgroundColor: typeColors[type] || "#6366f1" }}
                       title={`${typeLabels[type] || type}: ${count} (${pct}%)`}
                     />
                   )
                 })}
               </div>
               <div className="flex flex-wrap gap-2 mt-1">
-                {Object.entries(week.counts).map(([type, count]) => (
-                  <span key={type} className="text-[10px] text-muted-foreground/40">
-                    {typeLabels[type] || type} {count}
-                  </span>
-                ))}
+                {Object.entries(week.counts).map(([type, count]) => {
+                  const dotColors: Record<string, string> = {
+                    text: "#6366f1",
+                    link: "#f59e0b",
+                    image: "#10b981",
+                    voice: "#ec4899",
+                  }
+                  return (
+                    <span key={type} className="text-[10px] text-muted-foreground/40 flex items-center gap-1">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dotColors[type] || "#6366f1" }} />
+                      {typeLabels[type] || type} {count}
+                    </span>
+                  )
+                })}
               </div>
             </div>
           )}

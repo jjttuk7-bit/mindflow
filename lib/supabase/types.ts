@@ -210,6 +210,54 @@ export interface InsightReportData {
   weekly_breakdown?: WeeklyBreakdownData[]
 }
 
+export interface AIProfileData {
+  // existing fields
+  interests: { topic: string; count: number }[]
+  patterns: {
+    peak_day: string
+    peak_hour: number
+    avg_daily: number
+    type_distribution: Record<string, number>
+    day_distribution: Record<string, number>
+    hour_distribution: Record<number, number>
+  }
+  thinking_style: string
+  style_description: string
+  interests_summary: string
+  growth_tip: string
+  total_items: number
+  updated_at: string
+
+  // new fields
+  dimensions: {
+    explorer: number
+    executor: number
+    creator: number
+    analyst: number
+    connector: number
+  }
+  time_persona: {
+    label: string
+    emoji: string
+    description: string
+  }
+  diversity_score: {
+    score: number
+    label: string
+    unique_tags: number
+    unique_types: number
+  }
+  history?: AIProfileSnapshot[]
+}
+
+export interface AIProfileSnapshot {
+  date: string
+  dimensions: AIProfileData["dimensions"]
+  top_topics: string[]
+  total_items: number
+  diversity_score: number
+}
+
 export interface UserSettings {
   id: string
   user_id: string
@@ -219,7 +267,7 @@ export interface UserSettings {
   telegram_chat_id?: string | null
   telegram_linked_at?: string | null
   preferences: Record<string, unknown>
-  ai_profile?: Record<string, unknown>
+  ai_profile?: AIProfileData | null
   created_at: string
   updated_at: string
 }

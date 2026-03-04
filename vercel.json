@@ -5,12 +5,19 @@
     },
     "app/api/chat/route.ts": {
       "maxDuration": 60
+    },
+    "app/api/insights/preview/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [
     {
       "path": "/api/cron/monthly-insight",
       "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/weekly-insight",
+      "schedule": "0 3 * * 1"
     },
     {
       "path": "/api/cron/weekly-nudge",

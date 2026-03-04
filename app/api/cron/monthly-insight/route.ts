@@ -1,7 +1,21 @@
 import { createClient } from "@supabase/supabase-js"
-import { getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
 import { PLAN_LIMITS } from "@/lib/plans"
+import {
+  gatherStats,
+  gatherHourlyHeatmap,
+  gatherStreakSnapshot,
+  gatherReminders,
+  generateInterests,
+  generateMonthlyDigest,
+  generateProductivityScore,
+  fetchSummaries,
+} from "@/lib/insights/gather"
+import type {
+  InsightReportData,
+  MoMComparisonData,
+  WeeklyBreakdownData,
+} from "@/lib/supabase/types"
 
 function getServiceSupabase() {
   return createClient(
@@ -10,25 +24,8 @@ function getServiceSupabase() {
   )
 }
 
-function safeJsonParse<T>(text: string, fallback: T): T {
-  try {
-    return JSON.parse(text)
-  } catch {
-    const match = text.match(/[\[{][\s\S]*[\]}]/)
-    if (match) {
-      try {
-        return JSON.parse(match[0])
-      } catch {
-        /* ignore */
-      }
-    }
-    return fallback
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
-    // Verify CRON_SECRET
     const authHeader = req.headers.get("authorization")
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -36,15 +33,14 @@ export async function POST(req: NextRequest) {
 
     const supabase = getServiceSupabase()
 
-    // Calculate last month's date range
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
     const monthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999)
     const monthStr = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, "0")}-01`
     const startDate = monthStart.toISOString()
     const endDate = monthEnd.toISOString()
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate()
 
-    // Get all users from user_settings
     const { data: users, error: usersError } = await supabase
       .from("user_settings")
       .select("user_id, plan")
@@ -62,117 +58,20 @@ export async function POST(req: NextRequest) {
 
       try {
         // ─── 1. Stats ───────────────────────────────────────────────
-        // Total captures
-        const { count: totalCaptures } = await supabase
-          .from("items")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .gte("created_at", startDate)
-          .lte("created_at", endDate)
+        const { stats, items } = await gatherStats(supabase, userId, startDate, endDate)
 
-        // By type
-        const { data: itemsByType } = await supabase
-          .from("items")
-          .select("type")
-          .eq("user_id", userId)
-          .gte("created_at", startDate)
-          .lte("created_at", endDate)
+        // ─── 2. Hourly Heatmap ──────────────────────────────────────
+        const hourlyHeatmap = gatherHourlyHeatmap(items)
 
-        const byType: Record<string, number> = {}
-        for (const item of itemsByType || []) {
-          byType[item.type] = (byType[item.type] || 0) + 1
-        }
+        // ─── 3. Streak Snapshot ─────────────────────────────────────
+        const streak = await gatherStreakSnapshot(
+          supabase,
+          userId,
+          stats.daily_heatmap,
+          daysInMonth
+        )
 
-        // By source
-        const { data: itemsBySource } = await supabase
-          .from("items")
-          .select("source")
-          .eq("user_id", userId)
-          .gte("created_at", startDate)
-          .lte("created_at", endDate)
-
-        const bySource: Record<string, number> = {}
-        for (const item of itemsBySource || []) {
-          const src = (item.source as string) || "web"
-          bySource[src] = (bySource[src] || 0) + 1
-        }
-
-        // Daily heatmap
-        const { data: itemsByDay } = await supabase
-          .from("items")
-          .select("created_at")
-          .eq("user_id", userId)
-          .gte("created_at", startDate)
-          .lte("created_at", endDate)
-
-        const dailyHeatmap: Record<string, number> = {}
-        for (const item of itemsByDay || []) {
-          const day = item.created_at.slice(0, 10)
-          dailyHeatmap[day] = (dailyHeatmap[day] || 0) + 1
-        }
-
-        // Top 3 projects
-        const { data: projectItems } = await supabase
-          .from("items")
-          .select("project_id")
-          .eq("user_id", userId)
-          .gte("created_at", startDate)
-          .lte("created_at", endDate)
-          .not("project_id", "is", null)
-
-        const projectCounts: Record<string, number> = {}
-        for (const item of projectItems || []) {
-          if (item.project_id) {
-            projectCounts[item.project_id] = (projectCounts[item.project_id] || 0) + 1
-          }
-        }
-
-        const topProjectIds = Object.entries(projectCounts)
-          .sort(([, a], [, b]) => b - a)
-          .slice(0, 3)
-          .map(([id]) => id)
-
-        let topProjects: string[] = []
-        if (topProjectIds.length > 0) {
-          const { data: projectNames } = await supabase
-            .from("projects")
-            .select("id, name")
-            .in("id", topProjectIds)
-
-          topProjects = topProjectIds.map((id) => {
-            const p = projectNames?.find((pn) => pn.id === id)
-            return p?.name || "Unknown"
-          })
-        }
-
-        // TODO stats
-        const { count: completedTodos } = await supabase
-          .from("todos")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("is_completed", true)
-          .gte("updated_at", startDate)
-          .lte("updated_at", endDate)
-
-        const { count: pendingTodos } = await supabase
-          .from("todos")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("is_completed", false)
-
-        const stats = {
-          total_captures: totalCaptures || 0,
-          by_type: byType,
-          by_source: bySource,
-          daily_heatmap: dailyHeatmap,
-          top_projects: topProjects,
-          todos: {
-            completed: completedTodos || 0,
-            pending: pendingTodos || 0,
-          },
-        }
-
-        // ─── 2. Interests (Pro only) ────────────────────────────────
+        // ─── 4. Interests (Pro only) ────────────────────────────────
         let interests = {
           top_topics: [] as string[],
           trending_up: [] as string[],
@@ -180,120 +79,150 @@ export async function POST(req: NextRequest) {
           summary: "",
         }
 
+        // Fetch previous month's topics for comparison
+        let prevTopics: string[] | undefined
         if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
-          const { data: monthItems } = await supabase
-            .from("items")
-            .select("summary, content, type")
+          const prevMonthDate = new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1)
+          const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-01`
+
+          const { data: prevReport } = await supabase
+            .from("insight_reports")
+            .select("report_data")
             .eq("user_id", userId)
-            .gte("created_at", startDate)
-            .lte("created_at", endDate)
-            .limit(100)
+            .eq("month", prevMonthStr)
+            .eq("report_type", "monthly")
+            .single()
 
-          if (monthItems && monthItems.length > 0) {
-            const summaries = monthItems
-              .map((i) => `[${i.type}] ${i.summary || i.content?.slice(0, 100)}`)
-              .join("\n")
+          if (prevReport?.report_data?.interests?.top_topics) {
+            prevTopics = prevReport.report_data.interests.top_topics
+          }
 
-            const interestResult = await getOpenAI().chat.completions.create({
-              model: MODEL_MAP.analysis,
-              messages: [{
-                role: "user",
-                content: `Analyze these personal knowledge captures and identify topic patterns.
-Return ONLY valid JSON with this structure:
-{
-  "top_topics": ["topic1", "topic2", ...],
-  "trending_up": ["growing interest 1", ...],
-  "trending_down": ["declining interest 1", ...],
-  "summary": "One paragraph analysis of the user's interests and patterns"
-}
-
-Write in the same language as the content.
-
-Items:
-${summaries}`,
-              }],
-            })
-
-            interests = safeJsonParse(interestResult.choices[0].message.content?.trim() || "", interests)
+          const summaries = await fetchSummaries(supabase, userId, startDate, endDate)
+          if (summaries) {
+            interests = await generateInterests(summaries, prevTopics)
           }
         }
 
-        // ─── 3. Reminders ───────────────────────────────────────────
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        // ─── 5. MoM Comparison (Pro only) ───────────────────────────
+        let momComparison: MoMComparisonData | undefined
+        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+          const prevMonthDate = new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1)
+          const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-01`
 
-        // Unread links (>7 days old, not archived)
-        const { data: unreadLinks } = await supabase
-          .from("items")
-          .select("id, summary, content, created_at")
-          .eq("user_id", userId)
-          .eq("type", "link")
-          .eq("is_archived", false)
-          .lte("created_at", sevenDaysAgo)
-          .limit(10)
+          const { data: prevReport } = await supabase
+            .from("insight_reports")
+            .select("report_data")
+            .eq("user_id", userId)
+            .eq("month", prevMonthStr)
+            .eq("report_type", "monthly")
+            .single()
 
-        // Overdue todos
-        const { data: overdueTodos } = await supabase
-          .from("todos")
-          .select("id, content, due_date")
-          .eq("user_id", userId)
-          .eq("is_completed", false)
-          .not("due_date", "is", null)
-          .lte("due_date", now.toISOString())
-          .limit(10)
+          if (prevReport?.report_data?.stats) {
+            const prevTotal = prevReport.report_data.stats.total_captures || 0
+            const currentTotal = stats.total_captures
+            const changePercent = prevTotal > 0
+              ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100)
+              : 0
 
-        // Stale pins (pinned items >30 days old)
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        const { data: stalePins } = await supabase
-          .from("items")
-          .select("id, summary, content, created_at")
-          .eq("user_id", userId)
-          .eq("is_pinned", true)
-          .lte("created_at", thirtyDaysAgo)
-          .limit(10)
+            const prevTopicsList: string[] = prevReport.report_data.interests?.top_topics || []
+            const currentTopicsList: string[] = interests.top_topics || []
 
-        const reminderItems: Array<{ id: string; title: string; age_days: number }> = []
+            momComparison = {
+              previous_total: prevTotal,
+              current_total: currentTotal,
+              change_percent: changePercent,
+              new_topics: currentTopicsList.filter((t) => !prevTopicsList.includes(t)),
+              dropped_topics: prevTopicsList.filter((t) => !currentTopicsList.includes(t)),
+            }
+          }
+        }
 
-        for (const link of unreadLinks || []) {
-          const ageDays = Math.floor(
-            (now.getTime() - new Date(link.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        // ─── 6. Weekly Breakdown ────────────────────────────────────
+        const weeklyBreakdown: WeeklyBreakdownData[] = []
+        {
+          // Split items into weeks (Mon-Sun)
+          const weekMap = new Map<string, Array<{ created_at: string; type?: string; project_id?: string }>>()
+
+          // Fetch items with type and project for breakdown
+          const { data: breakdownItems } = await supabase
+            .from("items")
+            .select("created_at, type, project_id")
+            .eq("user_id", userId)
+            .gte("created_at", startDate)
+            .lte("created_at", endDate)
+
+          for (const item of breakdownItems || []) {
+            const d = new Date(item.created_at)
+            // Find Monday of this item's week
+            const dayOfWeek = d.getUTCDay()
+            const monday = new Date(d)
+            monday.setUTCDate(d.getUTCDate() - ((dayOfWeek + 6) % 7))
+            const key = monday.toISOString().slice(0, 10)
+            if (!weekMap.has(key)) weekMap.set(key, [])
+            weekMap.get(key)!.push(item)
+          }
+
+          const sortedWeeks = Array.from(weekMap.entries()).sort(([a], [b]) => a.localeCompare(b))
+
+          for (const [weekStartStr, weekItems] of sortedWeeks) {
+            const ws = new Date(weekStartStr)
+            const we = new Date(ws)
+            we.setUTCDate(ws.getUTCDate() + 6)
+
+            const byType: Record<string, number> = {}
+            const projectCounts: Record<string, number> = {}
+
+            for (const item of weekItems) {
+              if (item.type) byType[item.type] = (byType[item.type] || 0) + 1
+              if (item.project_id) projectCounts[item.project_id] = (projectCounts[item.project_id] || 0) + 1
+            }
+
+            const topProjIds = Object.entries(projectCounts)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 3)
+              .map(([id]) => id)
+
+            let topProjects: string[] = []
+            if (topProjIds.length > 0) {
+              const { data: projNames } = await supabase
+                .from("projects")
+                .select("id, name")
+                .in("id", topProjIds)
+
+              topProjects = topProjIds.map((id) => {
+                const p = projNames?.find((pn) => pn.id === id)
+                return p?.name || "Unknown"
+              })
+            }
+
+            weeklyBreakdown.push({
+              week_start: weekStartStr,
+              week_end: we.toISOString().slice(0, 10),
+              total_captures: weekItems.length,
+              by_type: byType,
+              top_projects: topProjects,
+            })
+          }
+        }
+
+        // ─── 7. Reminders ───────────────────────────────────────────
+        const reminders = await gatherReminders(supabase, userId, now)
+
+        // ─── 8. Productivity Score (Pro only) ───────────────────────
+        let productivityScore: InsightReportData["productivity_score"]
+        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+          productivityScore = await generateProductivityScore(
+            {
+              total_captures: stats.total_captures,
+              activeDays: streak.total_active_days,
+              todoCompleted: stats.todos.completed,
+              todoPending: stats.todos.pending,
+            },
+            streak
           )
-          reminderItems.push({
-            id: link.id,
-            title: link.summary || link.content?.slice(0, 60) || "Untitled link",
-            age_days: ageDays,
-          })
         }
 
-        for (const todo of overdueTodos || []) {
-          const ageDays = Math.floor(
-            (now.getTime() - new Date(todo.due_date!).getTime()) / (1000 * 60 * 60 * 24)
-          )
-          reminderItems.push({
-            id: todo.id,
-            title: todo.content?.slice(0, 60) || "Untitled todo",
-            age_days: ageDays,
-          })
-        }
-
-        for (const pin of stalePins || []) {
-          const ageDays = Math.floor(
-            (now.getTime() - new Date(pin.created_at).getTime()) / (1000 * 60 * 60 * 24)
-          )
-          reminderItems.push({
-            id: pin.id,
-            title: pin.summary || pin.content?.slice(0, 60) || "Untitled pin",
-            age_days: ageDays,
-          })
-        }
-
-        const reminders = {
-          unread_links: unreadLinks?.length || 0,
-          overdue_todos: overdueTodos?.length || 0,
-          stale_pins: stalePins?.length || 0,
-          items: reminderItems,
-        }
-
-        // ─── 4. Digest (Pro only) ───────────────────────────────────
+        // ─── 9. Digest (Pro only) ──────────────────────────────────
         let digest = {
           one_liner: "",
           key_insights: [] as string[],
@@ -301,52 +230,42 @@ ${summaries}`,
         }
 
         if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
-          const { data: digestItems } = await supabase
-            .from("items")
-            .select("summary, content, type")
-            .eq("user_id", userId)
-            .gte("created_at", startDate)
-            .lte("created_at", endDate)
-            .limit(100)
-
-          if (digestItems && digestItems.length > 0) {
-            const summaries = digestItems
-              .map((i) => `[${i.type}] ${i.summary || i.content?.slice(0, 100)}`)
-              .join("\n")
-
-            const digestResult = await getOpenAI().chat.completions.create({
-              model: MODEL_MAP.analysis,
-              messages: [{
-                role: "user",
-                content: `Create a monthly digest summary of these personal knowledge captures.
-Return ONLY valid JSON with this structure:
-{
-  "one_liner": "A single catchy sentence summarizing the month",
-  "key_insights": ["insight 1", "insight 2", "insight 3"],
-  "full_summary": "A comprehensive paragraph summarizing the month's captures, patterns, and highlights"
-}
-
-Write in the same language as the content.
-
-Items:
-${summaries}`,
-              }],
+          const summaries = await fetchSummaries(supabase, userId, startDate, endDate)
+          if (summaries) {
+            const monthLabel = `${monthStart.getFullYear()}년 ${monthStart.getMonth() + 1}월`
+            digest = await generateMonthlyDigest(summaries, {
+              period: monthLabel,
+              totalCaptures: stats.total_captures,
+              activeDays: streak.total_active_days,
+              totalDays: daysInMonth,
+              peakHour: hourlyHeatmap.peak_hour,
+              currentStreak: streak.current_streak,
+              momChangePercent: momComparison?.change_percent,
             })
-
-            digest = safeJsonParse(digestResult.choices[0].message.content?.trim() || "", digest)
           }
         }
 
         // ─── Upsert report ──────────────────────────────────────────
-        const reportData = { stats, interests, reminders, digest }
+        const reportData: InsightReportData = {
+          stats,
+          interests,
+          reminders,
+          digest,
+          hourly_heatmap: hourlyHeatmap,
+          mom_comparison: momComparison,
+          streak,
+          productivity_score: productivityScore,
+          weekly_breakdown: weeklyBreakdown,
+        }
 
         await supabase.from("insight_reports").upsert(
           {
             user_id: userId,
             month: monthStr,
+            report_type: "monthly",
             report_data: reportData,
           },
-          { onConflict: "user_id,month" }
+          { onConflict: "user_id,month,report_type" }
         )
 
         processed++

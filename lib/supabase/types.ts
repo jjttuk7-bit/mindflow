@@ -112,8 +112,69 @@ export interface InsightReport {
   id: string
   user_id: string
   month: string
+  report_type: "weekly" | "monthly"
   report_data: InsightReportData
   created_at: string
+}
+
+export interface HourlyHeatmapData {
+  hourly_counts: Record<string, number>
+  peak_hour: number
+  peak_count: number
+}
+
+export interface MoMComparisonData {
+  previous_total: number
+  current_total: number
+  change_percent: number
+  new_topics: string[]
+  dropped_topics: string[]
+}
+
+export interface StreakSnapshotData {
+  current_streak: number
+  longest_streak: number
+  total_active_days: number
+  active_rate_percent: number
+}
+
+export interface ProductivityScoreData {
+  score: number
+  label: string
+  factors: string[]
+}
+
+export interface WeeklyBreakdownData {
+  week_start: string
+  week_end: string
+  total_captures: number
+  by_type: Record<string, number>
+  top_projects: string[]
+}
+
+export interface WeeklyInsightData {
+  stats: {
+    total_captures: number
+    by_type: Record<string, number>
+    by_source: Record<string, number>
+    daily_heatmap: Record<string, number>
+    top_projects: string[]
+    todos: { completed: number; pending: number }
+  }
+  hourly_heatmap: HourlyHeatmapData
+  streak: StreakSnapshotData
+  productivity_score?: ProductivityScoreData
+  reminders: {
+    unread_links: number
+    overdue_todos: number
+    stale_pins: number
+    items: Array<{ id: string; title: string; age_days: number }>
+  }
+  digest?: {
+    one_liner: string
+    key_insights: string[]
+    full_summary: string
+  }
 }
 
 export interface InsightReportData {
@@ -142,6 +203,11 @@ export interface InsightReportData {
     key_insights: string[]
     full_summary: string
   }
+  hourly_heatmap?: HourlyHeatmapData
+  mom_comparison?: MoMComparisonData
+  streak?: StreakSnapshotData
+  productivity_score?: ProductivityScoreData
+  weekly_breakdown?: WeeklyBreakdownData[]
 }
 
 export interface UserSettings {

@@ -370,7 +370,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Smart Folders */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Smart Folders
+            Quick Access
           </p>
           <div className="space-y-0.5">
             <button
@@ -443,7 +443,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Tags */}
         <div className="px-4">
           <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Collections
+            Tags
           </p>
           {tagCounts.length === 0 && (
             <p className="text-xs text-muted-foreground/50 px-2 italic">
@@ -520,7 +520,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <span className="flex items-center gap-2.5">
               <ListTodo className={`h-4 w-4 ${sidebarView === "todos" ? "text-primary" : "text-muted-foreground/50"}`} />
-              TODO
+              Todo
             </span>
             {pendingTodoCount > 0 && (
               <span className={`text-[11px] tabular-nums px-1.5 py-0.5 rounded-full ${

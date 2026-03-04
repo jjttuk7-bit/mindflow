@@ -2,16 +2,8 @@ import { getUser } from "@/lib/supabase/server"
 import { checkUsageLimit } from "@/lib/plans"
 import { rateLimit } from "@/lib/rate-limit"
 import { validate, exportSummarySchema } from "@/lib/validations"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
-
-let _genAI: GoogleGenerativeAI | null = null
-function getGenAI() {
-  if (!_genAI) {
-    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-  }
-  return _genAI
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -92,9 +84,6 @@ export async function POST(req: NextRequest) {
     })
     const contentString = contentLines.join("\n")
 
-    // Call Gemini to organize and summarize
-    const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
-
     const depthInstruction =
       depth === "brief"
         ? "Create a concise bullet-point summary. Group related items together under topic headings. Keep it scannable and brief."
@@ -109,8 +98,12 @@ IMPORTANT: Write the summary in the SAME LANGUAGE as the content. If the content
 Items (${items.length} total):
 ${contentString}`
 
-    const result = await model.generateContent(prompt)
-    const markdown = result.response.text().trim()
+    const result = await getOpenAI().chat.completions.create({
+      model: MODEL_MAP.summary,
+      messages: [{ role: "user", content: prompt }],
+    })
+
+    const markdown = result.choices[0].message.content?.trim() || ""
 
     return NextResponse.json({ markdown, item_count: items.length })
   } catch (err: unknown) {

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { NextRequest, NextResponse } from "next/server"
 import { PLAN_LIMITS } from "@/lib/plans"
 
@@ -8,14 +8,6 @@ function getServiceSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-}
-
-let _genAI: GoogleGenerativeAI | null = null
-function getGenAI() {
-  if (!_genAI) {
-    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-  }
-  return _genAI
 }
 
 function safeJsonParse<T>(text: string, fallback: T): T {
@@ -43,7 +35,6 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getServiceSupabase()
-    const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
 
     // Calculate last month's date range
     const now = new Date()
@@ -203,8 +194,11 @@ export async function POST(req: NextRequest) {
               .map((i) => `[${i.type}] ${i.summary || i.content?.slice(0, 100)}`)
               .join("\n")
 
-            const interestResult = await model.generateContent(
-              `Analyze these personal knowledge captures and identify topic patterns.
+            const interestResult = await getOpenAI().chat.completions.create({
+              model: MODEL_MAP.analysis,
+              messages: [{
+                role: "user",
+                content: `Analyze these personal knowledge captures and identify topic patterns.
 Return ONLY valid JSON with this structure:
 {
   "top_topics": ["topic1", "topic2", ...],
@@ -216,10 +210,11 @@ Return ONLY valid JSON with this structure:
 Write in the same language as the content.
 
 Items:
-${summaries}`
-            )
+${summaries}`,
+              }],
+            })
 
-            interests = safeJsonParse(interestResult.response.text().trim(), interests)
+            interests = safeJsonParse(interestResult.choices[0].message.content?.trim() || "", interests)
           }
         }
 
@@ -319,8 +314,11 @@ ${summaries}`
               .map((i) => `[${i.type}] ${i.summary || i.content?.slice(0, 100)}`)
               .join("\n")
 
-            const digestResult = await model.generateContent(
-              `Create a monthly digest summary of these personal knowledge captures.
+            const digestResult = await getOpenAI().chat.completions.create({
+              model: MODEL_MAP.analysis,
+              messages: [{
+                role: "user",
+                content: `Create a monthly digest summary of these personal knowledge captures.
 Return ONLY valid JSON with this structure:
 {
   "one_liner": "A single catchy sentence summarizing the month",
@@ -331,10 +329,11 @@ Return ONLY valid JSON with this structure:
 Write in the same language as the content.
 
 Items:
-${summaries}`
-            )
+${summaries}`,
+              }],
+            })
 
-            digest = safeJsonParse(digestResult.response.text().trim(), digest)
+            digest = safeJsonParse(digestResult.choices[0].message.content?.trim() || "", digest)
           }
         }
 

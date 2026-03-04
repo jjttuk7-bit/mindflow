@@ -1,10 +1,9 @@
 import { getUser } from "@/lib/supabase/server"
-import { generateEmbedding } from "@/lib/ai"
+import { generateEmbedding, getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { checkUsageLimit } from "@/lib/plans"
 import { withLogging } from "@/lib/logger"
 import { rateLimit } from "@/lib/rate-limit"
 import { validate, chatSchema } from "@/lib/validations"
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
@@ -76,12 +75,12 @@ export async function POST(req: NextRequest) {
     .order("created_at", { ascending: true })
     .limit(10)
 
-  // Build Gemini contents array from history
+  // Build OpenAI messages array from history
   const conversationHistory = (historyMessages || [])
     .slice(0, -1) // exclude the just-inserted user message (we add it separately)
     .map((msg: { role: string; content: string }) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: msg.content }],
+      role: msg.role as "user" | "assistant",
+      content: msg.content,
     }))
 
   // RAG: generate embedding and search for relevant items
@@ -143,10 +142,6 @@ export async function POST(req: NextRequest) {
     ? `\n[최근 저장한 항목]\n${recentItems.map((i: { type: string; summary: string | null; content: string }) => `- [${i.type}] ${i.summary || i.content.slice(0, 100)}`).join("\n")}`
     : ""
 
-  // Call Gemini with streaming
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-
   const systemPrompt = `당신은 DotLine의 AI 지식 동반자입니다. 사용자의 개인 지식 베이스를 기반으로 정보 검색부터 콘텐츠 생성, 비즈니스 지원까지 도움을 제공합니다.
 
 핵심 역할:
@@ -194,18 +189,20 @@ ${context ? `검색된 컨텍스트:\n${context}` : "지식 베이스에서 관�
           encoder.encode(`data: ${JSON.stringify({ type: "session", session_id: currentSessionId, sources: relevantItems })}\n\n`)
         )
 
-        const result = await model.generateContentStream({
-          contents: [
+        const completion = await getOpenAI().chat.completions.create({
+          model: MODEL_MAP.chat,
+          messages: [
+            { role: "system", content: systemPrompt },
             ...conversationHistory,
-            { role: "user", parts: [{ text: message }] },
+            { role: "user", content: message },
           ],
-          systemInstruction: { role: "user", parts: [{ text: systemPrompt }] },
+          stream: true,
         })
 
         let fullReply = ""
 
-        for await (const chunk of result.stream) {
-          const text = chunk.text()
+        for await (const chunk of completion) {
+          const text = chunk.choices[0]?.delta?.content || ""
           if (text) {
             fullReply += text
             controller.enqueue(

@@ -1,12 +1,20 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import OpenAI, { toFile } from "openai"
 
-let _genAI: GoogleGenerativeAI | null = null
-function getGenAI() {
-  if (!_genAI) {
-    _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+let _openai: OpenAI | null = null
+export function getOpenAI() {
+  if (!_openai) {
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
   }
-  return _genAI
+  return _openai
 }
+
+export const MODEL_MAP = {
+  tagging: "gpt-4.1-nano",
+  summary: "gpt-4o-mini",
+  chat: "gpt-4.1-mini",
+  content: "gpt-4o",
+  analysis: "gpt-4o",
+} as const
 
 export async function generateTags(
   content: string,
@@ -18,11 +26,6 @@ export async function generateTags(
   if (!content || content === "Image" || content === "Voice memo" || content.length < 2) {
     return []
   }
-
-  const model = getGenAI().getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0.3 },
-  })
 
   const freqSection = tagFrequencies?.length
     ? `\n[사용자의 기존 태그 - 사용 빈도순]\n${tagFrequencies.join(", ")}\n→ 기존 태그와 의미가 같으면 반드시 기존 태그를 그대로 사용. 새 태그는 기존에 해당하는 것이 정말 없을 때만.`
@@ -84,8 +87,13 @@ JSON 배열만 반환. 다른 텍스트 없이.
 
 콘텐츠: ${content}`
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text().trim()
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.tagging,
+    temperature: 0.3,
+    messages: [{ role: "user", content: prompt }],
+  })
+
+  const text = result.choices[0].message.content?.trim() || ""
 
   const banned = new Set(["일반", "기타", "메모", "general", "other", "misc", "note", "stuff", "image", "link", "voice", "text", "url", "사진", "음성", "링크"])
 
@@ -111,10 +119,11 @@ JSON 배열만 반환. 다른 텍스트 없이.
 export async function generateSummary(content: string): Promise<string | null> {
   if (content.length < 50) return null
 
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
-
-  const result = await model.generateContent(
-    `다음 콘텐츠를 한국어로 핵심 요약하세요.
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.summary,
+    messages: [{
+      role: "user",
+      content: `다음 콘텐츠를 한국어로 핵심 요약하세요.
 
 규칙:
 - 1~2문장, 최대 80자
@@ -123,22 +132,22 @@ export async function generateSummary(content: string): Promise<string | null> {
 - 원문이 한국어면 한국어로, 영어면 한국어로 번역 요약
 - 요약문만 반환. 다른 텍스트 없이.
 
-콘텐츠: ${content}`
-  )
+콘텐츠: ${content}`,
+    }],
+  })
 
-  return result.response.text().trim() || null
+  return result.choices[0].message.content?.trim() || null
 }
 
 export async function generateInsight(content: string, type: string): Promise<string | null> {
   if (!content || content.length < 10) return null
 
-  const model = getGenAI().getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0.7 },
-  })
-
-  const result = await model.generateContent(
-    `사용자가 저장한 콘텐츠를 읽고, 짧고 임팩트 있는 AI 코멘트를 달아주세요.
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.summary,
+    temperature: 0.7,
+    messages: [{
+      role: "user",
+      content: `사용자가 저장한 콘텐츠를 읽고, 짧고 임팩트 있는 AI 코멘트를 달아주세요.
 
 역할: 사용자의 지식 동반자. 공감하고, 연결하고, 격려하는 톤.
 
@@ -156,10 +165,11 @@ export async function generateInsight(content: string, type: string): Promise<st
 - 콘텐츠만 반환. 다른 텍스트 없이.
 
 콘텐츠 유형: ${type}
-콘텐츠: ${content}`
-  )
+콘텐츠: ${content}`,
+    }],
+  })
 
-  return result.response.text().trim() || null
+  return result.choices[0].message.content?.trim() || null
 }
 
 export async function generateLinkAnalysis(
@@ -170,13 +180,12 @@ export async function generateLinkAnalysis(
   const context = [ogTitle, ogDescription, url].filter(Boolean).join(" — ")
   if (!context || context.length < 10) return null
 
-  const model = getGenAI().getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: { temperature: 0.5 },
-  })
-
-  const result = await model.generateContent(
-    `URL과 메타데이터를 분석하여 이 링크의 핵심 내용을 정리해주세요.
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.summary,
+    temperature: 0.5,
+    messages: [{
+      role: "user",
+      content: `URL과 메타데이터를 분석하여 이 링크의 핵심 내용을 정리해주세요.
 
 정보:
 - URL: ${url}
@@ -194,20 +203,20 @@ ${ogDescription ? `- 설명: ${ogDescription}` : ""}
 - 친근한 톤 ("~이에요/~해요")
 - 마크다운 없이 플레인 텍스트만
 - 정보가 부족하면 URL 도메인과 경로에서 추론
-- 내용만 반환. 라벨("한 줄 요약:", "핵심:") 붙이지 마세요.`)
+- 내용만 반환. 라벨("한 줄 요약:", "핵심:") 붙이지 마세요.`,
+    }],
+  })
 
-  return result.response.text().trim() || null
+  return result.choices[0].message.content?.trim() || null
 }
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-embedding-001" })
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result = await model.embedContent({
-    content: { parts: [{ text }] },
-    outputDimensionality: 768,
-  } as any)
-  return result.embedding.values
+  const result = await getOpenAI().embeddings.create({
+    model: "text-embedding-3-small",
+    input: text,
+    dimensions: 768,
+  })
+  return result.data[0].embedding
 }
 
 export async function classifyProject(
@@ -215,8 +224,6 @@ export async function classifyProject(
   type: string,
   existingProjects: { id: string; name: string; samples?: string[] }[]
 ): Promise<{ action: "none" } | { action: "new"; name: string } | { action: "existing"; project_id: string }> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
-
   let prompt: string
   if (existingProjects.length === 0) {
     prompt = `당신은 프로젝트 분류 전문가입니다. 콘텐츠를 보고 새 프로젝트를 만들지 판단하세요.
@@ -264,8 +271,12 @@ JSON만 반환:
 콘텐츠: ${content}`
   }
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text().trim()
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.tagging,
+    messages: [{ role: "user", content: prompt }],
+  })
+
+  const text = result.choices[0].message.content?.trim() || ""
   try {
     return JSON.parse(text)
   } catch {
@@ -278,15 +289,18 @@ JSON만 반환:
 }
 
 export async function extractTodos(content: string): Promise<string[]> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
-
-  const prompt = `You are a TODO extractor. Given content, extract actionable TODO items.
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.tagging,
+    messages: [{
+      role: "user",
+      content: `You are a TODO extractor. Given content, extract actionable TODO items.
 Return ONLY a JSON array of strings. If there are no actionable items, return [].
 
-Content: ${content}`
+Content: ${content}`,
+    }],
+  })
 
-  const result = await model.generateContent(prompt)
-  const text = result.response.text().trim()
+  const text = result.choices[0].message.content?.trim() || ""
   try {
     return JSON.parse(text)
   } catch {
@@ -299,16 +313,13 @@ Content: ${content}`
 }
 
 export async function describeImage(base64: string, mimeType: string): Promise<string> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-pro" })
-
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType,
-        data: base64,
-      },
-    },
-    `이미지의 캡션을 생성하세요.
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.content,
+    messages: [{
+      role: "user",
+      content: [
+        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } },
+        { type: "text", text: `이미지의 캡션을 생성하세요.
 
 최우선 규칙: 이미지에 텍스트(손글씨, 인쇄, 숫자 등)가 있으면 해석하지 말고 그대로 옮겨 적으세요.
 
@@ -335,10 +346,12 @@ E. 텍스트 없는 일반 사진:
 절대 규칙:
 - 텍스트가 보이면 반드시 그대로 옮겨쓰기. 요약/해석/의역 금지.
 - "이 이미지는~" 같은 메타 설명 금지
-- 최대 150자. 한국어 응답. 캡션만 반환.`,
-  ])
+- 최대 150자. 한국어 응답. 캡션만 반환.` },
+      ],
+    }],
+  })
 
-  return result.response.text().trim()
+  return result.choices[0].message.content?.trim() || ""
 }
 
 export interface ScreenshotAnalysis {
@@ -356,16 +369,13 @@ export interface ScreenshotAnalysis {
 }
 
 export async function analyzeScreenshot(base64: string, mimeType: string): Promise<ScreenshotAnalysis> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.5-pro" })
-
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType,
-        data: base64,
-      },
-    },
-    `이 이미지를 분석하세요. 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+  const result = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.analysis,
+    messages: [{
+      role: "user",
+      content: [
+        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } },
+        { type: "text", text: `이 이미지를 분석하세요. 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "is_screenshot": true 또는 false (스크린샷/캡처 여부),
   "type": "tweet|chat|article|recipe|code|whiteboard|email|shopping|map|other" 중 하나,
@@ -385,10 +395,12 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
 - is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출
 - type은 스크린샷일 때만 유의미, 일반 사진이면 "other"
 - summary는 항상 한국어로 1~2문장
-- JSON만 반환하세요`,
-  ])
+- JSON만 반환하세요` },
+      ],
+    }],
+  })
 
-  const text = result.response.text().trim()
+  const text = result.choices[0].message.content?.trim() || ""
 
   try {
     return JSON.parse(text)
@@ -412,20 +424,17 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
 }
 
 export async function transcribeAudio(file: File): Promise<string> {
-  const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" })
-
   const arrayBuffer = await file.arrayBuffer()
-  const base64 = Buffer.from(arrayBuffer).toString("base64")
+  const audioFile = await toFile(
+    Buffer.from(arrayBuffer),
+    file.name || "audio.webm",
+    { type: file.type || "audio/webm" }
+  )
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: file.type || "audio/webm",
-        data: base64,
-      },
-    },
-    "Transcribe this audio accurately. Return ONLY the transcription text, nothing else. If the audio is in Korean, transcribe in Korean.",
-  ])
+  const result = await getOpenAI().audio.transcriptions.create({
+    model: "whisper-1",
+    file: audioFile,
+  })
 
-  return result.response.text().trim()
+  return result.text
 }

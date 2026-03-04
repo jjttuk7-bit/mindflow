@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/supabase/server"
 import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
+import { getOpenAI, MODEL_MAP } from "@/lib/ai"
 import { NextResponse } from "next/server"
 
 // GET: Retrieve profile
@@ -71,18 +72,17 @@ export async function POST() {
   const peakDay = Object.entries(dayCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "월"
   const peakHour = Object.entries(hourCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "9"
 
-  // AI thinking style analysis via Gemini
-  const { GoogleGenerativeAI } = await import("@google/generative-ai")
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-
+  // AI thinking style analysis
   const summaries = items
     .slice(0, 50)
     .map((i) => i.summary || i.content?.slice(0, 80))
     .join("\n")
 
-  const analysisResult = await model.generateContent(
-    `사용자가 최근 기록한 내용 요약 목록입니다. 이 사용자의 사고 성향과 관심 분야를 분석해주세요.
+  const analysisResult = await getOpenAI().chat.completions.create({
+    model: MODEL_MAP.analysis,
+    messages: [{
+      role: "user",
+      content: `사용자가 최근 기록한 내용 요약 목록입니다. 이 사용자의 사고 성향과 관심 분야를 분석해주세요.
 
 ${summaries}
 
@@ -92,12 +92,13 @@ JSON만 반환:
   "style_description": "사고 성향 한 줄 설명 (한국어)",
   "interests_summary": "관심 분야 요약 2~3문장 (한국어)",
   "growth_tip": "지식 관리 팁 한 줄 (한국어)"
-}`
-  )
+}`,
+    }],
+  })
 
   let analysis = { thinking_style: "분석형", style_description: "", interests_summary: "", growth_tip: "" }
   try {
-    const text = analysisResult.response.text().trim()
+    const text = analysisResult.choices[0].message.content?.trim() || ""
     const match = text.match(/\{[\s\S]*\}/)
     if (match) analysis = JSON.parse(match[0])
   } catch { /* use defaults */ }

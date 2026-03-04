@@ -24,6 +24,7 @@ import {
   Network,
   Bot,
   Layers,
+  Ghost,
 } from "lucide-react"
 import { useTheme } from "@/hooks/use-theme"
 import { DotLineLogo } from "@/components/dotline-logo"
@@ -189,8 +190,9 @@ const moreFeatures = [
   { icon: Network, title: "지식 맵 & 연결", description: "검색, 클러스터링, 유사도 조절로 항목 간 관계를 시각화합니다." },
   { icon: CheckSquare, title: "스마트 할 일", description: "AI가 액션 아이템을 자동 추출, 프로젝트별 관리." },
   { icon: Tag, title: "AI 프로젝트 분류", description: "콘텐츠 주제를 분석해 프로젝트에 자동 분류합니다." },
-  { icon: Zap, title: "인사이트 리포트", description: "주간/월간 리포트, 시간대 히트맵, 생산성 점수, 전월 대비 분석." },
+  { icon: Zap, title: "인사이트 리포트", description: "주간/월간 리포트, 활용률 분석, 지식 건강 점수, 생산성 추적." },
   { icon: Sparkles, title: "AI 프로필", description: "5축 성격 분석, 시간대 페르소나, 콘텐츠 다양성 점수, 성장 추적." },
+  { icon: Ghost, title: "AI 정리 가이드", description: "방치된 항목을 AI가 분석하고 아카이브·삭제·재방문을 추천합니다." },
 ]
 
 function FeaturesSection() {
@@ -429,7 +431,7 @@ const plans = [
     name: "Pro",
     price: "$9.99/월",
     desc: "무제한 AI + 고급 인사이트",
-    features: ["DL Agent 무제한", "콘텐츠 생성 & 비즈니스 지원", "5축 AI 프로필 & 성장 추적", "주간/월간 인사이트 리포트", "지식 맵 & 연결 시각화", "프로젝트 & 검색 무제한"],
+    features: ["DL Agent 무제한", "콘텐츠 생성 & 비즈니스 지원", "5축 AI 프로필 & 성장 추적", "주간/월간 인사이트 리포트", "지식 건강 점수 & AI 정리 가이드", "지식 맵 & 연결 시각화", "프로젝트 & 검색 무제한"],
     cta: "Pro 시작하기",
     highlight: true,
   },

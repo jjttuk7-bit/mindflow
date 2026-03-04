@@ -69,6 +69,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
             todos: data.extracted?.todos || [],
             people: data.extracted?.people || [],
             key_info: data.extracted?.key_info || [],
+            expiry: data.extracted?.expiry || undefined,
           })
         } else {
           if (!content.trim()) setContent(data.summary || data.content || "")
@@ -242,6 +243,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
                     todos: data.extracted?.todos || [],
                     people: data.extracted?.people || [],
                     key_info: data.extracted?.key_info || [],
+                    expiry: data.extracted?.expiry || undefined,
                   }
                 }
                 updateItem(item.id, { content: newContent })

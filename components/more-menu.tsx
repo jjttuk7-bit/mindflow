@@ -95,7 +95,7 @@ export function MoreMenu() {
         </button>
 
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
-          Settings
+          Features
         </p>
         <a href="/profile/ai" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <DotLineLogo className="h-5 w-5 text-muted-foreground/60" />

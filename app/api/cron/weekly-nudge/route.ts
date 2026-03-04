@@ -76,18 +76,18 @@ export async function GET(req: NextRequest) {
 
     // ── Stale item check ("아직 필요한가요?") ─────────────────────
     try {
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-      // Items not accessed in 30+ days (or never accessed and 30+ days old)
+      // Items not accessed in 7+ days (or never accessed and 7+ days old)
       const { data: staleItems } = await supabase
         .from("items")
         .select("id, content, summary, type")
         .eq("user_id", user_id)
         .eq("is_archived", false)
         .is("deleted_at", null)
-        .or(`last_accessed_at.is.null,last_accessed_at.lt.${thirtyDaysAgo.toISOString()}`)
-        .lt("created_at", thirtyDaysAgo.toISOString())
+        .or(`last_accessed_at.is.null,last_accessed_at.lt.${sevenDaysAgo.toISOString()}`)
+        .lt("created_at", sevenDaysAgo.toISOString())
         .order("created_at", { ascending: true })
         .limit(5)
 
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
           user_id,
           type: "action",
           title: "아직 필요한가요?",
-          content: `30일 이상 열어보지 않은 항목이 ${staleItems.length}개 있어요: ${preview}`,
+          content: `7일 이상 열어보지 않은 항목이 ${staleItems.length}개 있어요: ${preview}`,
           related_item_ids: staleItems.map((i) => i.id),
         })
 

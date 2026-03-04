@@ -29,8 +29,8 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   function getProjectName(projectId: string | null) {
-    if (!projectId) return "No Project"
-    return projects.find((p) => p.id === projectId)?.name || "Unknown Project"
+    if (!projectId) return "프로젝트 없음"
+    return projects.find((p) => p.id === projectId)?.name || "알 수 없는 프로젝트"
   }
 
   function getProjectColor(projectId: string | null) {
@@ -48,14 +48,14 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
     if (res.ok) {
       const todo = await res.json()
       addTodo(todo)
-      toast.success("Todo added")
+      toast.success("할 일이 추가되었습니다")
     }
     setNewContent("")
   }
 
   async function handleToggle(id: string, currentCompleted: boolean) {
     updateTodo(id, { is_completed: !currentCompleted })
-    toast.success(!currentCompleted ? "Completed" : "Marked active")
+    toast.success(!currentCompleted ? "완료되었습니다" : "진행 중으로 변경되었습니다")
     await fetch(`/api/todos/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -65,7 +65,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
 
   async function handleDelete(id: string) {
     removeTodo(id)
-    toast.success("Deleted")
+    toast.success("삭제되었습니다")
     await fetch(`/api/todos/${id}`, { method: "DELETE" })
   }
 
@@ -87,9 +87,9 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-display text-xl text-foreground">TODO</h2>
+              <h2 className="font-display text-xl text-foreground">Todo</h2>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {pendingCount} pending {pendingCount === 1 ? "task" : "tasks"}
+                {pendingCount}개의 할 일이 남아있습니다
               </p>
             </div>
           </div>
@@ -100,7 +100,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleAdd() }}
-              placeholder="Add a new todo..."
+              placeholder="새로운 할 일을 입력하세요..."
               className="flex-1 bg-muted/50 border border-border/60 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 transition-all"
             />
             <button
@@ -114,19 +114,22 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* Filter tabs */}
           <div className="flex gap-1 mb-6">
-            {(["all", "active", "completed"] as TodoFilter[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-sm capitalize transition-all duration-200 ${
-                  filter === f
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+            {(["all", "active", "completed"] as TodoFilter[]).map((f) => {
+              const label = f === "all" ? "전체" : f === "active" ? "진행 중" : "완료"
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition-all duration-200 ${
+                    filter === f
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -138,10 +141,10 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="text-center py-12">
               <p className="text-muted-foreground/60 text-sm">
                 {filter === "all"
-                  ? "No todos yet. Add one above!"
+                  ? "아직 할 일이 없습니다. 위에서 추가해보세요!"
                   : filter === "active"
-                  ? "No active todos."
-                  : "No completed todos."}
+                  ? "진행 중인 할 일이 없습니다."
+                  : "완료된 할 일이 없습니다."}
               </p>
             </div>
           )}
@@ -191,7 +194,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                     )}
                     <button
                       onClick={() => handleDelete(todo.id)}
-                      className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all opacity-0 group-hover:opacity-100"
+                      className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all md:opacity-0 md:group-hover:opacity-100"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

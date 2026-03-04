@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sparkles, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, X, ChevronDown, ChevronUp } from "lucide-react"
+import { Sparkles, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, Ghost, Wand2, X, ChevronDown, ChevronUp } from "lucide-react"
+import { CleanupGuide } from "./cleanup-guide"
 
 const typeLabels: Record<string, string> = {
   text: "텍스트",
@@ -39,12 +40,19 @@ interface BriefingData {
     current: number
     longest: number
   }
+  zombie?: {
+    links: number
+    todos: number
+    pins: number
+    total: number
+  }
 }
 
 export function DailyBriefing() {
   const [data, setData] = useState<BriefingData | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [showCleanup, setShowCleanup] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -71,7 +79,7 @@ export function DailyBriefing() {
 
   if (loading || dismissed || !data) return null
 
-  const { yesterday, todos, week, totalItems, streak } = data
+  const { yesterday, todos, week, totalItems, streak, zombie } = data
 
   return (
     <div className="relative rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-amber-accent/5 px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -105,7 +113,7 @@ export function DailyBriefing() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div className="grid grid-cols-4 gap-2 mb-3">
         {/* Yesterday */}
         <div className="rounded-lg bg-muted/40 px-3 py-2">
           <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5">어제</p>
@@ -132,6 +140,25 @@ export function DailyBriefing() {
             <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
           </p>
         </div>
+
+        {/* Zombie counter */}
+        {zombie && zombie.total > 0 && (
+          <div className="rounded-lg bg-muted/40 px-3 py-2 group relative cursor-default">
+            <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5 flex items-center gap-1">
+              <Ghost className="h-3 w-3" />
+              방치
+            </p>
+            <p className="text-lg font-bold text-foreground/80 leading-tight">
+              {zombie.total}
+              <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
+            </p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
+              <div className="rounded-lg bg-popover border border-border shadow-lg px-3 py-2 text-[11px] text-muted-foreground whitespace-nowrap">
+                링크 {zombie.links}개 · 할 일 {zombie.todos}개 · 핀 {zombie.pins}개
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Overdue warning */}
@@ -142,6 +169,17 @@ export function DailyBriefing() {
             기한이 지난 할 일이 {todos.overdue}개 있어요
           </span>
         </div>
+      )}
+
+      {/* Cleanup guide CTA */}
+      {zombie && zombie.total >= 5 && (
+        <button
+          onClick={() => setShowCleanup(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-primary/8 px-3 py-1.5 mb-3 text-[11px] text-primary hover:bg-primary/15 transition-colors"
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+          AI로 정리하기
+        </button>
       )}
 
       {/* Expandable details */}
@@ -241,6 +279,9 @@ export function DailyBriefing() {
           )}
         </div>
       )}
+
+      {/* Cleanup guide modal */}
+      {showCleanup && <CleanupGuide onClose={() => setShowCleanup(false)} />}
     </div>
   )
 }

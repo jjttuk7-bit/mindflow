@@ -6,6 +6,8 @@ import {
   gatherHourlyHeatmap,
   gatherStreakSnapshot,
   gatherReminders,
+  gatherUtilization,
+  gatherKnowledgeHealth,
   generateWeeklyDigest,
   generateProductivityScore,
   fetchSummaries,
@@ -103,6 +105,17 @@ export async function GET(req: NextRequest) {
           )
         }
 
+        // 7. Utilization
+        const utilization = await gatherUtilization(supabase, userId, startDate, endDate)
+
+        // 8. Knowledge Health (Pro only)
+        let knowledgeHealth: WeeklyInsightData["knowledge_health"] = undefined
+        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+          knowledgeHealth = await gatherKnowledgeHealth(
+            supabase, userId, startDate, endDate, utilization.rate
+          )
+        }
+
         const reportData: WeeklyInsightData = {
           stats,
           hourly_heatmap: hourlyHeatmap,
@@ -110,6 +123,8 @@ export async function GET(req: NextRequest) {
           productivity_score: productivityScore,
           reminders,
           digest,
+          utilization,
+          knowledge_health: knowledgeHealth,
         }
 
         await supabase.from("insight_reports").upsert(

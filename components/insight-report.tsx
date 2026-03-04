@@ -7,6 +7,7 @@ import type {
   ProductivityScoreData,
   MoMComparisonData,
   WeeklyBreakdownData,
+  WeeklyInsightData,
 } from "@/lib/supabase/types"
 import {
   BarChart,
@@ -36,6 +37,9 @@ import {
   Gauge,
   ArrowUpDown,
   CalendarDays,
+  Recycle,
+  Heart,
+  Ghost,
 } from "lucide-react"
 
 const TYPE_COLORS: Record<string, string> = {
@@ -726,6 +730,126 @@ function InterestsSection({ interests }: { interests: InsightReportData["interes
   )
 }
 
+// ─── Utilization Section ───────────────────────────────────────────
+
+function UtilizationSection({ data }: { data: NonNullable<WeeklyInsightData["utilization"]> }) {
+  const deg = (data.rate / 100) * 360
+  const color = data.rate >= 70 ? "var(--sage)" : data.rate >= 40 ? "var(--primary)" : "var(--amber-accent)"
+
+  return (
+    <SectionCard title="활용률" icon={<Recycle className="h-4 w-4 text-sage" />}>
+      <div className="flex items-center gap-6">
+        <div
+          className="relative w-24 h-24 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            background: `conic-gradient(${color} ${deg}deg, var(--muted) ${deg}deg)`,
+          }}
+        >
+          <div className="w-[76px] h-[76px] rounded-full bg-card flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-2xl font-display tabular-nums" style={{ color }}>
+                {data.rate}%
+              </p>
+              <p className="text-[10px] text-muted-foreground">활용률</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">아카이브</span>
+            <span className="text-foreground/70 tabular-nums">{data.archived}개</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">연결</span>
+            <span className="text-foreground/70 tabular-nums">{data.connected}개</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">할 일 완료</span>
+            <span className="text-foreground/70 tabular-nums">{data.todos_completed}개</span>
+          </div>
+          <div className="border-t border-border/40 pt-1.5 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">전체 아이템</span>
+            <span className="text-foreground/70 tabular-nums">{data.total_items}개</span>
+          </div>
+        </div>
+      </div>
+    </SectionCard>
+  )
+}
+
+// ─── Knowledge Health Section ─────────────────────────────────────
+
+const HEALTH_FACTOR_LABELS: Record<string, { label: string; max: number }> = {
+  capture_consistency: { label: "캡처 꾸준함", max: 25 },
+  organization: { label: "정리 상태", max: 25 },
+  utilization: { label: "활용률", max: 20 },
+  diversity: { label: "다양성", max: 15 },
+  connectivity: { label: "연결성", max: 15 },
+}
+
+function KnowledgeHealthSection({ data }: { data: NonNullable<WeeklyInsightData["knowledge_health"]> }) {
+  const deg = (data.score / 100) * 360
+  const color = data.score >= 80 ? "var(--sage)" : data.score >= 60 ? "var(--primary)" : data.score >= 40 ? "var(--amber-accent)" : "var(--dusty-rose)"
+
+  return (
+    <SectionCard title="지식 관리 건강 점수" icon={<Heart className="h-4 w-4 text-dusty-rose" />}>
+      <div className="flex items-center gap-6 mb-5">
+        <div
+          className="relative w-28 h-28 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            background: `conic-gradient(${color} ${deg}deg, var(--muted) ${deg}deg)`,
+          }}
+        >
+          <div className="w-[88px] h-[88px] rounded-full bg-card flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-3xl font-display tabular-nums" style={{ color }}>
+                {data.score}
+              </p>
+              <p className="text-[10px] text-muted-foreground">{data.grade}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 space-y-2.5">
+          {Object.entries(data.factors).map(([key, value]) => {
+            const info = HEALTH_FACTOR_LABELS[key]
+            if (!info) return null
+            const pct = Math.round((value / info.max) * 100)
+            return (
+              <div key={key}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] text-muted-foreground">{info.label}</span>
+                  <span className="text-[11px] text-foreground/60 tabular-nums">{value}/{info.max}</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{ width: `${pct}%`, backgroundColor: color }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      {data.tips.length > 0 && (
+        <div className="rounded-lg bg-primary/5 p-3">
+          <p className="text-xs font-medium text-primary mb-1.5 flex items-center gap-1">
+            <Lightbulb className="h-3 w-3" /> 개선 팁
+          </p>
+          <ul className="space-y-1">
+            {data.tips.map((tip, i) => (
+              <li key={i} className="text-xs text-foreground/70 flex items-start gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </SectionCard>
+  )
+}
+
 // ─── Main Component ────────────────────────────────────────────────
 
 export function InsightReport({
@@ -779,7 +903,23 @@ export function InsightReport({
         </ProGate>
       ) : null}
 
-      {/* 5. MoM Comparison (Pro, monthly only) */}
+      {/* 5. Utilization */}
+      {(data as unknown as WeeklyInsightData).utilization && (
+        <UtilizationSection data={(data as unknown as WeeklyInsightData).utilization!} />
+      )}
+
+      {/* 6. Knowledge Health (Pro) */}
+      {(data as unknown as WeeklyInsightData).knowledge_health ? (
+        isPro ? (
+          <KnowledgeHealthSection data={(data as unknown as WeeklyInsightData).knowledge_health!} />
+        ) : (
+          <ProGate>
+            <KnowledgeHealthSection data={(data as unknown as WeeklyInsightData).knowledge_health!} />
+          </ProGate>
+        )
+      ) : null}
+
+      {/* 7. MoM Comparison (Pro, monthly only) */}
       {!isWeekly && (
         data.mom_comparison ? (
           isPro ? (

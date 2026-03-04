@@ -69,6 +69,43 @@ export async function GET() {
 
     const streak = streakData || { current_streak: 0, longest_streak: 0, last_active_date: null }
 
+    // 8. Zombie items count
+    const thirtyDaysAgo = new Date(todayStart)
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const fourteenDaysAgo = new Date(todayStart)
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+    const sevenDaysAgo = new Date(todayStart)
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const { count: zombieLinksCount } = await supabase
+      .from("items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("type", "link")
+      .eq("is_archived", false)
+      .is("deleted_at", null)
+      .lte("created_at", thirtyDaysAgo.toISOString())
+      .lte("updated_at", sevenDaysAgo.toISOString())
+
+    const { count: zombieTodosCount } = await supabase
+      .from("todos")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_completed", false)
+      .lte("created_at", fourteenDaysAgo.toISOString())
+
+    const { count: zombiePinsCount } = await supabase
+      .from("items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_pinned", true)
+      .is("deleted_at", null)
+      .lte("created_at", thirtyDaysAgo.toISOString())
+
+    const zombieLinks = zombieLinksCount || 0
+    const zombieTodos = zombieTodosCount || 0
+    const zombiePins = zombiePinsCount || 0
+
     // Build type counts
     const yesterdayCounts: Record<string, number> = {}
     for (const item of yesterdayItems || []) {
@@ -133,6 +170,12 @@ export async function GET() {
       streak: {
         current: streak.current_streak,
         longest: streak.longest_streak,
+      },
+      zombie: {
+        links: zombieLinks,
+        todos: zombieTodos,
+        pins: zombiePins,
+        total: zombieLinks + zombieTodos + zombiePins,
       },
     })
   } catch (err: unknown) {

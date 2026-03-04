@@ -192,6 +192,25 @@ export interface WeeklyInsightData {
     key_insights: string[]
     full_summary: string
   }
+  utilization?: {
+    total_items: number
+    archived: number
+    connected: number
+    todos_completed: number
+    rate: number
+  }
+  knowledge_health?: {
+    score: number
+    grade: string
+    factors: {
+      capture_consistency: number
+      organization: number
+      utilization: number
+      diversity: number
+      connectivity: number
+    }
+    tips: string[]
+  }
 }
 
 export interface InsightReportData {
@@ -308,7 +327,7 @@ export interface UserStreak {
   updated_at: string
 }
 
-export type NudgeType = "connection" | "resurface" | "trend" | "action" | "expiry"
+export type NudgeType = "connection" | "resurface" | "trend" | "action" | "expiry" | "zombie"
 
 export interface Nudge {
   id: string

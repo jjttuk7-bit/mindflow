@@ -440,6 +440,206 @@ ${summaries}`,
   })
 }
 
+// ─── Utilization ──────────────────────────────────────────────────
+
+export async function gatherUtilization(
+  supabase: SupabaseClient,
+  userId: string,
+  startDate: string,
+  endDate: string
+) {
+  // Total items created in the period
+  const { count: totalItems } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  // Archived items (read and organized)
+  const { count: archived } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_archived", true)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  // Items that have connections
+  const { data: connectedItems } = await supabase
+    .from("item_connections")
+    .select("source_id")
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  // Filter connections belonging to this user's items
+  const connectedIds = new Set(
+    (connectedItems || []).map((c) => c.source_id)
+  )
+  // Count unique connected items — approximate by counting source_ids
+  const connected = connectedIds.size
+
+  // Completed todos in the period
+  const { count: todosCompleted } = await supabase
+    .from("todos")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_completed", true)
+    .gte("updated_at", startDate)
+    .lte("updated_at", endDate)
+
+  const total = totalItems || 0
+  const arch = archived || 0
+  const comp = todosCompleted || 0
+  const rate = total > 0 ? Math.round(((arch + connected + comp) / total) * 100) : 0
+
+  return {
+    total_items: total,
+    archived: arch,
+    connected,
+    todos_completed: comp,
+    rate: Math.min(rate, 100),
+  }
+}
+
+// ─── Knowledge Health Score ───────────────────────────────────────
+
+export async function gatherKnowledgeHealth(
+  supabase: SupabaseClient,
+  userId: string,
+  startDate: string,
+  endDate: string,
+  utilizationRate: number
+) {
+  // 1. Capture consistency (25 points): days with at least 1 capture
+  const { data: captureItems } = await supabase
+    .from("items")
+    .select("created_at")
+    .eq("user_id", userId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  const captureDays = new Set(
+    (captureItems || []).map((i) => i.created_at.slice(0, 10))
+  )
+  // 5+ days out of 7 = max score
+  const captureConsistency = Math.min(Math.round((captureDays.size / 5) * 25), 25)
+
+  // 2. Organization (25 points): zombie ratio — lower is better
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+
+  const { count: totalAll } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .is("deleted_at", null)
+
+  const { count: zombieLinks } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("type", "link")
+    .eq("is_archived", false)
+    .is("deleted_at", null)
+    .lte("created_at", thirtyDaysAgo.toISOString())
+    .lte("updated_at", sevenDaysAgo.toISOString())
+
+  const { count: zombieTodos } = await supabase
+    .from("todos")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_completed", false)
+    .lte("created_at", fourteenDaysAgo.toISOString())
+
+  const { count: zombiePins } = await supabase
+    .from("items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_pinned", true)
+    .is("deleted_at", null)
+    .lte("created_at", thirtyDaysAgo.toISOString())
+
+  const totalCount = totalAll || 1
+  const zombieCount = (zombieLinks || 0) + (zombieTodos || 0) + (zombiePins || 0)
+  const zombieRatio = zombieCount / totalCount
+  const organization = Math.round((1 - Math.min(zombieRatio, 1)) * 25)
+
+  // 3. Utilization (20 points)
+  const utilization = Math.round((utilizationRate / 100) * 20)
+
+  // 4. Diversity (15 points): from AI profile diversity_score
+  const { data: settings } = await supabase
+    .from("user_settings")
+    .select("ai_profile")
+    .eq("user_id", userId)
+    .single()
+
+  const diversityScore = (settings?.ai_profile as Record<string, unknown>)?.diversity_score as
+    | { score: number }
+    | undefined
+  const diversity = diversityScore
+    ? Math.round((Math.min(diversityScore.score, 100) / 100) * 15)
+    : 8 // default mid-range
+
+  // 5. Connectivity (15 points): ratio of items with connections
+  const { count: connectedCount } = await supabase
+    .from("item_connections")
+    .select("source_id", { count: "exact", head: true })
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  const connectionRatio = (captureItems?.length || 1) > 0
+    ? (connectedCount || 0) / (captureItems?.length || 1)
+    : 0
+  const connectivity = Math.round(Math.min(connectionRatio, 1) * 15)
+
+  const score = captureConsistency + organization + utilization + diversity + connectivity
+
+  let grade: string
+  if (score >= 90) grade = "훌륭해요!"
+  else if (score >= 70) grade = "잘하고 있어요"
+  else if (score >= 50) grade = "조금 더 신경 써볼까요?"
+  else grade = "함께 정리해볼까요?"
+
+  // Generate tips based on lowest factors
+  const tips: string[] = []
+  const factors = [
+    { name: "캡처 꾸준함", score: captureConsistency, max: 25 },
+    { name: "정리 상태", score: organization, max: 25 },
+    { name: "활용률", score: utilization, max: 20 },
+    { name: "다양성", score: diversity, max: 15 },
+    { name: "연결성", score: connectivity, max: 15 },
+  ]
+  const sorted = [...factors].sort((a, b) => (a.score / a.max) - (b.score / b.max))
+
+  for (const f of sorted.slice(0, 2)) {
+    const ratio = f.score / f.max
+    if (ratio < 0.5) {
+      if (f.name === "캡처 꾸준함") tips.push("매일 조금씩이라도 기록하는 습관을 만들어보세요")
+      else if (f.name === "정리 상태") tips.push("오래된 항목을 아카이브하거나 삭제해서 정리해보세요")
+      else if (f.name === "활용률") tips.push("저장한 내용을 다시 읽고 아카이브로 정리해보세요")
+      else if (f.name === "다양성") tips.push("다양한 주제의 콘텐츠를 탐색해보세요")
+      else if (f.name === "연결성") tips.push("관련 있는 항목들을 연결해서 지식 네트워크를 만들어보세요")
+    }
+  }
+
+  return {
+    score,
+    grade,
+    factors: {
+      capture_consistency: captureConsistency,
+      organization,
+      utilization,
+      diversity,
+      connectivity,
+    },
+    tips,
+  }
+}
+
 // ─── Summaries text builder ────────────────────────────────────────
 
 export async function fetchSummaries(

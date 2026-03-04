@@ -71,6 +71,68 @@ export async function GET(req: NextRequest) {
     } catch (err) {
       console.error(`Weekly nudge error for user ${user_id}:`, err)
     }
+
+    // ── Zombie item detection ──────────────────────────────────────
+    try {
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      const fourteenDaysAgo = new Date()
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+      // Zombie links: unarchived links older than 30 days, not touched in 7 days
+      const { count: zombieLinks } = await supabase
+        .from("items")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user_id)
+        .eq("type", "link")
+        .eq("is_archived", false)
+        .is("deleted_at", null)
+        .lte("created_at", thirtyDaysAgo.toISOString())
+        .lte("updated_at", sevenDaysAgo.toISOString())
+
+      // Zombie todos: incomplete todos older than 14 days
+      const { count: zombieTodos } = await supabase
+        .from("todos")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user_id)
+        .eq("is_completed", false)
+        .lte("created_at", fourteenDaysAgo.toISOString())
+
+      // Zombie pins: pinned items older than 30 days
+      const { count: zombiePins } = await supabase
+        .from("items")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user_id)
+        .eq("is_pinned", true)
+        .is("deleted_at", null)
+        .lte("created_at", thirtyDaysAgo.toISOString())
+
+      const zLinks = zombieLinks || 0
+      const zTodos = zombieTodos || 0
+      const zPins = zombiePins || 0
+      const zombieTotal = zLinks + zTodos + zPins
+
+      if (zombieTotal >= 3) {
+        const parts: string[] = []
+        if (zLinks > 0) parts.push(`읽지 않은 링크 ${zLinks}개`)
+        if (zTodos > 0) parts.push(`미완료 할 일 ${zTodos}개`)
+        if (zPins > 0) parts.push(`오래된 핀 ${zPins}개`)
+
+        await supabase.from("nudges").insert({
+          user_id,
+          type: "zombie",
+          title: "\u{1F47B} 잊힌 항목이 있어요",
+          content: `${parts.join(", ")}가 방치되고 있어요`,
+          related_item_ids: [],
+        })
+
+        nudgesCreated++
+      }
+    } catch (err) {
+      console.error(`Zombie nudge error for user ${user_id}:`, err)
+    }
   }
 
   return NextResponse.json({ nudgesCreated })

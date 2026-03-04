@@ -486,8 +486,9 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
 }
 
 규칙:
-- is_screenshot=false이면 일반 사진: content에 짧은 설명, extracted는 모두 빈 배열, expiry.detected=false
-- is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출
+- 이미지에 텍스트(손글씨, 메모, 포스트잇, 화이트보드, 영수증, 명함, 인쇄물 등)가 보이면 is_screenshot=true로 처리하고 content에 원문 텍스트를 그대로 추출. 해석/요약 금지.
+- is_screenshot=false는 텍스트가 전혀 없는 순수 사진(풍경, 음식, 셀피 등)에만 사용. content에 짧은 설명, extracted는 모두 빈 배열, expiry.detected=false
+- is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출 (줄바꿈 포함, 의역/요약 금지)
 - type은 스크린샷일 때만 유의미, 일반 사진이면 "other"
 - summary는 항상 한국어로 1~2문장
 - expiry: 기프티콘, 쿠폰, 할인권, 상품권, 티켓, 바우처, 멤버십, 보증서 등 유효기간이 있는 콘텐츠를 감지. detected=true이면 나머지 필드를 최대한 추출.

@@ -14,6 +14,8 @@ function formatTime(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`
 }
 
+const MAX_DURATION = 5 * 60 // 5 minutes
+
 export function VoiceRecorder({ onRecorded, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<"idle" | "recording" | "recorded">("idle")
   const [elapsed, setElapsed] = useState(0)
@@ -62,7 +64,13 @@ export function VoiceRecorder({ onRecorded, disabled }: VoiceRecorderProps) {
       setState("recording")
       setElapsed(0)
       timerRef.current = setInterval(() => {
-        setElapsed((prev) => prev + 1)
+        setElapsed((prev) => {
+          if (prev + 1 >= MAX_DURATION) {
+            stopRecording()
+            return prev
+          }
+          return prev + 1
+        })
       }, 1000)
     } catch {
       // Microphone permission denied
@@ -133,8 +141,11 @@ export function VoiceRecorder({ onRecorded, disabled }: VoiceRecorderProps) {
         </button>
         <p className="text-sm font-mono text-destructive tabular-nums">
           {formatTime(elapsed)}
+          <span className="text-muted-foreground/40"> / {formatTime(MAX_DURATION)}</span>
         </p>
-        <p className="text-xs text-muted-foreground/50">Recording...</p>
+        <p className="text-xs text-muted-foreground/50">
+          {elapsed >= MAX_DURATION - 30 ? `${MAX_DURATION - elapsed}초 남음` : "Recording..."}
+        </p>
       </div>
     )
   }

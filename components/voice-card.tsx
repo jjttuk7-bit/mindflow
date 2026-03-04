@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Play, Pause } from "lucide-react"
+import { Play, Pause, Copy, Check, Share2, Download } from "lucide-react"
 
 interface VoiceCardProps {
   fileUrl: string
@@ -89,10 +89,89 @@ export function VoiceCard({ fileUrl, duration, transcript }: VoiceCardProps) {
 
       {/* Transcript */}
       {transcript && (
-        <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-foreground/90">
-          {transcript}
-        </p>
+        <div className="space-y-2">
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-foreground/90">
+            {transcript}
+          </p>
+
+          {/* Transcript actions */}
+          <div className="flex items-center gap-1 pt-1">
+            <CopyButton text={transcript} />
+            <ShareButton text={transcript} />
+            <DownloadButton text={transcript} duration={duration} />
+          </div>
+        </div>
       )}
     </div>
+  )
+}
+
+/* ── Copy button ─────────────────────────────────────── */
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+    >
+      {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+      {copied ? "복사됨" : "복사"}
+    </button>
+  )
+}
+
+/* ── Share button ─────────────────────────────────────── */
+function ShareButton({ text }: { text: string }) {
+  async function handleShare() {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text })
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      await navigator.clipboard.writeText(text)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+    >
+      <Share2 className="h-3 w-3" />
+      공유
+    </button>
+  )
+}
+
+/* ── Download as TXT ─────────────────────────────────── */
+function DownloadButton({ text, duration }: { text: string; duration: number }) {
+  function handleDownload() {
+    const header = `[DotLine 음성 메모 전사]\n녹음 길이: ${Math.floor(duration / 60)}분 ${Math.floor(duration % 60)}초\n${"─".repeat(30)}\n\n`
+    const blob = new Blob([header + text], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `dotline-voice-${new Date().toISOString().slice(0, 10)}.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+    >
+      <Download className="h-3 w-3" />
+      다운로드
+    </button>
   )
 }

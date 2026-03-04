@@ -89,7 +89,7 @@ export function SwipeableCard({ children, onSwipeLeft, onSwipeRight, onLongPress
   const progress = Math.min(absX / 80, 1)
 
   return (
-    <div className="relative overflow-hidden rounded-xl md:overflow-visible">
+    <div className={`relative rounded-xl ${swiping ? "overflow-hidden" : ""} md:overflow-visible`}>
       {deltaX < -10 && (
         <div className="absolute inset-0 flex items-center justify-end px-6 bg-destructive/10 rounded-xl">
           <Archive className={`h-5 w-5 text-destructive transition-opacity ${progress >= 1 ? "opacity-100" : "opacity-40"}`} />

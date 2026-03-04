@@ -7,6 +7,13 @@ import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
 import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu"
 import { VoiceCard } from "@/components/voice-card"
 import { VoiceMeta } from "@/lib/supabase/types"
 import { useStore } from "@/lib/store"
@@ -122,7 +129,6 @@ export function FeedCard({
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedLoaded, setRelatedLoaded] = useState(false)
   const [showProjectMenu, setShowProjectMenu] = useState(false)
-  const projectMenuRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { projects } = useStore()
   const config = typeConfig[item.type] ?? typeConfig.text
@@ -221,20 +227,8 @@ export function FeedCard({
     setEditing(false)
   }
 
-  // Close project menu on click outside
-  useEffect(() => {
-    if (!showProjectMenu) return
-    function handleClick(e: MouseEvent) {
-      if (projectMenuRef.current && !projectMenuRef.current.contains(e.target as Node)) {
-        setShowProjectMenu(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [showProjectMenu])
 
   async function handleMoveToProject(projectId: string | null) {
-    setShowProjectMenu(false)
     const prevProjectId = item.project_id
     onUpdate(item.id, { project_id: projectId } as Partial<Item>)
     try {
@@ -533,57 +527,53 @@ export function FeedCard({
                 <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
               </button>
               <ShareButton item={item} />
-              <div className="relative" ref={projectMenuRef}>
-                <button
-                  onClick={() => setShowProjectMenu(!showProjectMenu)}
-                  className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                    item.project_id
-                      ? "text-sage bg-sage/10"
-                      : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
-                  }`}
-                  title="프로젝트 이동"
-                  aria-label="Move to project"
-                >
-                  <FolderOpen className="h-3 w-3" />
-                </button>
-                {showProjectMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-44 rounded-lg border border-border/60 bg-popover shadow-lg z-50 py-1">
-                    <p className="px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
-                      Move to
-                    </p>
-                    {item.project_id && (
-                      <button
-                        onClick={() => handleMoveToProject(null)}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent transition-colors"
-                      >
-                        <X className="h-3 w-3" />
-                        Remove from project
-                      </button>
-                    )}
-                    {projects.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => handleMoveToProject(p.id)}
-                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
-                          item.project_id === p.id
-                            ? "text-primary bg-primary/5 font-medium"
-                            : "text-foreground/70 hover:bg-accent"
-                        }`}
-                      >
-                        <span
-                          className="w-2 h-2 rounded-full shrink-0"
-                          style={{ backgroundColor: p.color }}
-                        />
-                        <span className="truncate">{p.name}</span>
-                        {item.project_id === p.id && <Check className="h-3 w-3 ml-auto shrink-0" />}
-                      </button>
-                    ))}
-                    {projects.length === 0 && (
-                      <p className="px-3 py-1.5 text-xs text-muted-foreground/50 italic">No projects</p>
-                    )}
-                  </div>
-                )}
-              </div>
+              <DropdownMenu open={showProjectMenu} onOpenChange={setShowProjectMenu}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                      item.project_id
+                        ? "text-sage bg-sage/10"
+                        : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
+                    }`}
+                    title="프로젝트 이동"
+                    aria-label="Move to project"
+                  >
+                    <FolderOpen className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuLabel className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
+                    Move to
+                  </DropdownMenuLabel>
+                  {item.project_id && (
+                    <DropdownMenuItem onClick={() => handleMoveToProject(null)} className="text-xs text-muted-foreground">
+                      <X className="h-3 w-3" />
+                      Remove from project
+                    </DropdownMenuItem>
+                  )}
+                  {projects.map((p) => (
+                    <DropdownMenuItem
+                      key={p.id}
+                      onClick={() => handleMoveToProject(p.id)}
+                      className={`text-xs ${
+                        item.project_id === p.id
+                          ? "text-primary font-medium"
+                          : "text-foreground/70"
+                      }`}
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: p.color }}
+                      />
+                      <span className="truncate">{p.name}</span>
+                      {item.project_id === p.id && <Check className="h-3 w-3 ml-auto shrink-0" />}
+                    </DropdownMenuItem>
+                  ))}
+                  {projects.length === 0 && (
+                    <p className="px-3 py-1.5 text-xs text-muted-foreground/50 italic">No projects</p>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <button
                 onClick={handleArchive}
                 className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"

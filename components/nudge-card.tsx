@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { Nudge } from "@/lib/supabase/types"
-import { Sparkles, Link2, Clock, TrendingUp, CheckSquare, X } from "lucide-react"
+import { Sparkles, Link2, Clock, TrendingUp, CheckSquare, Gift, X } from "lucide-react"
 
 const nudgeIcons: Record<string, React.ReactNode> = {
   connection: <Link2 className="h-4 w-4 text-primary" />,
   resurface: <Clock className="h-4 w-4 text-terracotta" />,
   trend: <TrendingUp className="h-4 w-4 text-sage" />,
   action: <CheckSquare className="h-4 w-4 text-dusty-rose" />,
+  expiry: <Gift className="h-4 w-4 text-amber-accent" />,
 }
 
 export function NudgeCards() {

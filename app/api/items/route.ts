@@ -102,6 +102,35 @@ export async function POST(req: NextRequest) {
       if (result.embedding) {
         await autoConnect(itemId, result.embedding, supa)
       }
+
+      // Extract expiry info from screenshot analysis
+      if (itemType === "image") {
+        const { data: currentItem } = await supa
+          .from("items")
+          .select("metadata")
+          .eq("id", itemId)
+          .single()
+        const currentMeta = currentItem?.metadata as Record<string, unknown> | null
+        const screenshot = currentMeta?.screenshot as Record<string, unknown> | undefined
+        const expiry = screenshot?.expiry as Record<string, unknown> | undefined
+        if (expiry?.detected && expiry.expiry_date) {
+          await supa
+            .from("items")
+            .update({
+              metadata: {
+                ...currentMeta,
+                expiry: {
+                  expiry_date: expiry.expiry_date as string,
+                  expiry_type: (expiry.expiry_type as string) || "other",
+                  vendor: (expiry.vendor as string) || undefined,
+                  amount: (expiry.amount as string) || undefined,
+                  barcode: (expiry.barcode as string) || undefined,
+                },
+              },
+            })
+            .eq("id", itemId)
+        }
+      }
     } catch (e) {
       console.error("AI enrichment failed:", e)
     }

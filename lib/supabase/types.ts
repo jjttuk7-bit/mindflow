@@ -45,11 +45,28 @@ export interface ScreenshotData {
   todos: string[]
   people: string[]
   key_info: string[]
+  expiry?: {
+    detected: boolean
+    expiry_date: string
+    expiry_type: string
+    vendor: string
+    amount: string
+    barcode: string
+  }
+}
+
+export interface ExpiryMeta {
+  expiry_date: string        // "2026-06-30" ISO date
+  expiry_type: "coupon" | "gift_card" | "ticket" | "membership" | "warranty" | "other"
+  vendor?: string            // "스타벅스", "배민" 등
+  amount?: string            // "5,000원"
+  barcode?: string           // 바코드/PIN (텍스트 추출)
 }
 
 export interface ImageMeta {
   image_url: string
   screenshot?: ScreenshotData
+  expiry?: ExpiryMeta
 }
 
 export interface VoiceMeta {
@@ -291,7 +308,7 @@ export interface UserStreak {
   updated_at: string
 }
 
-export type NudgeType = "connection" | "resurface" | "trend" | "action"
+export type NudgeType = "connection" | "resurface" | "trend" | "action" | "expiry"
 
 export interface Nudge {
   id: string

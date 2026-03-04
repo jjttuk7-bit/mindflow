@@ -443,6 +443,14 @@ export interface ScreenshotAnalysis {
     todos: string[]
     people: string[]
     key_info: string[]
+    expiry?: {
+      detected: boolean
+      expiry_date: string
+      expiry_type: string
+      vendor: string
+      amount: string
+      barcode: string
+    }
   }
 }
 
@@ -465,7 +473,15 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
     "dates": ["날짜/시간 정보"],
     "todos": ["해야 할 일/액션 아이템"],
     "people": ["언급된 사람/이름"],
-    "key_info": ["핵심 정보 (가격, 장소, 전화번호 등)"]
+    "key_info": ["핵심 정보 (가격, 장소, 전화번호 등)"],
+    "expiry": {
+      "detected": true/false,
+      "expiry_date": "YYYY-MM-DD",
+      "expiry_type": "coupon|gift_card|ticket|membership|warranty|other",
+      "vendor": "브랜드명",
+      "amount": "금액",
+      "barcode": "바코드/일련번호"
+    }
   }
 }
 
@@ -474,6 +490,8 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
 - is_screenshot=true이면: content에 이미지의 모든 텍스트를 원문 그대로 추출
 - type은 스크린샷일 때만 유의미, 일반 사진이면 "other"
 - summary는 항상 한국어로 1~2문장
+- expiry: 기프티콘, 쿠폰, 할인권, 상품권, 티켓, 바우처, 멤버십, 보증서 등 유효기간이 있는 콘텐츠를 감지.
+  detected=true이면 나머지 필드를 최대한 추출. 날짜를 찾을 수 없으면 expiry_date는 빈 문자열.
 - JSON만 반환하세요` },
       ],
     }],
@@ -497,7 +515,7 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
       type: "other",
       content: text.slice(0, 200),
       summary: text.slice(0, 50),
-      extracted: { urls: [], dates: [], todos: [], people: [], key_info: [] },
+      extracted: { urls: [], dates: [], todos: [], people: [], key_info: [], expiry: { detected: false, expiry_date: "", expiry_type: "other", vendor: "", amount: "", barcode: "" } },
     }
   }
 }

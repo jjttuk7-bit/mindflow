@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Item, LinkMeta, ImageMeta, ItemContext } from "@/lib/supabase/types"
+import { Item, LinkMeta, ImageMeta, ExpiryMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
@@ -52,6 +52,28 @@ function timeAgo(dateStr: string) {
   const day = date.getDate()
   if (sameYear) return `${month}월 ${day}일`
   return `${date.getFullYear()}.${month}.${day}`
+}
+
+function getExpiryBadge(meta: unknown): React.ReactNode {
+  if (!meta || typeof meta !== "object" || !("expiry" in meta)) return null
+  const expiry = (meta as { expiry?: ExpiryMeta }).expiry
+  if (!expiry?.expiry_date) return null
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const expiryDate = new Date(expiry.expiry_date)
+  expiryDate.setHours(0, 0, 0, 0)
+  const daysLeft = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  const label = daysLeft > 0 ? `D-${daysLeft}` : "만료"
+  const colorClass =
+    daysLeft <= 0 ? "bg-red-500/10 text-red-500 line-through" :
+    daysLeft <= 3 ? "bg-red-500/10 text-red-500" :
+    daysLeft <= 7 ? "bg-amber-500/10 text-amber-500" :
+    "bg-muted text-muted-foreground"
+  return (
+    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${colorClass}`}>
+      {label}
+    </span>
+  )
 }
 
 function isLinkMeta(meta: unknown): meta is LinkMeta {
@@ -384,6 +406,7 @@ export function FeedCard({
 
           {/* Tags + Meta */}
           <div className="flex items-center gap-2 flex-wrap">
+            {getExpiryBadge(item.metadata)}
             {item.project_id && (() => {
               const proj = projects.find((p) => p.id === item.project_id)
               return proj ? (

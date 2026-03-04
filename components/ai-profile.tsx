@@ -426,8 +426,9 @@ export function AIProfile() {
     )
   }
 
-  const isFree = "_plan" in profile && profile._plan === "free"
-  const full = isFullProfile(profile) ? profile : null
+  // TODO: 테스트 후 플랜 체크 복원
+  const isFree = false // "_plan" in profile && profile._plan === "free"
+  const full = (isFullProfile(profile) ? profile : null) as AIProfileData | null
 
   const interests = profile.interests || []
   const patterns = profile.patterns || null

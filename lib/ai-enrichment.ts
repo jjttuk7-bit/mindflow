@@ -7,6 +7,23 @@ import {
   generateLinkAnalysis,
   type InsightContext,
 } from "@/lib/ai"
+import { logger } from "@/lib/logger"
+
+/** Wrap an AI function call with timing and structured logging */
+async function tracked<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  const start = Date.now()
+  try {
+    const result = await fn()
+    const duration = Date.now() - start
+    logger.info(`ai.${name} completed`, { duration, fn: name })
+    return result
+  } catch (err) {
+    const duration = Date.now() - start
+    const error = err instanceof Error ? err.message : String(err)
+    logger.error(`ai.${name} failed`, { duration, fn: name, error })
+    throw err
+  }
+}
 
 function getServiceSupabase() {
   return createClient(
@@ -101,12 +118,12 @@ export async function enrichItem(
     recentTopics: detectedTopics?.length ? detectedTopics : undefined,
   }
 
-  // Run AI tasks in parallel
+  // Run AI tasks in parallel with timing
   const results = await Promise.allSettled([
-    generateTags(content, type, tagNames, tagNamesWithFreq),
-    generateSummary(content, type),
-    generateEmbedding(content),
-    generateInsight(content, type, insightContext),
+    tracked("generateTags", () => generateTags(content, type, tagNames, tagNamesWithFreq)),
+    tracked("generateSummary", () => generateSummary(content, type)),
+    tracked("generateEmbedding", () => generateEmbedding(content)),
+    tracked("generateInsight", () => generateInsight(content, type, insightContext)),
   ])
 
   const suggestedTags = results[0].status === "fulfilled" ? results[0].value : []
@@ -126,7 +143,9 @@ export async function enrichItem(
   // Link analysis (separate, only for links)
   let linkAnalysis: string | null = null
   if (type === "link") {
-    linkAnalysis = await generateLinkAnalysis(content, ogTitle, ogDescription).catch(() => null)
+    linkAnalysis = await tracked("generateLinkAnalysis", () =>
+      generateLinkAnalysis(content, ogTitle, ogDescription)
+    ).catch(() => null)
   }
 
   // Batch tag upsert — 2 DB calls instead of N
@@ -166,6 +185,18 @@ export async function enrichItem(
   if (Object.keys(updates).length > 0) {
     await supabase.from("items").update(updates).eq("id", itemId)
   }
+
+  logger.info("enrichItem completed", {
+    itemId,
+    type,
+    source,
+    tags: suggestedTags.length,
+    hasSummary: !!summary,
+    hasEmbedding: !!embedding,
+    hasInsight: !!insight,
+    hasLinkAnalysis: !!linkAnalysis,
+    errors: errors.length,
+  })
 
   return { tags: suggestedTags, summary, embedding, insight, linkAnalysis, errors }
 }

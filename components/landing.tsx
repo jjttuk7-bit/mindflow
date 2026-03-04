@@ -161,10 +161,10 @@ const coreFeatures = [
   },
   {
     icon: Bot,
-    title: "AI 지식 동반자",
+    title: "DL Agent",
     description:
-      "저장된 지식을 기반으로 실시간 스트리밍 대화. 할 일, 프로젝트, 최근 활동까지 인식하는 똑똑한 AI 채팅입니다.",
-    badge: "New",
+      "저장된 지식을 기반으로 실시간 스트리밍 대화. 할 일, 프로젝트, 최근 활동까지 인식하고 답변을 복사·내보내기(DOCX/PDF)할 수 있습니다.",
+    badge: "Upgraded",
   },
   {
     icon: PenTool,
@@ -185,11 +185,12 @@ const moreFeatures = [
   { icon: TrendingUp, title: "트렌드 분석", description: "저장 패턴에서 관심 분야 변화를 감지하고 새로운 기회를 발견합니다." },
   { icon: Briefcase, title: "비즈니스 지원", description: "미팅 정리, 제안서 초안, 프로젝트 현황 보고를 자동 작성합니다." },
   { icon: Flame, title: "스트릭 & 습관", description: "연속 사용일 카운트와 데일리 브리핑으로 기록 습관을 만듭니다." },
-  { icon: MessageSquare, title: "스트리밍 AI 응답", description: "실시간 타이핑 답변, 대화 맥락 기억, 즉시 메모 저장." },
-  { icon: Network, title: "지식 맵 & 연결", description: "네트워크 그래프로 항목 간 관계를 시각화합니다." },
+  { icon: MessageSquare, title: "DL Agent 대화", description: "실시간 스트리밍 답변, 대화 맥락 기억, 복사 & DOCX/PDF 내보내기." },
+  { icon: Network, title: "지식 맵 & 연결", description: "검색, 클러스터링, 유사도 조절로 항목 간 관계를 시각화합니다." },
   { icon: CheckSquare, title: "스마트 할 일", description: "AI가 액션 아이템을 자동 추출, 프로젝트별 관리." },
   { icon: Tag, title: "AI 프로젝트 분류", description: "콘텐츠 주제를 분석해 프로젝트에 자동 분류합니다." },
-  { icon: Zap, title: "인사이트 리포트", description: "월간 트렌드, 활동 히트맵, 리마인더를 한눈에." },
+  { icon: Zap, title: "인사이트 리포트", description: "주간/월간 리포트, 시간대 히트맵, 생산성 점수, 전월 대비 분석." },
+  { icon: Sparkles, title: "AI 프로필", description: "5축 성격 분석, 시간대 페르소나, 콘텐츠 다양성 점수, 성장 추적." },
 ]
 
 function FeaturesSection() {
@@ -420,7 +421,7 @@ const plans = [
     name: "Free",
     price: "무료",
     desc: "핵심 기능으로 시작하기",
-    features: ["AI 채팅 5회/일", "다차원 스마트 태깅", "스트릭 & 데일리 브리핑", "프로젝트 3개", "크롬 확장 & 텔레그램"],
+    features: ["DL Agent 5회/일", "다차원 스마트 태깅", "스트릭 & 데일리 브리핑", "프로젝트 3개", "크롬 확장 & 텔레그램"],
     cta: "무료로 시작",
     highlight: false,
   },
@@ -428,7 +429,7 @@ const plans = [
     name: "Pro",
     price: "$9.99/월",
     desc: "무제한 AI + 고급 인사이트",
-    features: ["AI 채팅 무제한", "콘텐츠 생성 & 비즈니스 지원", "AI 프로필 분석", "월간 인사이트 리포트", "프로젝트 & 검색 무제한"],
+    features: ["DL Agent 무제한", "콘텐츠 생성 & 비즈니스 지원", "5축 AI 프로필 & 성장 추적", "주간/월간 인사이트 리포트", "지식 맵 & 연결 시각화", "프로젝트 & 검색 무제한"],
     cta: "Pro 시작하기",
     highlight: true,
   },

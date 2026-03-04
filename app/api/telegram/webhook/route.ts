@@ -5,7 +5,7 @@ import {
   getTelegramFileUrl,
   verifyTelegramWebhook,
 } from "@/lib/telegram"
-import { generateTags, generateSummary, generateEmbedding } from "@/lib/ai"
+import { enrichItem } from "@/lib/ai-enrichment"
 import { PLAN_LIMITS } from "@/lib/plans"
 
 function getServiceSupabase() {
@@ -282,9 +282,9 @@ async function handleTextMessage(supabase: any, chatId: string, userId: string, 
     return NextResponse.json({ ok: true })
   }
 
-  // Fire-and-forget AI tagging using direct function calls
-  processAiTagging(supabase, item.id, text, type, userId).catch((err) =>
-    console.error("AI tagging error:", err)
+  // Fire-and-forget AI enrichment
+  enrichItem(item.id, text, type, userId, supabase, { source: "telegram" }).catch((err) =>
+    console.error("AI enrichment error:", err)
   )
 
   await sendTelegramMessage(chatId, `Saved! (${type === "link" ? "link" : "text"})`)
@@ -341,10 +341,10 @@ async function handlePhotoMessage(supabase: any, chatId: string, userId: string,
       return NextResponse.json({ ok: true })
     }
 
-    // Fire-and-forget AI tagging
+    // Fire-and-forget AI enrichment
     if (caption) {
-      processAiTagging(supabase, item.id, caption, "image", userId).catch((err) =>
-        console.error("AI tagging error:", err)
+      enrichItem(item.id, caption, "image", userId, supabase, { source: "telegram" }).catch((err) =>
+        console.error("AI enrichment error:", err)
       )
     }
 
@@ -408,9 +408,9 @@ async function handleVoiceMessage(supabase: any, chatId: string, userId: string,
       return NextResponse.json({ ok: true })
     }
 
-    // Fire-and-forget AI tagging
-    processAiTagging(supabase, item.id, "Voice message", "voice", userId).catch((err) =>
-      console.error("AI tagging error:", err)
+    // Fire-and-forget AI enrichment
+    enrichItem(item.id, "Voice message", "voice", userId, supabase, { source: "telegram" }).catch((err) =>
+      console.error("AI enrichment error:", err)
     )
 
     await sendTelegramMessage(chatId, "Saved! (voice)")
@@ -422,62 +422,3 @@ async function handleVoiceMessage(supabase: any, chatId: string, userId: string,
   return NextResponse.json({ ok: true })
 }
 
-/**
- * Direct AI tagging for Telegram items (no cookie auth needed).
- * Mirrors the logic in /api/ai/tag but uses the service role client.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function processAiTagging(supabase: any, itemId: string, content: string, type: string, userId: string) {
-  // Get existing tags for reuse
-  const { data: existingTags } = await supabase
-    .from("tags")
-    .select("name")
-    .eq("user_id", userId)
-
-  const tagNames = existingTags?.map((t: { name: string }) => t.name) || []
-
-  // Run AI tasks in parallel
-  const [suggestedTags, summary, embedding] = await Promise.all([
-    generateTags(content, type, tagNames),
-    generateSummary(content),
-    generateEmbedding(content),
-  ])
-
-  // Upsert tags and create relations
-  for (const tagName of suggestedTags) {
-    const { data: tag } = await supabase
-      .from("tags")
-      .upsert({ name: tagName, user_id: userId }, { onConflict: "name,user_id" })
-      .select()
-      .single()
-
-    if (tag) {
-      await supabase
-        .from("item_tags")
-        .upsert(
-          { item_id: itemId, tag_id: tag.id },
-          { onConflict: "item_id,tag_id" }
-        )
-    }
-  }
-
-  // Update item with summary, embedding, and context
-  const updates: Record<string, unknown> = {}
-  if (summary) updates.summary = summary
-  if (embedding) updates.embedding = JSON.stringify(embedding)
-
-  const now = new Date()
-  const hour = now.getHours()
-  const timeOfDay =
-    hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-  updates.context = {
-    source: "telegram",
-    time_of_day: timeOfDay,
-    day_of_week: days[now.getDay()],
-  }
-
-  if (Object.keys(updates).length > 0) {
-    await supabase.from("items").update(updates).eq("id", itemId)
-  }
-}

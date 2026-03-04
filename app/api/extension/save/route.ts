@@ -1,10 +1,9 @@
 import { getUserFromToken } from "@/lib/auth-token"
-import { generateTags, generateSummary, generateEmbedding } from "@/lib/ai"
+import { enrichItem } from "@/lib/ai-enrichment"
 import { rateLimit } from "@/lib/rate-limit"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import ogs from "open-graph-scraper"
-import type { SupabaseClient } from "@supabase/supabase-js"
 
 const saveSchema = z.object({
   url: z.string().url().max(2048),
@@ -86,10 +85,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: insertError.message }, { status: 400 })
   }
 
-  // Trigger async AI tagging (fire and forget, inline to avoid cookie auth issues)
+  // Fire-and-forget AI enrichment
   const m = metadata as Record<string, string>
   const tagContent = [m.og_title, m.og_description, url].filter(Boolean).join(" — ")
-  runAiTagging(supabase, user.id, item.id, tagContent).catch(() => {})
+  enrichItem(item.id, tagContent, "link", user.id, supabase, {
+    ogTitle: m.og_title,
+    ogDescription: m.og_description,
+    source: "chrome_extension",
+  }).catch(() => {})
 
   return NextResponse.json(
     { success: true, item_id: item.id, title: ogData.og_title || title || url },
@@ -97,66 +100,3 @@ export async function POST(req: NextRequest) {
   )
 }
 
-/** Inline AI tagging using the authenticated supabase client (no cookie needed) */
-async function runAiTagging(
-  supabase: SupabaseClient,
-  userId: string,
-  itemId: string,
-  content: string
-) {
-  // Get existing tags for reuse
-  const { data: userTagRows } = await supabase
-    .from("item_tags")
-    .select("tag_id, tags(name), items!inner(user_id)")
-    .eq("items.user_id", userId)
-
-  const tagFreqMap = new Map<string, number>()
-  for (const row of userTagRows || []) {
-    const name = (row.tags as unknown as { name: string })?.name
-    if (name) tagFreqMap.set(name, (tagFreqMap.get(name) || 0) + 1)
-  }
-  const tagNamesWithFreq = [...tagFreqMap.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([name, count]) => `${name} (${count})`)
-  const tagNames = [...tagFreqMap.keys()]
-
-  const [suggestedTags, summary, embedding] = await Promise.all([
-    generateTags(content, "link", tagNames, tagNamesWithFreq),
-    generateSummary(content),
-    generateEmbedding(content),
-  ])
-
-  // Upsert tags
-  for (const tagName of suggestedTags) {
-    const { data: tag } = await supabase
-      .from("tags")
-      .upsert({ name: tagName }, { onConflict: "name" })
-      .select()
-      .single()
-    if (tag) {
-      await supabase
-        .from("item_tags")
-        .upsert({ item_id: itemId, tag_id: tag.id }, { onConflict: "item_id,tag_id" })
-    }
-  }
-
-  // Update item with summary, embedding, context
-  const updates: Record<string, unknown> = {}
-  if (summary) updates.summary = summary
-  if (embedding) updates.embedding = JSON.stringify(embedding)
-
-  const now = new Date()
-  const hour = now.getHours()
-  const timeOfDay =
-    hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-  updates.context = {
-    source: "chrome_extension",
-    time_of_day: timeOfDay,
-    day_of_week: days[now.getDay()],
-  }
-
-  if (Object.keys(updates).length > 0) {
-    await supabase.from("items").update(updates).eq("id", itemId)
-  }
-}

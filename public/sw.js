@@ -84,9 +84,9 @@ self.addEventListener("push", (event) => {
   const options = {
     body: data.body || "",
     icon: "/icon-192",
-    badge: "/icon-192",
+    badge: "/notification-badge",
     data: { url: data.url || "/" },
-    tag: "dotline-briefing",
+    tag: data.tag || "dotline",
     renotify: true,
   }
   event.waitUntil(self.registration.showNotification(title, options))

@@ -48,9 +48,14 @@ function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <DotLineLogo className="w-6 h-6 text-primary" />
-          <span className="font-display text-xl tracking-tight text-foreground">
-            DotLine
-          </span>
+          <div>
+            <span className="font-display text-xl tracking-tight text-foreground leading-none">
+              DotLine
+            </span>
+            <p className="text-[9px] tracking-widest text-muted-foreground/50 leading-none mt-0.5">
+              Connecting dots, Drawing lines.
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />

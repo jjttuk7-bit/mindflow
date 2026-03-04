@@ -15,6 +15,7 @@ import {
   ListTodo,
   FileText,
 } from "lucide-react"
+import { ChatExportMenu } from "@/components/chat-export-menu"
 
 interface ChatSource {
   id: string
@@ -487,6 +488,8 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     )
   }
 
+  const currentSession = sessions.find((s) => s.id === currentSessionId) ?? null
+
   // Full-screen mode for mobile tab
   if (fullScreen) {
     return (
@@ -496,13 +499,16 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             <MessageSquare className="h-5 w-5 text-primary" />
             <h2 className="font-display text-lg tracking-tight text-foreground">AI Chat</h2>
           </div>
-          <button
-            onClick={handleNewChat}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
-            aria-label="New chat"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <ChatExportMenu messages={messages} session={currentSession} disabled={loading} />
+            <button
+              onClick={handleNewChat}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+              aria-label="New chat"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </header>
 
         {renderSessionList()}
@@ -543,6 +549,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             </h2>
           </div>
           <div className="flex items-center gap-1">
+            <ChatExportMenu messages={messages} session={currentSession} disabled={loading} />
             <button
               onClick={handleNewChat}
               className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"

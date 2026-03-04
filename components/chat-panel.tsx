@@ -14,6 +14,8 @@ import {
   ExternalLink,
   ListTodo,
   FileText,
+  Copy,
+  Check,
 } from "lucide-react"
 import { ChatExportMenu } from "@/components/chat-export-menu"
 
@@ -48,6 +50,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [sourcesMap, setSourcesMap] = useState<Record<string, ChatSource[]>>({})
   const [addedSuggestions, setAddedSuggestions] = useState<Set<string>>(new Set())
   const [keyboardHeight, setKeyboardHeight] = useState(0)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -271,6 +274,12 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     }
   }
 
+  async function handleCopy(id: string, content: string) {
+    await navigator.clipboard.writeText(content)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
+
   function formatTime(dateStr: string) {
     const d = new Date(dateStr)
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -354,15 +363,28 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               {msg.role === "assistant" ? renderMessageContent(msg) : (
                 <p className="whitespace-pre-wrap">{msg.content}</p>
               )}
-              <p
-                className={`text-[10px] mt-1.5 ${
-                  msg.role === "user"
-                    ? "text-primary/40 text-right"
-                    : "text-muted-foreground/40"
-                }`}
-              >
-                {formatTime(msg.created_at)}
-              </p>
+              {msg.role === "assistant" ? (
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className="text-[10px] text-muted-foreground/40">
+                    {formatTime(msg.created_at)}
+                  </p>
+                  <button
+                    onClick={() => handleCopy(msg.id, msg.content)}
+                    className="h-5 w-5 flex items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors"
+                    aria-label="Copy message"
+                  >
+                    {copiedId === msg.id ? (
+                      <Check className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-[10px] mt-1.5 text-primary/40 text-right">
+                  {formatTime(msg.created_at)}
+                </p>
+              )}
 
               {/* Source chips for assistant messages */}
               {msg.role === "assistant" &&

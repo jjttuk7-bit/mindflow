@@ -32,6 +32,14 @@ export function ResurfacedMemory() {
       return
     }
 
+    // Hide if briefing is active (it already shows rediscoveries)
+    const briefingDismissed = sessionStorage.getItem("briefing_dismissed")
+    if (!briefingDismissed) {
+      setDismissed(true)
+      setLoading(false)
+      return
+    }
+
     fetch("/api/ai/resurface")
       .then((r) => r.ok ? r.json() : null)
       .then((res) => {

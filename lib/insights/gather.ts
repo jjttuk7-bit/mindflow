@@ -640,6 +640,139 @@ export async function gatherKnowledgeHealth(
   }
 }
 
+// ─── Connection Summary ──────────────────────────────────────────
+
+export async function gatherConnectionSummary(
+  supabase: SupabaseClient,
+  userId: string,
+  startDate: string,
+  endDate: string
+) {
+  // Get connections created this period
+  const { data: connections } = await supabase
+    .from("item_connections")
+    .select("source_id, target_id, ai_reason")
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  if (!connections || connections.length === 0) {
+    return { new_connections: 0, top_pairs: [] }
+  }
+
+  // Get item summaries for the connected items
+  const allIds = [
+    ...new Set([
+      ...connections.map((c) => c.source_id),
+      ...connections.map((c) => c.target_id),
+    ]),
+  ]
+
+  const { data: items } = await supabase
+    .from("items")
+    .select("id, summary, content, user_id")
+    .in("id", allIds.slice(0, 50))
+    .eq("user_id", userId)
+
+  const itemMap = new Map(
+    (items || []).map((i) => [i.id, i.summary || i.content?.slice(0, 50) || ""])
+  )
+
+  // Filter connections that belong to this user's items
+  const userConnections = connections.filter(
+    (c) => itemMap.has(c.source_id) || itemMap.has(c.target_id)
+  )
+
+  const topPairs = userConnections.slice(0, 3).map((c) => ({
+    source: itemMap.get(c.source_id) || "",
+    target: itemMap.get(c.target_id) || "",
+    reason: c.ai_reason || undefined,
+  }))
+
+  return {
+    new_connections: userConnections.length,
+    top_pairs: topPairs,
+  }
+}
+
+// ─── Interest Shift Detection ────────────────────────────────────
+
+export async function gatherInterestShift(
+  supabase: SupabaseClient,
+  userId: string,
+  startDate: string,
+  endDate: string
+) {
+  // Current period tags
+  const { data: currentItems } = await supabase
+    .from("items")
+    .select("id, item_tags(tags(name))")
+    .eq("user_id", userId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate)
+
+  const currentTagCount: Record<string, number> = {}
+  for (const item of currentItems || []) {
+    const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
+    for (const t of tags) {
+      if (t.tags?.name) currentTagCount[t.tags.name] = (currentTagCount[t.tags.name] || 0) + 1
+    }
+  }
+
+  // Previous period (same duration, shifted back)
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const duration = end.getTime() - start.getTime()
+  const prevStart = new Date(start.getTime() - duration).toISOString()
+  const prevEnd = new Date(start.getTime() - 1).toISOString()
+
+  const { data: prevItems } = await supabase
+    .from("items")
+    .select("id, item_tags(tags(name))")
+    .eq("user_id", userId)
+    .gte("created_at", prevStart)
+    .lte("created_at", prevEnd)
+
+  const prevTagCount: Record<string, number> = {}
+  for (const item of prevItems || []) {
+    const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
+    for (const t of tags) {
+      if (t.tags?.name) prevTagCount[t.tags.name] = (prevTagCount[t.tags.name] || 0) + 1
+    }
+  }
+
+  const currentTags = Object.entries(currentTagCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }))
+
+  const previousTags = Object.entries(prevTagCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }))
+
+  const prevTagNames = new Set(Object.keys(prevTagCount))
+  const currTagNames = new Set(Object.keys(currentTagCount))
+
+  // New interests: in current top but not in previous
+  const newInterests = currentTags
+    .filter((t) => !prevTagNames.has(t.name))
+    .map((t) => t.name)
+    .slice(0, 5)
+
+  // Fading interests: in previous top but not in current
+  const fadingInterests = previousTags
+    .filter((t) => !currTagNames.has(t.name))
+    .map((t) => t.name)
+    .slice(0, 5)
+
+  return {
+    current_tags: currentTags,
+    previous_tags: previousTags,
+    new_interests: newInterests,
+    fading_interests: fadingInterests,
+  }
+}
+
 // ─── Summaries text builder ────────────────────────────────────────
 
 export async function fetchSummaries(

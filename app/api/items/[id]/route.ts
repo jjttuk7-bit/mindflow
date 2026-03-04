@@ -2,6 +2,7 @@ import { getUser } from "@/lib/supabase/server"
 import { validate, itemUpdateSchema } from "@/lib/validations"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
+import { after } from "next/server"
 
 function getSupabaseAdmin() {
   return createAdminClient(
@@ -30,6 +31,17 @@ export async function GET(
   const tags = (data.item_tags as Array<{ tags: unknown }>)
     ?.map((it) => it.tags)
     .filter(Boolean) || []
+
+  // Update last_accessed_at in background (fire-and-forget)
+  after(async () => {
+    try {
+      await supabase
+        .from("items")
+        .update({ last_accessed_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id)
+    } catch { /* best-effort */ }
+  })
 
   return NextResponse.json({ ...data, tags, item_tags: undefined })
 }

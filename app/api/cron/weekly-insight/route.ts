@@ -8,6 +8,8 @@ import {
   gatherReminders,
   gatherUtilization,
   gatherKnowledgeHealth,
+  gatherConnectionSummary,
+  gatherInterestShift,
   generateWeeklyDigest,
   generateProductivityScore,
   fetchSummaries,
@@ -116,6 +118,12 @@ export async function GET(req: NextRequest) {
           )
         }
 
+        // 9. Connection summary
+        const connectionSummary = await gatherConnectionSummary(supabase, userId, startDate, endDate)
+
+        // 10. Interest shift detection
+        const interestShift = await gatherInterestShift(supabase, userId, startDate, endDate)
+
         const reportData: WeeklyInsightData = {
           stats,
           hourly_heatmap: hourlyHeatmap,
@@ -125,6 +133,8 @@ export async function GET(req: NextRequest) {
           digest,
           utilization,
           knowledge_health: knowledgeHealth,
+          connection_summary: connectionSummary,
+          interest_shift: interestShift,
         }
 
         await supabase.from("insight_reports").upsert(

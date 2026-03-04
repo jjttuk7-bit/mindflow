@@ -74,6 +74,43 @@ export async function GET(req: NextRequest) {
       console.error(`Weekly nudge error for user ${user_id}:`, err)
     }
 
+    // ── Stale item check ("아직 필요한가요?") ─────────────────────
+    try {
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      // Items not accessed in 30+ days (or never accessed and 30+ days old)
+      const { data: staleItems } = await supabase
+        .from("items")
+        .select("id, content, summary, type")
+        .eq("user_id", user_id)
+        .eq("is_archived", false)
+        .is("deleted_at", null)
+        .or(`last_accessed_at.is.null,last_accessed_at.lt.${thirtyDaysAgo.toISOString()}`)
+        .lt("created_at", thirtyDaysAgo.toISOString())
+        .order("created_at", { ascending: true })
+        .limit(5)
+
+      if (staleItems && staleItems.length >= 3) {
+        const preview = staleItems
+          .slice(0, 2)
+          .map((i) => `"${(i.summary || i.content || "").slice(0, 30)}..."`)
+          .join(", ")
+
+        await supabase.from("nudges").insert({
+          user_id,
+          type: "action",
+          title: "아직 필요한가요?",
+          content: `30일 이상 열어보지 않은 항목이 ${staleItems.length}개 있어요: ${preview}`,
+          related_item_ids: staleItems.map((i) => i.id),
+        })
+
+        nudgesCreated++
+      }
+    } catch (err) {
+      console.error(`Stale nudge error for user ${user_id}:`, err)
+    }
+
     // ── Zombie item detection ──────────────────────────────────────
     try {
       const zombie = await detectZombieItems(supabase, user_id)
@@ -96,6 +133,108 @@ export async function GET(req: NextRequest) {
       }
     } catch (err) {
       console.error(`Zombie nudge error for user ${user_id}:`, err)
+    }
+  }
+
+  // ── Second pass: interest shift + auto-project suggestion ────────
+  for (const { user_id } of users) {
+    // 3b. Interest shift detection
+    try {
+      const twoWeeksAgo = new Date()
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+
+      // Current week tags
+      const { data: currItems } = await supabase
+        .from("items")
+        .select("id, item_tags(tags(name))")
+        .eq("user_id", user_id)
+        .gte("created_at", weekAgo.toISOString())
+
+      const currTags: Record<string, number> = {}
+      for (const item of currItems || []) {
+        const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
+        for (const t of tags) {
+          if (t.tags?.name) currTags[t.tags.name] = (currTags[t.tags.name] || 0) + 1
+        }
+      }
+
+      // Previous week tags
+      const { data: prevItems } = await supabase
+        .from("items")
+        .select("id, item_tags(tags(name))")
+        .eq("user_id", user_id)
+        .gte("created_at", twoWeeksAgo.toISOString())
+        .lt("created_at", weekAgo.toISOString())
+
+      const prevTags: Record<string, number> = {}
+      for (const item of prevItems || []) {
+        const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
+        for (const t of tags) {
+          if (t.tags?.name) prevTags[t.tags.name] = (prevTags[t.tags.name] || 0) + 1
+        }
+      }
+
+      // Find newly emerging tags
+      const prevTagSet = new Set(Object.keys(prevTags))
+      const newTags = Object.entries(currTags)
+        .filter(([name, count]) => !prevTagSet.has(name) && count >= 2)
+        .map(([name]) => name)
+
+      if (newTags.length > 0) {
+        await supabase.from("nudges").insert({
+          user_id,
+          type: "trend",
+          title: "관심사가 변하고 있어요",
+          content: `이번 주 새로운 관심사: ${newTags.slice(0, 3).join(", ")}`,
+          related_item_ids: [],
+        })
+        nudgesCreated++
+      }
+    } catch (err) {
+      console.error(`Interest shift nudge error for user ${user_id}:`, err)
+    }
+
+    // 3c. Auto project suggestion
+    try {
+      // Find tags shared by 3+ unorganized items (no project)
+      const { data: unorganized } = await supabase
+        .from("items")
+        .select("id, item_tags(tags(name))")
+        .eq("user_id", user_id)
+        .is("project_id", null)
+        .is("deleted_at", null)
+        .eq("is_archived", false)
+        .gte("created_at", weekAgo.toISOString())
+
+      const tagItems: Record<string, string[]> = {}
+      for (const item of unorganized || []) {
+        const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
+        for (const t of tags) {
+          if (t.tags?.name) {
+            if (!tagItems[t.tags.name]) tagItems[t.tags.name] = []
+            tagItems[t.tags.name].push(item.id)
+          }
+        }
+      }
+
+      // Find tags with 3+ items
+      const candidates = Object.entries(tagItems)
+        .filter(([, ids]) => ids.length >= 3)
+        .sort((a, b) => b[1].length - a[1].length)
+
+      if (candidates.length > 0) {
+        const [tagName, itemIds] = candidates[0]
+        await supabase.from("nudges").insert({
+          user_id,
+          type: "action",
+          title: `"${tagName}" 프로젝트로 묶을까요?`,
+          content: `"${tagName}" 태그가 달린 항목이 ${itemIds.length}개 있어요. 프로젝트로 정리하면 찾기 쉬워요!`,
+          related_item_ids: itemIds.slice(0, 5),
+        })
+        nudgesCreated++
+      }
+    } catch (err) {
+      console.error(`Auto-project nudge error for user ${user_id}:`, err)
     }
   }
 

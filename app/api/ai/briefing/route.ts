@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 import { detectZombieItems } from "@/lib/zombie-detection"
+import { fetchRediscoveries } from "@/lib/rediscovery"
 
 export async function GET() {
   try {
@@ -70,8 +71,38 @@ export async function GET() {
 
     const streak = streakData || { current_streak: 0, longest_streak: 0, last_active_date: null }
 
-    // 8. Zombie items count (parallelized via shared utility)
-    const zombie = await detectZombieItems(supabase, user.id, todayStart)
+    // 8. Zombie items + Rediscoveries + Unread links (parallelized)
+    const threeDaysAgo = new Date(todayStart)
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
+
+    const [zombie, rediscoveries, unreadLinksResult] = await Promise.all([
+      detectZombieItems(supabase, user.id, todayStart),
+      fetchRediscoveries(supabase, user.id, 2),
+      supabase
+        .from("items")
+        .select("id, content, summary, metadata, created_at")
+        .eq("user_id", user.id)
+        .eq("type", "link")
+        .is("last_accessed_at", null)
+        .is("deleted_at", null)
+        .eq("is_archived", false)
+        .lt("created_at", threeDaysAgo.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(3),
+    ])
+
+    const unreadLinks = (unreadLinksResult.data || []).map((item) => {
+      const meta = item.metadata as Record<string, string> | null
+      const daysAgo = Math.floor(
+        (Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      )
+      return {
+        id: item.id,
+        title: meta?.og_title || item.summary || item.content,
+        domain: meta?.og_domain,
+        days_ago: daysAgo,
+      }
+    })
 
     // Build type counts
     const yesterdayCounts: Record<string, number> = {}
@@ -139,6 +170,8 @@ export async function GET() {
         longest: streak.longest_streak,
       },
       zombie,
+      rediscoveries,
+      unreadLinks,
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)

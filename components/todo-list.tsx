@@ -1,16 +1,55 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useStore } from "@/lib/store"
-import { Check, Trash2, Plus, Link as LinkIcon, Menu } from "lucide-react"
+import { Check, Trash2, Plus, Link as LinkIcon, Menu, FileText, Image, Mic, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+
+interface RelatedItem {
+  id: string
+  type: string
+  content: string
+  similarity: number
+  created_at: string
+}
+
+const relatedTypeIcons: Record<string, React.ReactNode> = {
+  text: <FileText className="h-3 w-3" />,
+  link: <LinkIcon className="h-3 w-3" />,
+  image: <Image className="h-3 w-3" />,
+  voice: <Mic className="h-3 w-3" />,
+}
 
 type TodoFilter = "all" | "active" | "completed"
 
 export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
+  const router = useRouter()
   const { todos, addTodo, updateTodo, removeTodo, projects } = useStore()
   const [newContent, setNewContent] = useState("")
   const [filter, setFilter] = useState<TodoFilter>("all")
+  const [expandedTodo, setExpandedTodo] = useState<string | null>(null)
+  const [relatedItems, setRelatedItems] = useState<Record<string, RelatedItem[]>>({})
+  const [loadingRelated, setLoadingRelated] = useState<string | null>(null)
+
+  const fetchRelated = useCallback(async (todoId: string) => {
+    if (expandedTodo === todoId) {
+      setExpandedTodo(null)
+      return
+    }
+    setExpandedTodo(todoId)
+    if (relatedItems[todoId]) return
+
+    setLoadingRelated(todoId)
+    try {
+      const res = await fetch(`/api/todos/${todoId}/related`)
+      if (res.ok) {
+        const data = await res.json()
+        setRelatedItems((prev) => ({ ...prev, [todoId]: data }))
+      }
+    } catch { /* ignore */ }
+    setLoadingRelated(null)
+  }, [expandedTodo, relatedItems])
 
   const pendingCount = todos.filter((t) => !t.is_completed).length
 
@@ -164,8 +203,8 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
               )}
               <div className="space-y-1.5">
                 {groupTodos.map((todo) => (
+                  <div key={todo.id}>
                   <div
-                    key={todo.id}
                     className="group flex items-center gap-3 rounded-lg border border-border/40 bg-card px-4 py-3 transition-all hover:border-border/60"
                   >
                     <button
@@ -192,12 +231,50 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                         <LinkIcon className="h-3.5 w-3.5" />
                       </span>
                     )}
+                    {!todo.is_completed && (
+                      <button
+                        onClick={() => fetchRelated(todo.id)}
+                        className={`h-6 w-6 flex items-center justify-center rounded transition-all md:opacity-0 md:group-hover:opacity-100 ${
+                          expandedTodo === todo.id
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground/30 hover:text-primary hover:bg-primary/5"
+                        }`}
+                        title="관련 기록 보기"
+                      >
+                        <ChevronRight className={`h-3.5 w-3.5 transition-transform ${expandedTodo === todo.id ? "rotate-90" : ""}`} />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(todo.id)}
                       className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all md:opacity-0 md:group-hover:opacity-100"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
+                  </div>
+                  {expandedTodo === todo.id && (
+                    <div className="mt-2 ml-8 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                      {loadingRelated === todo.id && (
+                        <p className="text-[11px] text-muted-foreground/40">관련 기록 찾는 중...</p>
+                      )}
+                      {relatedItems[todo.id]?.length === 0 && loadingRelated !== todo.id && (
+                        <p className="text-[11px] text-muted-foreground/40">관련 기록이 없습니다</p>
+                      )}
+                      {relatedItems[todo.id]?.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => router.push(`/?highlight=${item.id}`)}
+                          className="w-full text-left flex items-center gap-2 rounded-md bg-muted/30 px-3 py-1.5 hover:bg-muted/50 transition-colors"
+                        >
+                          <span className="text-muted-foreground/50 shrink-0">
+                            {relatedTypeIcons[item.type] || relatedTypeIcons.text}
+                          </span>
+                          <span className="text-[11px] text-foreground/60 line-clamp-1 flex-1">
+                            {item.content}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   </div>
                 ))}
               </div>

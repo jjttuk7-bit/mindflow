@@ -1,8 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sparkles, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, Ghost, Wand2, X, ChevronDown, ChevronUp } from "lucide-react"
+import { Sparkles, CheckCircle2, AlertCircle, FileText, Link, Image, Mic, Ghost, Wand2, X, ChevronDown, ChevronUp, RotateCcw } from "lucide-react"
 import { CleanupGuide } from "./cleanup-guide"
+import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation"
+import { RediscoveryItem } from "@/lib/rediscovery"
 
 const typeLabels: Record<string, string> = {
   text: "텍스트",
@@ -46,9 +49,17 @@ interface BriefingData {
     pins: number
     total: number
   }
+  rediscoveries?: RediscoveryItem[]
+  unreadLinks?: {
+    id: string
+    title: string
+    domain?: string
+    days_ago: number
+  }[]
 }
 
 export function DailyBriefing() {
+  const router = useRouter()
   const [data, setData] = useState<BriefingData | null>(null)
   const [dismissed, setDismissed] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -79,7 +90,7 @@ export function DailyBriefing() {
 
   if (loading || dismissed || !data) return null
 
-  const { yesterday, todos, week, totalItems, streak, zombie } = data
+  const { yesterday, todos, week, totalItems, streak, zombie, rediscoveries, unreadLinks } = data
 
   return (
     <div className="relative rounded-xl border border-primary/15 bg-gradient-to-br from-primary/5 via-transparent to-amber-accent/5 px-5 py-4 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -289,6 +300,81 @@ export function DailyBriefing() {
                     </span>
                   )
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* Rediscoveries */}
+          {rediscoveries && rediscoveries.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <RotateCcw className="h-3.5 w-3.5 text-amber-500" />
+                <p className="text-[10px] tracking-wide uppercase font-semibold text-amber-500">
+                  오늘의 재발견
+                </p>
+              </div>
+              <div className="space-y-2">
+                {rediscoveries.map((rd) => (
+                  <button
+                    key={rd.item.id}
+                    onClick={() => router.push(`/?highlight=${rd.item.id}`)}
+                    className="w-full text-left rounded-lg border border-amber-500/10 bg-amber-500/5 px-3 py-2.5 hover:bg-amber-500/10 transition-colors group"
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <div className="mt-0.5 flex items-center justify-center w-6 h-6 rounded-md bg-amber-500/10 text-amber-600/70 shrink-0">
+                        {typeIcons[rd.item.type] || typeIcons.text}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] leading-relaxed text-foreground/70 line-clamp-2 group-hover:text-foreground/90 transition-colors">
+                          {rd.item.summary || rd.item.content}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          {rd.item.tags && rd.item.tags.length > 0 && rd.item.tags.slice(0, 3).map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="secondary"
+                              className="text-[9px] tracking-wide px-1.5 py-0 rounded font-medium bg-amber-500/8 text-amber-700/60 dark:text-amber-400/60 border-0"
+                            >
+                              {tag.name}
+                            </Badge>
+                          ))}
+                          <span className="text-[10px] text-muted-foreground/40">
+                            {rd.reason}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unread links */}
+          {unreadLinks && unreadLinks.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Link className="h-3.5 w-3.5 text-blue-500" />
+                <p className="text-[10px] tracking-wide uppercase font-semibold text-blue-500">
+                  읽지 않은 링크
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                {unreadLinks.map((link) => (
+                  <button
+                    key={link.id}
+                    onClick={() => router.push(`/?highlight=${link.id}`)}
+                    className="w-full text-left flex items-center gap-2.5 rounded-lg border border-blue-500/10 bg-blue-500/5 px-3 py-2 hover:bg-blue-500/10 transition-colors"
+                  >
+                    <Link className="h-3.5 w-3.5 text-blue-500/50 shrink-0" />
+                    <span className="text-[12px] text-foreground/70 line-clamp-1 flex-1">
+                      {link.title}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground/40 shrink-0">
+                      {link.days_ago}일 전
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           )}

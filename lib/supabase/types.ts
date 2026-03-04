@@ -211,6 +211,16 @@ export interface WeeklyInsightData {
     }
     tips: string[]
   }
+  connection_summary?: {
+    new_connections: number
+    top_pairs: { source: string; target: string; reason?: string }[]
+  }
+  interest_shift?: {
+    current_tags: { name: string; count: number }[]
+    previous_tags: { name: string; count: number }[]
+    new_interests: string[]
+    fading_interests: string[]
+  }
 }
 
 export interface InsightReportData {

@@ -39,11 +39,11 @@ export function MoreMenu() {
   return (
     <main className="flex-1 flex flex-col h-full overflow-hidden bg-background">
       <div className="px-4 pt-4 pb-3">
-        <h2 className="font-display text-xl tracking-tight text-foreground">더보기</h2>
+        <h2 className="font-display text-xl tracking-tight text-foreground">More</h2>
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-1">
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
-          스마트 폴더
+          Quick Access
         </p>
         <button
           onClick={() => goToSmartFolder("this-week")}
@@ -53,7 +53,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <CalendarDays className="h-5 w-5 text-muted-foreground/60" />
-            이번 주
+            This Week
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{thisWeekCount}</span>
         </button>
@@ -65,7 +65,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <Pin className="h-5 w-5 text-muted-foreground/60" />
-            고정됨
+            Pinned
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{pinnedCount}</span>
         </button>
@@ -77,7 +77,7 @@ export function MoreMenu() {
         >
           <span className="flex items-center gap-3">
             <Archive className="h-5 w-5 text-muted-foreground/60" />
-            보관함
+            Archive
           </span>
           <span className="text-xs text-muted-foreground/50 tabular-nums">{archivedCount}</span>
         </button>
@@ -95,7 +95,7 @@ export function MoreMenu() {
         </button>
 
         <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
-          설정
+          Settings
         </p>
         <a href="/profile/ai" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <DotLineLogo className="h-5 w-5 text-muted-foreground/60" />
@@ -107,11 +107,11 @@ export function MoreMenu() {
         </a>
         <a href="/knowledge-map" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <GitBranch className="h-5 w-5 text-muted-foreground/60" />
-          지식 맵
+          Knowledge Map
         </a>
         <a href="/settings" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
           <Settings className="h-5 w-5 text-muted-foreground/60" />
-          설정
+          Settings
         </a>
         <FeedbackButton />
         <button
@@ -119,7 +119,7 @@ export function MoreMenu() {
           className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors"
         >
           {dark ? <Sun className="h-5 w-5 text-muted-foreground/60" /> : <Moon className="h-5 w-5 text-muted-foreground/60" />}
-          {dark ? "라이트 모드" : "다크 모드"}
+          {dark ? "Light Mode" : "Dark Mode"}
         </button>
         <div className="px-1 pt-2">
           <ExportMenu />
@@ -127,11 +127,11 @@ export function MoreMenu() {
 
         <div className="flex items-center gap-3 px-4 pt-6 pb-4">
           <a href="/terms" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
-            이용약관
+            Terms
           </a>
           <span className="text-muted-foreground/20">|</span>
           <a href="/privacy" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
-            개인정보처리방침
+            Privacy Policy
           </a>
         </div>
       </div>

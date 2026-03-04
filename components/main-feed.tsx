@@ -72,7 +72,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
               onClick={handleEmptyTrash}
               className="text-xs text-destructive/70 hover:text-destructive px-3 py-1.5 rounded-lg hover:bg-destructive/5 transition-colors font-medium"
             >
-              Empty Trash
+              휴지통 비우기
             </button>
           </div>
         </div>

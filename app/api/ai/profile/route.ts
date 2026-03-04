@@ -86,60 +86,21 @@ export async function GET() {
   // 테스트: 모든 유저에게 전체 프로필 반환
   return NextResponse.json(profile || {})
 
+  /* TODO: 테스트 후 Free 유저 기본 통계 로직 복원
+  // Free user: return basic stats only
+  if (profile) {
+    return NextResponse.json({
+      interests: profile.interests?.slice(0, 3) || [],
+      patterns: profile.patterns || null,
+      total_items: profile.total_items || 0,
+      updated_at: profile.updated_at || null,
+      _plan: "free",
+    })
+  }
+
   // Free user with no profile: compute basic stats on the fly
-  const ninetyDaysAgo = new Date()
-  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-
-  const { data: items } = await supabase
-    .from("items")
-    .select("id, type, created_at, item_tags(tags(name))")
-    .eq("user_id", user.id)
-    .gte("created_at", ninetyDaysAgo.toISOString())
-    .order("created_at", { ascending: false })
-    .limit(200)
-
-  if (!items || items.length === 0) {
-    return NextResponse.json({ _plan: "free" })
-  }
-
-  const dayCount: Record<string, number> = {}
-  const hourCount: Record<number, number> = {}
-  const typeCount: Record<string, number> = {}
-  const tagCount: Record<string, number> = {}
-
-  for (const item of items) {
-    const date = new Date(item.created_at)
-    const day = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()]
-    dayCount[day] = (dayCount[day] || 0) + 1
-    hourCount[date.getHours()] = (hourCount[date.getHours()] || 0) + 1
-    typeCount[item.type] = (typeCount[item.type] || 0) + 1
-    const tags = (item.item_tags as unknown as { tags: { name: string } }[]) || []
-    for (const t of tags) {
-      if (t.tags?.name) tagCount[t.tags.name] = (tagCount[t.tags.name] || 0) + 1
-    }
-  }
-
-  const topTags = Object.entries(tagCount)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, count]) => ({ topic: name, count }))
-
-  const peakDay = Object.entries(dayCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "월"
-  const peakHour = Number(Object.entries(hourCount).sort((a, b) => b[1] - a[1])[0]?.[0] || "9")
-
-  return NextResponse.json({
-    interests: topTags,
-    patterns: {
-      peak_day: peakDay,
-      peak_hour: peakHour,
-      avg_daily: Math.round((items.length / 90) * 10) / 10,
-      type_distribution: typeCount,
-      day_distribution: dayCount,
-      hour_distribution: hourCount,
-    },
-    total_items: items.length,
-    _plan: "free",
-  })
+  ...
+  */
 }
 
 // ─── POST: Trigger re-analysis (Pro only) ───────────────────────────

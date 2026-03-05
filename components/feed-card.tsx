@@ -541,7 +541,7 @@ export function FeedCard({
                     <FolderOpen className="h-3 w-3" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuContent align="end" className="w-44 max-h-60 overflow-y-auto">
                   <DropdownMenuLabel className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
                     Move to
                   </DropdownMenuLabel>

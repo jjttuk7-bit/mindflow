@@ -892,7 +892,7 @@ function SettingsContent() {
                     데이터 내보내기
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    JSON 또는 Markdown 형식으로 아이템을 다운로드하세요
+                    DOCX, PDF, JSON, Markdown 형식으로 아이템을 다운로드하세요
                   </p>
                 </div>
                 <Link href="/">

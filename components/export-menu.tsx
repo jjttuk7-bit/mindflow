@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { useStore } from "@/lib/store"
-import { Download, FileText, Braces, Sparkles, Copy, Check, Loader2 } from "lucide-react"
+import { Download, FileText, FileDown, Braces, Sparkles, Copy, Check, Loader2 } from "lucide-react"
+import { downloadBlob } from "@/lib/chat-export"
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,136 @@ function itemsToJson(items: ReturnType<typeof useStore.getState>["items"]): stri
     }))
 
   return JSON.stringify(exportData, null, 2)
+}
+
+async function itemsToDocx(items: ReturnType<typeof useStore.getState>["items"]): Promise<Blob> {
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, BorderStyle } = await import("docx")
+
+  const children: InstanceType<typeof Paragraph>[] = []
+
+  children.push(
+    new Paragraph({
+      heading: HeadingLevel.HEADING_1,
+      children: [new TextRun({ text: "DotLine Export", bold: true })],
+    })
+  )
+
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: `Exported: ${new Date().toLocaleString()}`,
+          italics: true,
+          color: "888888",
+          size: 20,
+        }),
+      ],
+      spacing: { after: 200 },
+    })
+  )
+
+  children.push(
+    new Paragraph({
+      border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "CCCCCC" } },
+      spacing: { after: 300 },
+    })
+  )
+
+  for (const item of items) {
+    if (item.is_archived) continue
+    const tags = item.tags?.map((t) => t.name).join(", ") ?? ""
+    const date = new Date(item.created_at).toLocaleString()
+    const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1)
+
+    children.push(
+      new Paragraph({
+        heading: HeadingLevel.HEADING_2,
+        children: [new TextRun({ text: item.summary || item.content.slice(0, 60), bold: true })],
+        spacing: { before: 240 },
+      })
+    )
+
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: `Type: ${typeLabel}`, bold: true, size: 20, color: "555555" }),
+          new TextRun({ text: `  |  Date: ${date}`, size: 20, color: "888888" }),
+        ],
+      })
+    )
+
+    if (tags) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: `Tags: ${tags}`, italics: true, size: 20, color: "666666" })],
+        })
+      )
+    }
+
+    const lines = item.content.split("\n")
+    for (const line of lines) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: line, size: 22 })],
+          spacing: { after: 40 },
+        })
+      )
+    }
+  }
+
+  const doc = new Document({ sections: [{ children }] })
+  return Packer.toBlob(doc)
+}
+
+async function itemsToPdf(items: ReturnType<typeof useStore.getState>["items"]): Promise<Blob> {
+  const html2pdf = (await import("html2pdf.js")).default
+
+  const cardsHtml = items
+    .filter((i) => !i.is_archived)
+    .map((item) => {
+      const tags = item.tags?.map((t) => t.name).join(", ") ?? ""
+      const date = new Date(item.created_at).toLocaleString()
+      const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1)
+      const escapedContent = item.content
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>")
+
+      return `
+        <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#f8f9fa;border:1px solid #e9ecef;">
+          <div style="font-size:15px;font-weight:bold;margin-bottom:4px;">${(item.summary || item.content.slice(0, 60)).replace(/</g, "&lt;")}</div>
+          <div style="font-size:11px;color:#888;margin-bottom:8px;">
+            ${typeLabel} | ${date}${tags ? ` | Tags: ${tags}` : ""}
+          </div>
+          <div style="font-size:13px;line-height:1.6;color:#222;">${escapedContent}</div>
+        </div>`
+    })
+    .join("")
+
+  const htmlContent = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:100%;padding:20px;">
+      <h1 style="font-size:22px;margin-bottom:4px;">DotLine Export</h1>
+      <p style="color:#888;font-size:12px;margin-bottom:16px;">Exported: ${new Date().toLocaleString()}</p>
+      <hr style="border:none;border-top:1px solid #ddd;margin-bottom:20px;"/>
+      ${cardsHtml}
+    </div>`
+
+  const container = document.createElement("div")
+  container.innerHTML = htmlContent
+
+  const blob: Blob = await html2pdf()
+    .set({
+      margin: [10, 10, 10, 10],
+      filename: "export.pdf",
+      image: { type: "jpeg", quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    })
+    .from(container)
+    .outputPdf("blob")
+
+  return blob
 }
 
 function AISummaryDialog({
@@ -296,6 +427,18 @@ export function ExportMenu() {
     setOpen(false)
   }
 
+  async function handleExportDocx() {
+    setOpen(false)
+    const blob = await itemsToDocx(items)
+    downloadBlob(blob, `dotline-export-${Date.now()}.docx`)
+  }
+
+  async function handleExportPdf() {
+    setOpen(false)
+    const blob = await itemsToPdf(items)
+    downloadBlob(blob, `dotline-export-${Date.now()}.pdf`)
+  }
+
   function handleAISummary() {
     setOpen(false)
     setSummaryOpen(true)
@@ -334,6 +477,21 @@ export function ExportMenu() {
             >
               <Braces className="h-3.5 w-3.5 text-muted-foreground/50" />
               JSON (.json)
+            </button>
+            <div className="h-px bg-border/40 mx-2 my-1" />
+            <button
+              onClick={handleExportDocx}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-foreground/70 hover:bg-accent transition-colors"
+            >
+              <FileDown className="h-3.5 w-3.5 text-muted-foreground/50" />
+              Word (.docx)
+            </button>
+            <button
+              onClick={handleExportPdf}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-foreground/70 hover:bg-accent transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5 text-muted-foreground/50" />
+              PDF (.pdf)
             </button>
           </div>
         )}

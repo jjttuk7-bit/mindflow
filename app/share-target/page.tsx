@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
@@ -14,7 +14,7 @@ function isValidUrl(str: string): boolean {
   }
 }
 
-export default function ShareTargetPage() {
+function ShareTargetContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<"saving" | "success" | "error">("saving")
@@ -55,7 +55,6 @@ export default function ShareTargetPage() {
         })
 
         if (res.status === 401) {
-          // Not authenticated — redirect to login
           setStatus("error")
           setMessage("로그인이 필요합니다")
           setTimeout(() => router.replace("/login"), 1500)
@@ -88,16 +87,24 @@ export default function ShareTargetPage() {
   }, [searchParams, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          {status === "saving" && <Loader2 className="h-10 w-10 text-primary animate-spin" />}
-          {status === "success" && <CheckCircle className="h-10 w-10 text-green-500" />}
-          {status === "error" && <AlertCircle className="h-10 w-10 text-destructive" />}
-        </div>
-        <p className="text-lg font-medium text-foreground">{message}</p>
-        <p className="text-sm text-muted-foreground">잠시 후 메인 화면으로 이동합니다</p>
+    <div className="text-center space-y-4">
+      <div className="flex justify-center">
+        {status === "saving" && <Loader2 className="h-10 w-10 text-primary animate-spin" />}
+        {status === "success" && <CheckCircle className="h-10 w-10 text-green-500" />}
+        {status === "error" && <AlertCircle className="h-10 w-10 text-destructive" />}
       </div>
+      <p className="text-lg font-medium text-foreground">{message}</p>
+      <p className="text-sm text-muted-foreground">잠시 후 메인 화면으로 이동합니다</p>
+    </div>
+  )
+}
+
+export default function ShareTargetPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Suspense fallback={<Loader2 className="h-10 w-10 text-primary animate-spin" />}>
+        <ShareTargetContent />
+      </Suspense>
     </div>
   )
 }

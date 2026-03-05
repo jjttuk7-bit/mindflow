@@ -78,9 +78,9 @@ export async function GET(req: NextRequest) {
         // 4. Reminders
         const reminders = await gatherReminders(supabase, userId, now)
 
-        // 5. Weekly Digest (Pro only)
+        // 5. Weekly Digest
         let digest: WeeklyInsightData["digest"] = undefined
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           const summaries = await fetchSummaries(supabase, userId, startDate, endDate)
           if (summaries) {
             const weekLabel = `${weekStart.getMonth() + 1}/${weekStart.getDate()} - ${weekEnd.getMonth() + 1}/${weekEnd.getDate()}`
@@ -93,9 +93,9 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        // 6. Productivity Score (Pro only)
+        // 6. Productivity Score
         let productivityScore: WeeklyInsightData["productivity_score"] = undefined
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           productivityScore = await generateProductivityScore(
             {
               total_captures: stats.total_captures,
@@ -110,9 +110,9 @@ export async function GET(req: NextRequest) {
         // 7. Utilization
         const utilization = await gatherUtilization(supabase, userId, startDate, endDate)
 
-        // 8. Knowledge Health (Pro only)
+        // 8. Knowledge Health
         let knowledgeHealth: WeeklyInsightData["knowledge_health"] = undefined
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           knowledgeHealth = await gatherKnowledgeHealth(
             supabase, userId, startDate, endDate, utilization.rate
           )

@@ -72,8 +72,8 @@ export async function POST(req: NextRequest) {
       reminders,
     }
 
-    // Pro-only AI sections
-    if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+    // AI analysis sections
+    {
       const summaries = await fetchSummaries(supabase, user.id, startDate, endDate)
 
       if (summaries) {

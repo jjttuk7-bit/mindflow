@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
           daysInMonth
         )
 
-        // ─── 4. Interests (Pro only) ────────────────────────────────
+        // ─── 4. Interests ─────────────────────────────────────────────
         let interests = {
           top_topics: [] as string[],
           trending_up: [] as string[],
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
         // Fetch previous month's topics for comparison
         let prevTopics: string[] | undefined
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           const prevMonthDate = new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1)
           const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-01`
 
@@ -103,9 +103,9 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        // ─── 5. MoM Comparison (Pro only) ───────────────────────────
+        // ─── 5. MoM Comparison ────────────────────────────────────────
         let momComparison: MoMComparisonData | undefined
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           const prevMonthDate = new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1)
           const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}-01`
 
@@ -208,9 +208,9 @@ export async function POST(req: NextRequest) {
         // ─── 7. Reminders ───────────────────────────────────────────
         const reminders = await gatherReminders(supabase, userId, now)
 
-        // ─── 8. Productivity Score (Pro only) ───────────────────────
+        // ─── 8. Productivity Score ────────────────────────────────────
         let productivityScore: InsightReportData["productivity_score"]
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           productivityScore = await generateProductivityScore(
             {
               total_captures: stats.total_captures,
@@ -222,14 +222,14 @@ export async function POST(req: NextRequest) {
           )
         }
 
-        // ─── 9. Digest (Pro only) ──────────────────────────────────
+        // ─── 9. Digest ───────────────────────────────────────────────
         let digest = {
           one_liner: "",
           key_insights: [] as string[],
           full_summary: "",
         }
 
-        if (isPro && PLAN_LIMITS.pro.insight_ai_analysis) {
+        {
           const summaries = await fetchSummaries(supabase, userId, startDate, endDate)
           if (summaries) {
             const monthLabel = `${monthStart.getFullYear()}년 ${monthStart.getMonth() + 1}월`

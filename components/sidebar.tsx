@@ -344,7 +344,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                       if (e.key === "Enter") handleCreateProject()
                       if (e.key === "Escape") { setCreatingProject(false); setNewProjectName("") }
                     }}
-                    placeholder="Project name..."
+                    placeholder="프로젝트 이름..."
                     className="flex-1 min-w-0 bg-muted/50 border border-border/60 rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/30"
                   />
                   <button

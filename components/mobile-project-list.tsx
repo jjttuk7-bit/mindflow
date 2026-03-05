@@ -65,7 +65,7 @@ export function MobileProjectList() {
                 if (e.key === "Enter") handleCreate()
                 if (e.key === "Escape") { setCreating(false); setNewName("") }
               }}
-              placeholder="Project name..."
+              placeholder="프로젝트 이름..."
               className="flex-1 min-w-0 bg-transparent text-sm focus:outline-none"
             />
             <button onClick={handleCreate} className="h-8 w-8 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10">
@@ -80,9 +80,9 @@ export function MobileProjectList() {
         {projects.length === 0 && !creating ? (
           <EmptyState
             icon={<FolderOpen className="h-8 w-8" />}
-            title="No projects yet"
-            description="Create a project to organize your items by topic"
-            action={{ label: "New Project", onClick: () => setCreating(true) }}
+            title="아직 프로젝트가 없어요"
+            description="프로젝트를 만들어 항목을 주제별로 정리해보세요"
+            action={{ label: "새 프로젝트", onClick: () => setCreating(true) }}
           />
         ) : (
           <div className="space-y-2">

@@ -63,14 +63,9 @@ function ShareTargetContent() {
 
         if (!res.ok) throw new Error("Save failed")
 
-        const item = await res.json()
+        await res.json()
 
-        // Trigger AI tagging in background
-        fetch("/api/ai/tag", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ item_id: item.id, content: content.trim(), type }),
-        }).catch(() => {})
+        // AI tagging is handled server-side via after() in the API route
 
         setStatus("success")
         setMessage("저장 완료!")

@@ -97,17 +97,10 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
       toast.success("클립보드 내용이 저장되었습니다!")
       onSaved?.()
 
-      // AI tagging in background
-      const tagContent = isLink && item.metadata
-        ? [item.metadata.og_title, item.metadata.og_description, item.content].filter(Boolean).join(" — ")
-        : item.content
-      fetch("/api/ai/tag", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ item_id: item.id, content: tagContent, type }),
-      })
-        .then(async (r) => {
-          if (!r.ok) return
+      // AI tagging is handled server-side via after() in the API route
+      // Poll for updated tags after a delay
+      setTimeout(async () => {
+        try {
           const itemRes = await fetch(`/api/items/${item.id}`)
           if (!itemRes.ok) return
           const updated = await itemRes.json()
@@ -116,9 +109,10 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
             context: updated.context,
             tags: updated.tags || [],
             project_id: updated.project_id,
+            metadata: updated.metadata,
           })
-        })
-        .catch(() => {})
+        } catch {}
+      }, 5000)
     } catch {
       toast.error("저장에 실패했습니다")
     } finally {

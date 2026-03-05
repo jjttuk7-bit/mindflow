@@ -35,7 +35,11 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/api/stripe/webhook") ||
     request.nextUrl.pathname.startsWith("/api/cron") ||
     request.nextUrl.pathname.startsWith("/api/extension") ||
-    request.nextUrl.pathname.startsWith("/notification-badge")
+    request.nextUrl.pathname.startsWith("/notification-badge") ||
+    request.nextUrl.pathname.startsWith("/icon") ||
+    request.nextUrl.pathname.startsWith("/apple-icon") ||
+    request.nextUrl.pathname === "/manifest.webmanifest" ||
+    request.nextUrl.pathname === "/sw.js"
 
   // For public routes, just refresh the session without blocking
   if (isPublicRoute) {

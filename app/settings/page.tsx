@@ -78,6 +78,11 @@ function SettingsContent() {
   const [pinStep, setPinStep] = useState<"enter" | "confirm">("enter")
   const [pinError, setPinError] = useState("")
   const [pinLoading, setPinLoading] = useState(false)
+  const [pinAuth, setPinAuth] = useState(false)
+  const [pinAuthAction, setPinAuthAction] = useState<"change" | "remove" | null>(null)
+  const [pinPassword, setPinPassword] = useState("")
+  const [pinAuthError, setPinAuthError] = useState("")
+  const [pinAuthLoading, setPinAuthLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -175,6 +180,34 @@ function SettingsContent() {
       toast.error("알림 설정에 실패했습니다")
     } finally {
       setPushLoading(false)
+    }
+  }
+
+  async function handlePinAuth() {
+    if (!pinPassword || !email) return
+    setPinAuthLoading(true)
+    setPinAuthError("")
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: pinPassword,
+      })
+      if (error) {
+        setPinAuthError("비밀번호가 일치하지 않습니다")
+        return
+      }
+      setPinAuth(false)
+      setPinPassword("")
+      if (pinAuthAction === "change") {
+        setPinMode("change")
+      } else if (pinAuthAction === "remove") {
+        handlePinRemove()
+      }
+      setPinAuthAction(null)
+    } catch {
+      setPinAuthError("인증에 실패했습니다")
+    } finally {
+      setPinAuthLoading(false)
     }
   }
 
@@ -763,6 +796,42 @@ function SettingsContent() {
                     </Button>
                   </div>
                 </div>
+              ) : pinAuth ? (
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-foreground">
+                    비밀번호를 입력하여 본인 확인을 해주세요
+                  </p>
+                  <input
+                    autoFocus
+                    type="password"
+                    value={pinPassword}
+                    onChange={(e) => { setPinPassword(e.target.value); setPinAuthError("") }}
+                    onKeyDown={(e) => { if (e.key === "Enter") handlePinAuth() }}
+                    placeholder="비밀번호"
+                    className="w-full rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  />
+                  {pinAuthError && (
+                    <p className="text-sm text-destructive">{pinAuthError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setPinAuth(false); setPinPassword(""); setPinAuthError(""); setPinAuthAction(null) }}
+                      className="flex-1"
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handlePinAuth}
+                      disabled={pinAuthLoading || !pinPassword}
+                      className="flex-1"
+                    >
+                      {pinAuthLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "확인"}
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
@@ -780,14 +849,14 @@ function SettingsContent() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPinMode("change")}
+                        onClick={() => { setPinAuthAction("change"); setPinAuth(true) }}
                       >
                         변경
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handlePinRemove}
+                        onClick={() => { setPinAuthAction("remove"); setPinAuth(true) }}
                         disabled={pinLoading}
                       >
                         {pinLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "해제"}

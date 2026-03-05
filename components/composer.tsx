@@ -299,6 +299,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                 summary: updated.summary,
                 context: updated.context,
                 tags: updated.tags || [],
+                project_id: updated.project_id,
               })
             })
             .catch((err) => console.error("AI tag error:", err))
@@ -345,6 +346,17 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ item_id: item.id, content: newContent, type: "image" }),
+                  }).then(async (r) => {
+                    if (!r.ok) return
+                    const itemRes = await fetch(`/api/items/${item.id}`)
+                    if (!itemRes.ok) return
+                    const tagged = await itemRes.json()
+                    updateItem(item.id, {
+                      summary: tagged.summary,
+                      context: tagged.context,
+                      tags: tagged.tags || [],
+                      project_id: tagged.project_id,
+                    })
                   }).catch(() => {})
                 }).catch(() => {})
               }

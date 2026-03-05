@@ -259,8 +259,9 @@ export async function generateLinkAnalysis(
   ogTitle?: string,
   ogDescription?: string
 ): Promise<string | null> {
+  // Skip if no meaningful metadata (URL alone produces generic results)
+  if (!ogTitle && !ogDescription) return null
   const context = [ogTitle, ogDescription, url].filter(Boolean).join(" — ")
-  if (!context || context.length < 10) return null
 
   // Domain-specific analysis hints
   let domainHint = ""
@@ -274,6 +275,8 @@ export async function generateLinkAnalysis(
       domainHint = "학술 논문/자료입니다. 연구 주제, 핵심 발견, 실용적 시사점에 초점을 맞추세요."
     } else if (/news|times|post|bbc|cnn|reuters/i.test(hostname)) {
       domainHint = "뉴스 기사입니다. 핵심 사건, 영향, 시사점에 초점을 맞추세요."
+    } else if (/smartstore\.naver|coupang|kurly|ssg\.com|11st\.co|gmarket|auction|tmon|wemake/i.test(hostname)) {
+      domainHint = "쇼핑몰 상품 페이지입니다. 상품명, 카테고리, 가격대, 특징에 초점을 맞추세요."
     }
   } catch { /* ignore invalid URL */ }
 

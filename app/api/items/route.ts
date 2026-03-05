@@ -13,7 +13,31 @@ function getServiceSupabase() {
   )
 }
 
+async function fetchOEmbed(url: string): Promise<{ title?: string; author?: string; thumbnail?: string } | null> {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+    let oembedUrl = ""
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+    } else {
+      return null
+    }
+    const res = await fetch(oembedUrl, { signal: AbortSignal.timeout(5000) })
+    if (!res.ok) return null
+    const data = await res.json()
+    return {
+      title: data.title || undefined,
+      author: data.author_name || undefined,
+      thumbnail: data.thumbnail_url || undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
 async function scrapeOg(url: string) {
+  const domain = new URL(url).hostname.replace("www.", "")
+
   try {
     const { result } = await ogs({
       url,
@@ -29,17 +53,42 @@ async function scrapeOg(url: string) {
       result.ogImage && result.ogImage.length > 0
         ? result.ogImage[0].url
         : undefined
-    return {
+
+    let ogData = {
       og_title: result.ogTitle || undefined,
       og_description: result.ogDescription || undefined,
       og_image: ogImage,
       og_url: result.ogUrl || url,
-      og_domain: new URL(url).hostname.replace("www.", ""),
+      og_domain: domain,
     }
+
+    // If OG scraping returned no title, try oEmbed fallback
+    if (!ogData.og_title) {
+      const oembed = await fetchOEmbed(url)
+      if (oembed) {
+        ogData.og_title = oembed.title
+        ogData.og_description = ogData.og_description || (oembed.author ? `by ${oembed.author}` : undefined)
+        ogData.og_image = ogData.og_image || oembed.thumbnail
+      }
+    }
+
+    return ogData
   } catch {
+    // OG scraping completely failed — try oEmbed as last resort
+    const oembed = await fetchOEmbed(url)
+    if (oembed?.title) {
+      return {
+        og_title: oembed.title,
+        og_description: oembed.author ? `by ${oembed.author}` : undefined,
+        og_image: oembed.thumbnail,
+        og_url: url,
+        og_domain: domain,
+      }
+    }
+
     return {
       og_url: url,
-      og_domain: new URL(url).hostname.replace("www.", ""),
+      og_domain: domain,
     }
   }
 }

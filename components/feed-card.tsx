@@ -136,18 +136,27 @@ export function FeedCard({
   // Highlight is computed directly from store (no useState delay)
   const isJustSaved = justSavedId === item.id
 
-  // Scroll into view and auto-clear highlight after 3s
+  // Debug: log when justSavedId matches
+  useEffect(() => {
+    if (justSavedId) {
+      console.log(`[DotLine] FeedCard ${item.id.slice(0,8)}: justSavedId=${justSavedId.slice(0,8)}, match=${isJustSaved}`)
+    }
+  }, [justSavedId, item.id, isJustSaved])
+
+  // Scroll into view and auto-clear highlight after 4s
   useEffect(() => {
     if (!isJustSaved) return
+    console.log(`[DotLine] Highlight active for ${item.id.slice(0,8)}, scrolling...`)
     // Scroll the card into view
     const scrollTimer = setTimeout(() => {
       const el = cardRef.current || document.querySelector(`[data-item-id="${item.id}"]`)
+      console.log(`[DotLine] Scroll target:`, el ? 'found' : 'NOT FOUND')
       el?.scrollIntoView({ behavior: "smooth", block: "center" })
     }, 300)
-    // Clear highlight after 3s
+    // Clear highlight after 4s
     const clearTimer = setTimeout(() => {
       setJustSavedId(null)
-    }, 3000)
+    }, 4000)
     return () => {
       clearTimeout(scrollTimer)
       clearTimeout(clearTimer)
@@ -452,6 +461,12 @@ export function FeedCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* Just-saved indicator */}
+      {isJustSaved && (
+        <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold tracking-wide z-10">
+          NEW
+        </div>
+      )}
       {/* Pin indicator */}
       {item.is_pinned && (
         <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">

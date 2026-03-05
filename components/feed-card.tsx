@@ -445,9 +445,9 @@ export function FeedCard({
 
           {/* AI Comment */}
           {item.context?.ai_comment && (
-            <div className="flex items-start gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2">
+            <div className="flex items-start gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2.5">
               <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-              <p className="text-xs text-foreground/70 leading-relaxed">
+              <p className="text-[13px] text-foreground/80 leading-relaxed">
                 {item.context.ai_comment}
               </p>
             </div>

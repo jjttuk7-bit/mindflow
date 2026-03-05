@@ -175,45 +175,67 @@ JSON 형식으로 반환: {"summary": "요약문"}
 export interface InsightContext {
   timeOfDay?: string
   recentTopics?: string[]
+  recentItems?: Array<{ summary: string; tags: string[]; daysAgo: number }>
+  projects?: string[]
+  tagStats?: { total: number; topTags: string[] }
 }
 
 export async function generateInsight(content: string, type: string, context?: InsightContext): Promise<string | null> {
   if (!content || content.length < 10) return null
 
-  const contextHints: string[] = []
-  if (context?.recentTopics?.length) {
-    contextHints.push(`사용자가 최근 비슷한 주제를 연속 저장 중: [${context.recentTopics.join(", ")}]. "이 주제에 관심이 많으시네요" 같은 패턴 인식 코멘트를 고려하세요.`)
+  // Build user knowledge context section
+  const knowledgeLines: string[] = []
+
+  if (context?.projects?.length) {
+    knowledgeLines.push(`프로젝트: ${context.projects.join(", ")}`)
   }
 
-  const contextSection = contextHints.length
-    ? `\n[맥락]\n${contextHints.join("\n")}\n`
+  if (context?.tagStats?.topTags?.length) {
+    knowledgeLines.push(`주요 관심사: ${context.tagStats.topTags.join(", ")}`)
+  }
+
+  if (context?.recentItems?.length) {
+    const recentLines = context.recentItems.map(item => {
+      const tags = item.tags.length ? ` (${item.tags.join(", ")})` : ""
+      return `- ${item.summary}${tags} — ${item.daysAgo}일 전`
+    })
+    knowledgeLines.push(`최근 저장:\n${recentLines.join("\n")}`)
+  }
+
+  const knowledgeSection = knowledgeLines.length
+    ? `\n[사용자의 지식 맥락]\n${knowledgeLines.join("\n")}\n`
     : ""
 
   const result = await getOpenAI().chat.completions.create({
     model: MODEL_MAP.summary,
-    temperature: 0.7,
+    temperature: 0.6,
     messages: [{
       role: "user",
-      content: `사용자가 저장한 콘텐츠를 읽고, 짧고 임팩트 있는 AI 코멘트를 달아주세요.
+      content: `당신은 사용자의 개인 지식 베이스를 관리하는 AI입니다.
+새로 저장된 콘텐츠를 사용자의 기존 지식 맥락에서 분석하고,
+이 사용자만을 위한 구체적인 인사이트를 제공하세요.
+${knowledgeSection}
+[새로 저장된 콘텐츠]
+유형: ${type}
+내용: ${content}
 
-역할: 사용자의 지식 동반자. 공감하고, 연결하고, 격려하는 톤.
-${contextSection}
-코멘트 유형 (콘텐츠에 맞게 자동 선택):
-- 아이디어면: 확장 가능성이나 연결 포인트 제시 ("이 아이디어를 ~와 결합하면 더 강력해질 수 있어요")
-- 학습/기술이면: 핵심 인사이트 강조 또는 실천 팁 ("핵심은 ~이네요. 바로 적용해볼 만해요")
-- 할 일/계획이면: 우선순위나 실행 팁 ("가장 임팩트가 큰 건 ~ 부분이에요")
-- 링크/참고자료면: 왜 가치있는지, 어떻게 활용할지 ("이 자료의 핵심은 ~. 나중에 ~ 할 때 유용해요")
-- 일상/감정이면: 공감과 격려 ("좋은 기록이에요. 이런 순간을 남기는 게 중요해요")
+[인사이트 유형 — 가장 적절한 하나를 선택]
+1. 연결: 기존 저장 항목과의 구체적 연결점 제시
+2. 패턴: 사용자의 학습/관심 패턴 인식 + 의미 부여
+3. 실행: 콘텐츠 기반 구체적 다음 행동 제안
+4. 관점: 사용자가 놓칠 수 있는 새로운 각도
+5. 성장: 과거 대비 변화/발전 짚어주기
 
-규칙:
-- 1~2문장, 최대 80자
-- 한국어로 작성
-- "~입니다" 대신 "~이에요/~해요" 친근한 톤
-- 시간대 언급 금지 ("늦은 시간", "아침에", "밤늦게" 등) — 시간 정보가 부정확할 수 있음
-- 콘텐츠만 반환. 다른 텍스트 없이.
-
-콘텐츠 유형: ${type}
-콘텐츠: ${content}`,
+[절대 규칙]
+- 2~3문장, 최대 200자
+- 한국어, "~에요/~해요" 톤
+- 기존 항목 참조 시 구체적 주제/제목 언급
+- 금지: "좋은 기록이에요", "흥미롭네요", "잘 하고 계세요" 같은 뻔한 격려
+- 금지: 콘텐츠를 요약하거나 반복하는 것
+- 반드시 사용자의 맥락에서만 나올 수 있는 코멘트를 작성
+- 맥락 연결이 불가능하면, 콘텐츠 안의 비자명한 포인트를 짚어주기
+- 시간대 언급 금지 ("늦은 시간", "아침에", "밤늦게" 등)
+- 콘텐츠만 반환. 다른 텍스트 없이.`,
     }],
   })
 

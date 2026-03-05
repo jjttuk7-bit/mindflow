@@ -81,31 +81,38 @@ export async function enrichItem(
     .map(([name, count]) => `${name} (${count})`)
   const tagNames = [...tagFreqMap.keys()]
 
-  // Detect recent topic patterns — last 5 items' tags
-  let detectedTopics = recentTopics
-  if (!detectedTopics) {
-    const { data: recentItemTags } = await supabase
-      .from("items")
-      .select("item_tags(tags(name))")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(5)
+  // Fetch recent 15 items with summary, content, tags for insight context
+  const { data: recentItems } = await supabase
+    .from("items")
+    .select("summary, content, created_at, item_tags(tags(name))")
+    .eq("user_id", userId)
+    .neq("id", itemId)
+    .order("created_at", { ascending: false })
+    .limit(15)
 
-    if (recentItemTags?.length) {
-      const recentTagCounts = new Map<string, number>()
-      for (const item of recentItemTags) {
-        const tags = item.item_tags as unknown as Array<{ tags: { name: string } | null }>
-        for (const it of tags || []) {
-          const name = it.tags?.name
-          if (name) recentTagCounts.set(name, (recentTagCounts.get(name) || 0) + 1)
-        }
+  // Detect recent topic patterns from fetched items
+  let detectedTopics = recentTopics
+  if (!detectedTopics && recentItems?.length) {
+    const recentTagCounts = new Map<string, number>()
+    for (const item of recentItems.slice(0, 5)) {
+      const tags = item.item_tags as unknown as Array<{ tags: { name: string } | null }>
+      for (const it of tags || []) {
+        const name = it.tags?.name
+        if (name) recentTagCounts.set(name, (recentTagCounts.get(name) || 0) + 1)
       }
-      // Tags appearing in 2+ of last 5 items = active topic
-      detectedTopics = [...recentTagCounts.entries()]
-        .filter(([, count]) => count >= 2)
-        .map(([name]) => name)
     }
+    detectedTopics = [...recentTagCounts.entries()]
+      .filter(([, count]) => count >= 2)
+      .map(([name]) => name)
   }
+
+  // Fetch user projects
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("name")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(10)
 
   // Build insight context
   const now = new Date()
@@ -113,9 +120,24 @@ export async function enrichItem(
   const timeOfDay =
     hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"
 
+  const extractItemTags = (item: { item_tags: unknown }): string[] => {
+    const tags = item.item_tags as unknown as Array<{ tags: { name: string } | null }>
+    return (tags || []).map(it => it.tags?.name).filter((n): n is string => !!n)
+  }
+
   const insightContext: InsightContext = {
     timeOfDay,
     recentTopics: detectedTopics?.length ? detectedTopics : undefined,
+    recentItems: recentItems?.map(item => ({
+      summary: item.summary || (item.content?.slice(0, 80) + "..."),
+      tags: extractItemTags(item),
+      daysAgo: Math.floor((Date.now() - new Date(item.created_at).getTime()) / 86400000),
+    })),
+    projects: projects?.map(p => p.name),
+    tagStats: {
+      total: tagFreqMap.size,
+      topTags: tagNamesWithFreq.slice(0, 10),
+    },
   }
 
   // Run AI tasks in parallel with timing

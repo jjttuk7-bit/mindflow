@@ -799,7 +799,7 @@ function SettingsContent() {
               ) : pinAuth ? (
                 <div className="space-y-4">
                   <p className="text-sm font-medium text-foreground">
-                    비밀번호를 입력하여 본인 확인을 해주세요
+                    로그인 비밀번호로 본인 확인을 해주세요
                   </p>
                   <input
                     autoFocus
@@ -807,7 +807,7 @@ function SettingsContent() {
                     value={pinPassword}
                     onChange={(e) => { setPinPassword(e.target.value); setPinAuthError("") }}
                     onKeyDown={(e) => { if (e.key === "Enter") handlePinAuth() }}
-                    placeholder="비밀번호"
+                    placeholder="로그인 비밀번호"
                     className="w-full rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                   {pinAuthError && (

@@ -65,7 +65,17 @@ function ShareTargetContent() {
 
         await res.json()
 
-        // AI tagging is handled server-side via after() in the API route
+        // Mark content as handled so clipboard-suggest won't show it again
+        try {
+          const handled = JSON.parse(localStorage.getItem("clipboard-handled") || "[]")
+          // Add all variations: full content, URL, original text
+          const toMark = new Set([content.trim(), text.trim(), url.trim(), title.trim()])
+          for (const t of toMark) {
+            if (t && !handled.includes(t)) handled.push(t)
+          }
+          if (handled.length > 50) handled.splice(0, handled.length - 50)
+          localStorage.setItem("clipboard-handled", JSON.stringify(handled))
+        } catch {}
 
         setStatus("success")
         setMessage("저장 완료!")

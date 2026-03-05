@@ -176,6 +176,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     projects, activeProject, setActiveProject, addProject, removeProject,
     todos, sidebarView, setSidebarView, setChatOpen,
     smartFolder, setSmartFolder,
+    archivePinSet, setShowPinDialog,
   } = useStore()
   const { dark, toggle } = useTheme()
 
@@ -565,7 +566,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </button>
           <SidebarFeedbackButton onClose={onClose} />
           <button
-            onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false) }}
+            onClick={() => {
+              if (!showArchived && archivePinSet && sessionStorage.getItem("archive_unlocked") !== "true") {
+                setShowPinDialog(true)
+                return
+              }
+              setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false)
+            }}
             className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
               showArchived
                 ? "bg-primary/10 text-primary font-medium"

@@ -30,6 +30,7 @@ import {
   CheckCircle2,
   Info,
   Bell,
+  Lock,
 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -70,6 +71,13 @@ function SettingsContent() {
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushLoading, setPushLoading] = useState(false)
   const [pushSupported, setPushSupported] = useState(false)
+  const [pinSet, setPinSet] = useState(false)
+  const [pinMode, setPinMode] = useState<null | "set" | "change">(null)
+  const [pinDigits, setPinDigits] = useState(["", "", "", ""])
+  const [pinConfirmDigits, setPinConfirmDigits] = useState(["", "", "", ""])
+  const [pinStep, setPinStep] = useState<"enter" | "confirm">("enter")
+  const [pinError, setPinError] = useState("")
+  const [pinLoading, setPinLoading] = useState(false)
 
   const supabase = createClient()
 
@@ -79,6 +87,7 @@ function SettingsContent() {
       if (res.ok) {
         const data = await res.json()
         setSettings(data)
+        setPinSet(!!data.preferences?.archive_pin)
       }
     } catch (err) {
       console.error("Failed to fetch settings:", err)
@@ -166,6 +175,95 @@ function SettingsContent() {
       toast.error("알림 설정에 실패했습니다")
     } finally {
       setPushLoading(false)
+    }
+  }
+
+  function resetPinForm() {
+    setPinMode(null)
+    setPinStep("enter")
+    setPinDigits(["", "", "", ""])
+    setPinConfirmDigits(["", "", "", ""])
+    setPinError("")
+  }
+
+  function handlePinDigitChange(
+    digits: string[],
+    setFn: (d: string[]) => void,
+    index: number,
+    value: string,
+    refs: (HTMLInputElement | null)[]
+  ) {
+    if (!/^\d*$/.test(value)) return
+    const next = [...digits]
+    next[index] = value.slice(-1)
+    setFn(next)
+    setPinError("")
+    if (value && index < 3) refs[index + 1]?.focus()
+  }
+
+  function handlePinKeyDown(
+    digits: string[],
+    index: number,
+    e: React.KeyboardEvent,
+    refs: (HTMLInputElement | null)[]
+  ) {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
+      refs[index - 1]?.focus()
+    }
+  }
+
+  async function handlePinSubmit() {
+    const pin = pinDigits.join("")
+    if (pin.length !== 4) return
+
+    if (pinStep === "enter") {
+      setPinStep("confirm")
+      setPinConfirmDigits(["", "", "", ""])
+      return
+    }
+
+    const confirmPin = pinConfirmDigits.join("")
+    if (confirmPin.length !== 4) return
+
+    if (pin !== confirmPin) {
+      setPinError("PIN이 일치하지 않습니다")
+      setPinConfirmDigits(["", "", "", ""])
+      return
+    }
+
+    setPinLoading(true)
+    try {
+      const res = await fetch("/api/settings/archive-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      })
+      if (res.ok) {
+        setPinSet(true)
+        resetPinForm()
+        sessionStorage.removeItem("archive_unlocked")
+        toast.success("보관함 PIN이 설정되었습니다")
+      }
+    } catch {
+      setPinError("오류가 발생했습니다")
+    } finally {
+      setPinLoading(false)
+    }
+  }
+
+  async function handlePinRemove() {
+    setPinLoading(true)
+    try {
+      const res = await fetch("/api/settings/archive-pin", { method: "DELETE" })
+      if (res.ok) {
+        setPinSet(false)
+        sessionStorage.removeItem("archive_unlocked")
+        toast.success("보관함 PIN이 해제되었습니다")
+      }
+    } catch {
+      toast.error("오류가 발생했습니다")
+    } finally {
+      setPinLoading(false)
     }
   }
 
@@ -586,6 +684,128 @@ function SettingsContent() {
               </CardContent>
             </Card>
           )}
+
+          {/* Archive PIN Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Lock className="h-4 w-4" />
+                보관함 잠금
+              </CardTitle>
+              <CardDescription>
+                보관함에 PIN 잠금을 설정하여 민감한 항목을 보호하세요
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {pinMode ? (
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-foreground">
+                    {pinStep === "enter" ? "새 PIN 입력" : "PIN 확인"}
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    {(pinStep === "enter" ? pinDigits : pinConfirmDigits).map((d, i) => (
+                      <input
+                        key={`${pinStep}-${i}`}
+                        ref={(el) => {
+                          if (el) {
+                            el.dataset.pinIndex = String(i)
+                            el.dataset.pinStep = pinStep
+                          }
+                        }}
+                        autoFocus={i === 0}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={d}
+                        onChange={(e) => {
+                          const parent = e.target.parentElement
+                          const refs = parent ? Array.from(parent.querySelectorAll("input")) as HTMLInputElement[] : []
+                          handlePinDigitChange(
+                            pinStep === "enter" ? pinDigits : pinConfirmDigits,
+                            pinStep === "enter" ? setPinDigits : setPinConfirmDigits,
+                            i, e.target.value, refs
+                          )
+                        }}
+                        onKeyDown={(e) => {
+                          const parent = (e.target as HTMLElement).parentElement
+                          const refs = parent ? Array.from(parent.querySelectorAll("input")) as HTMLInputElement[] : []
+                          handlePinKeyDown(
+                            pinStep === "enter" ? pinDigits : pinConfirmDigits,
+                            i, e, refs
+                          )
+                        }}
+                        disabled={pinLoading}
+                        className="h-12 w-10 rounded-lg border-2 border-border/60 bg-muted/30 text-center text-xl font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
+                      />
+                    ))}
+                  </div>
+                  {pinError && (
+                    <p className="text-sm text-destructive text-center">{pinError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetPinForm}
+                      className="flex-1"
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handlePinSubmit}
+                      disabled={pinLoading || (pinStep === "enter" ? pinDigits : pinConfirmDigits).join("").length !== 4}
+                      className="flex-1"
+                    >
+                      {pinLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : pinStep === "enter" ? "다음" : "설정"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {pinSet ? "PIN 설정됨" : "PIN 미설정"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {pinSet
+                        ? "보관함 접근 시 PIN 입력이 필요합니다"
+                        : "PIN을 설정하면 보관함 접근 시 인증이 필요합니다"}
+                    </p>
+                  </div>
+                  {pinSet ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPinMode("change")}
+                      >
+                        변경
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePinRemove}
+                        disabled={pinLoading}
+                      >
+                        {pinLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "해제"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPinMode("set")}
+                    >
+                      PIN 설정
+                    </Button>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Data Section */}
           <Card>

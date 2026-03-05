@@ -65,6 +65,11 @@ interface DotLineStore {
 
   isOffline: boolean
   setIsOffline: (offline: boolean) => void
+
+  archivePinSet: boolean
+  setArchivePinSet: (set: boolean) => void
+  showPinDialog: boolean
+  setShowPinDialog: (show: boolean) => void
 }
 
 export const useStore = create<DotLineStore>((set) => ({
@@ -149,4 +154,9 @@ export const useStore = create<DotLineStore>((set) => ({
 
   isOffline: false,
   setIsOffline: (isOffline) => set({ isOffline }),
+
+  archivePinSet: false,
+  setArchivePinSet: (archivePinSet) => set({ archivePinSet }),
+  showPinDialog: false,
+  setShowPinDialog: (showPinDialog) => set({ showPinDialog }),
 }))

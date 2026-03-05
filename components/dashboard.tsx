@@ -24,6 +24,7 @@ const TodoList = dynamic(() => import("@/components/todo-list").then(m => m.Todo
 const MoreMenu = dynamic(() => import("@/components/more-menu").then(m => m.MoreMenu))
 const MobileProjectList = dynamic(() => import("@/components/mobile-project-list").then(m => m.MobileProjectList))
 const PushPrompt = dynamic(() => import("@/components/push-prompt").then(m => m.PushPrompt), { ssr: false })
+const ArchivePinDialog = dynamic(() => import("@/components/archive-pin-dialog").then(m => m.ArchivePinDialog), { ssr: false })
 
 export function Dashboard() {
   const { refetch, loading, loadMore, loadingMore, hasMore } = useItems()
@@ -32,7 +33,7 @@ export function Dashboard() {
   useOfflineSync(refetch)
 
   const searchParams = useSearchParams()
-  const { sidebarView, activeTab, composerOpen, isOffline } = useStore()
+  const { sidebarView, activeTab, composerOpen, isOffline, setArchivePinSet } = useStore()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
@@ -54,9 +55,12 @@ export function Dashboard() {
         if (!data.preferences?.onboarding_completed) {
           setShowOnboarding(true)
         }
+        if (data.preferences?.archive_pin) {
+          setArchivePinSet(true)
+        }
       })
       .catch(() => {})
-  }, [])
+  }, [setArchivePinSet])
 
   const renderMobileContent = () => {
     switch (activeTab) {
@@ -117,6 +121,7 @@ export function Dashboard() {
       <SearchDialog />
       {composerOpen && <MobileComposer onSaved={refetch} />}
       {showOnboarding && <Onboarding onComplete={() => setShowOnboarding(false)} />}
+      <ArchivePinDialog />
       </div>
     </div>
   )

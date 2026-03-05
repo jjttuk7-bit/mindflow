@@ -13,7 +13,7 @@ export function MoreMenu() {
   const {
     showArchived, setShowArchived, showTrash, setShowTrash, smartFolder, setSmartFolder,
     setActiveFilter, setActiveTag, setActiveProject, setActiveTab,
-    items,
+    items, archivePinSet, setShowPinDialog,
   } = useStore()
   const { dark, toggle } = useTheme()
 
@@ -70,7 +70,13 @@ export function MoreMenu() {
           <span className="text-xs text-muted-foreground/50 tabular-nums">{pinnedCount}</span>
         </button>
         <button
-          onClick={() => { setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false); setActiveTab("feed") }}
+          onClick={() => {
+            if (!showArchived && archivePinSet && sessionStorage.getItem("archive_unlocked") !== "true") {
+              setShowPinDialog(true)
+              return
+            }
+            setShowArchived(!showArchived); setSmartFolder(null); if (!showArchived && showTrash) setShowTrash(false); setActiveTab("feed")
+          }}
           className={`w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors ${
             showArchived ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent"
           }`}

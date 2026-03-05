@@ -184,8 +184,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   const [newProjectName, setNewProjectName] = useState("")
   const [projectsExpanded, setProjectsExpanded] = useState(true)
   const [tagsExpanded, setTagsExpanded] = useState(false)
+  const [projectsShowAll, setProjectsShowAll] = useState(false)
 
   const TAG_DISPLAY_LIMIT = 5
+  const PROJECT_DISPLAY_LIMIT = 5
 
   const tagCounts = tags.map((tag) => ({
     ...tag,
@@ -301,7 +303,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   No projects yet
                 </p>
               )}
-              {projects.map((project) => (
+              {(projectsShowAll ? projects : projects.slice(0, PROJECT_DISPLAY_LIMIT)).map((project) => (
                 <div key={project.id} className="group relative">
                   <button
                     onClick={() => {
@@ -335,6 +337,15 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   </button>
                 </div>
               ))}
+              {projects.length > PROJECT_DISPLAY_LIMIT && (
+                <button
+                  onClick={() => setProjectsShowAll(!projectsShowAll)}
+                  className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all duration-200"
+                >
+                  <ChevronDown className={`h-3 w-3 transition-transform ${projectsShowAll ? "rotate-180" : ""}`} />
+                  {projectsShowAll ? "접기" : `+${projects.length - PROJECT_DISPLAY_LIMIT} more`}
+                </button>
+              )}
               {creatingProject && (
                 <div className="flex items-center gap-1 px-3 py-1.5">
                   <input

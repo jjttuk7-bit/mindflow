@@ -367,23 +367,27 @@ export function AIProfile() {
     try {
       const { toPng } = await import("html-to-image")
 
-      // Clone element offscreen at full size to avoid viewport clipping
+      // Clone element into viewport (z-index -1 to hide behind content)
+      // Offscreen clones (left:-9999px) are not rendered by browsers
       const clone = el.cloneNode(true) as HTMLElement
-      clone.style.position = "absolute"
-      clone.style.left = "-9999px"
-      clone.style.top = "0"
-      clone.style.width = "720px"
-      clone.style.height = "auto"
-      clone.style.overflow = "visible"
-      clone.style.maxWidth = "none"
+      clone.style.cssText = `
+        position: fixed; left: 0; top: 0; z-index: -1;
+        width: 720px; height: auto; overflow: visible;
+        max-width: none; pointer-events: none; background: #ffffff;
+        color: #1a1a1a;
+      `
       document.body.appendChild(clone)
 
-      // Wait for layout and fonts
-      await new Promise((r) => setTimeout(r, 200))
+      await new Promise((r) => setTimeout(r, 300))
+
+      const w = clone.scrollWidth
+      const h = clone.scrollHeight
 
       // Double-render for font/image warmup
-      await toPng(clone, { pixelRatio: 1, backgroundColor: "#ffffff" })
+      await toPng(clone, { width: w, height: h, pixelRatio: 1, backgroundColor: "#ffffff" })
       const dataUrl = await toPng(clone, {
+        width: w,
+        height: h,
         pixelRatio: 2,
         backgroundColor: "#ffffff",
       })

@@ -30,6 +30,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [linkError, setLinkError] = useState<string | null>(null)
   const [hasCamera, setHasCamera] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [screenshotData, setScreenshotData] = useState<ScreenshotData | null>(null)
@@ -37,6 +38,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const isSubmittingRef = useRef(false)
   const [showCamera, setShowCamera] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const { addItem, updateItem } = useStore()
@@ -52,6 +54,11 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
 
   function handleFileSelect(file: File) {
     if (!file.type.startsWith("image/")) return
+    const MAX_FILE_SIZE = 10 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("이미지 크기는 10MB 이하여야 합니다")
+      return
+    }
     setSelectedFile(file)
     setPreviewUrl(URL.createObjectURL(file))
     setScreenshotData(null)
@@ -174,11 +181,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     formData.append("file", file)
     formData.append("bucket", "items-images")
     const res = await fetch("/api/upload", { method: "POST", body: formData })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(`Upload failed: ${data.error || res.statusText}`)
-      return null
-    }
+    if (!res.ok) return null
     const { url } = await res.json()
     return url
   }
@@ -194,13 +197,20 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   }
 
   async function handleVoiceRecorded(blob: Blob, duration: number) {
+    if (isSubmittingRef.current) return
+    isSubmittingRef.current = true
     setIsSubmitting(true)
+    const toastId = toast.loading("음성 메모 처리 중...")
     try {
       // Upload audio file
       const fileUrl = await uploadAudio(blob)
-      if (!fileUrl) return
+      if (!fileUrl) {
+        toast.error("업로드 실패", { id: toastId })
+        return
+      }
 
       // Transcribe via Whisper
+      toast.loading("음성을 텍스트로 변환 중...", { id: toastId })
       const formData = new FormData()
       formData.append("audio", blob, "recording.webm")
       const transcribeRes = await fetch("/api/ai/transcribe", {
@@ -226,33 +236,86 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       if (res.ok) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
-        toast.success("음성 메모 저장됨!")
+        toast.success("음성 메모 저장됨!", { id: toastId })
         onSaved?.()
+
+        // AI tagging if transcript exists
+        if (transcript) {
+          fetch("/api/ai/tag", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ item_id: item.id, content: transcript, type: "voice" }),
+          })
+            .then(async (r) => {
+              if (!r.ok) return
+              const itemRes = await fetch(`/api/items/${item.id}`)
+              if (!itemRes.ok) return
+              const updated = await itemRes.json()
+              updateItem(item.id, {
+                summary: updated.summary,
+                context: updated.context,
+                tags: updated.tags || [],
+                project_id: updated.project_id,
+              })
+            })
+            .catch(console.error)
+        }
       } else {
         const data = await res.json().catch(() => ({}))
-        toast.error(data.error || "Failed to save voice memo")
+        toast.error(data.error || "음성 메모 저장에 실패했습니다", { id: toastId })
       }
     } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
 
+  function normalizeUrl(url: string): string {
+    const trimmed = url.trim()
+    if (!trimmed) return trimmed
+    if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`
+    return trimmed
+  }
+
+  function isValidUrl(url: string): boolean {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   async function handleSubmit() {
+    if (isSubmittingRef.current) return
+
     if (activeType === "image") {
       if (!selectedFile) return
+    } else if (activeType === "link") {
+      const normalized = normalizeUrl(content)
+      if (!normalized) return
+      if (!isValidUrl(normalized)) {
+        setLinkError("올바른 URL 형식이 아닙니다")
+        return
+      }
+      setLinkError(null)
     } else {
       if (!content.trim()) return
+      if (activeType === "text" && content.length > 50000) return
     }
 
+    isSubmittingRef.current = true
     setIsSubmitting(true)
     setError(null)
+    const toastId = toast.loading(activeType === "image" ? "이미지 업로드 중..." : "저장 중...")
     try {
       let metadata = {}
+      const submitContent = activeType === "link" ? normalizeUrl(content) : content.trim()
 
       if (activeType === "image" && selectedFile) {
         const imageUrl = await uploadImage(selectedFile)
         if (!imageUrl) {
-          setError("Failed to upload image")
+          toast.error("이미지 업로드에 실패했습니다", { id: toastId })
           return
         }
         metadata = screenshotData
@@ -265,7 +328,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: activeType,
-          content: activeType === "image" ? content.trim() || "Image" : content.trim(),
+          content: activeType === "image" ? content.trim() || "Image" : submitContent,
           metadata,
         }),
       })
@@ -291,7 +354,6 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                 console.error("AI tag failed:", r.status, await r.text().catch(() => ""))
                 return
               }
-              // Fetch the full updated item to get tags, summary, ai_comment
               const itemRes = await fetch(`/api/items/${item.id}`)
               if (!itemRes.ok) return
               const updated = await itemRes.json()
@@ -307,7 +369,8 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
 
         setContent("")
         clearFile()
-        toast.success("저장됨!")
+        setLinkError(null)
+        toast.success("저장됨!", { id: toastId })
         onSaved?.()
 
         if (savedFile) {
@@ -365,9 +428,13 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         }
       } else {
         const data = await res.json().catch(() => ({}))
-        setError(data.error || `Save failed (${res.status})`)
+        toast.error(data.error || "저장에 실패했습니다", {
+          id: toastId,
+          action: { label: "다시 시도", onClick: () => handleSubmit() },
+          duration: 10000,
+        })
       }
-    } catch (err) {
+    } catch {
       // Offline fallback for text/link items
       if ((activeType === "text" || activeType === "link") && content.trim()) {
         try {
@@ -375,15 +442,20 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           await addToOfflineQueue(offlineItem)
           addItem(offlineItem)
           setContent("")
-          toast("Saved offline. Will sync when back online.", { duration: 3000 })
+          toast.success("오프라인에 저장됨. 온라인 복구 시 동기화됩니다.", { id: toastId, duration: 3000 })
           onSaved?.()
         } catch {
-          setError("Failed to save offline. Please try again.")
+          toast.error("오프라인 저장에 실패했습니다", { id: toastId })
         }
       } else {
-        setError("Network error. Please try again.")
+        toast.error("네트워크 오류. 다시 시도해주세요.", {
+          id: toastId,
+          action: { label: "다시 시도", onClick: () => handleSubmit() },
+          duration: 10000,
+        })
       }
     } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -391,7 +463,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit()
+      if (!isSubmittingRef.current) handleSubmit()
     }
   }
 
@@ -400,7 +472,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       ? false // Voice uses its own send button
       : activeType === "image"
       ? !!selectedFile && !isSubmitting
-      : !!content.trim() && !isSubmitting
+      : !!content.trim() && !isSubmitting && (activeType !== "text" || content.length <= 50000)
 
   return (
     <div
@@ -414,17 +486,33 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       {activeType === "voice" ? (
         <VoiceRecorder onRecorded={handleVoiceRecorded} disabled={isSubmitting} />
       ) : activeType === "link" ? (
-        <input
-          type="url"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          placeholder="URL을 붙여넣으세요..."
-          className="w-full bg-transparent px-5 py-4 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
-          disabled={isSubmitting}
-        />
+        <div>
+          <input
+            type="url"
+            value={content}
+            onChange={(e) => { setContent(e.target.value); setLinkError(null) }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => {
+              setIsFocused(false)
+              if (content.trim()) {
+                const normalized = normalizeUrl(content)
+                setContent(normalized)
+                if (!isValidUrl(normalized)) {
+                  setLinkError("올바른 URL 형식이 아닙니다")
+                } else {
+                  setLinkError(null)
+                }
+              }
+            }}
+            placeholder="URL을 붙여넣으세요..."
+            className="w-full bg-transparent px-5 py-4 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
+            disabled={isSubmitting}
+          />
+          {linkError && (
+            <p className="text-xs text-destructive px-5 pb-1">{linkError}</p>
+          )}
+        </div>
       ) : activeType === "image" ? (
         <div className="px-5 pt-4 pb-2 space-y-3">
           {/* Hidden file inputs */}
@@ -573,6 +661,25 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         />
       )}
 
+      {activeType === "text" && content.length > 40000 && (
+        <p className={`text-xs px-5 pb-1 tabular-nums ${
+          content.length > 50000 ? "text-destructive" : "text-muted-foreground/50"
+        }`}>
+          {content.length.toLocaleString()} / 50,000
+        </p>
+      )}
+
+      {activeType === "text" && /^https?:\/\/[^\s]+$/.test(content.trim()) && (
+        <button
+          type="button"
+          onClick={() => { setActiveType("link"); setLinkError(null) }}
+          className="flex items-center gap-1.5 mx-5 mb-2 px-3 py-1.5 rounded-lg text-xs bg-primary/5 text-primary/70 hover:bg-primary/10 transition-colors"
+        >
+          <Link className="h-3 w-3" />
+          링크로 저장하시겠어요?
+        </button>
+      )}
+
       {error && (
         <p className="text-xs text-destructive px-4 pb-1">{error}</p>
       )}
@@ -586,6 +693,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
                 setActiveType(btn.type)
                 clearFile()
                 setError(null)
+                setLinkError(null)
               }}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
                 activeType === btn.type
@@ -607,7 +715,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           {isSubmitting ? (
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
-              Saving
+              저장 중
             </span>
           ) : (
             <>

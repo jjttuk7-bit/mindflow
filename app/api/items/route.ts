@@ -13,6 +13,49 @@ function getServiceSupabase() {
   )
 }
 
+async function fetchNaverShopping(url: string): Promise<{ title?: string; category?: string; price?: string; brand?: string; image?: string } | null> {
+  const clientId = process.env.NAVER_CLIENT_ID
+  const clientSecret = process.env.NAVER_CLIENT_SECRET
+  if (!clientId || !clientSecret) return null
+
+  try {
+    // Extract product name from URL path or query
+    const urlObj = new URL(url)
+    const pathParts = urlObj.pathname.split("/").filter(Boolean)
+    // Smart Store: /store-name/products/product-id
+    const productId = pathParts.find(p => /^\d+$/.test(p))
+
+    // Try to get product info via search using the URL
+    const searchQuery = productId || pathParts[pathParts.length - 1] || ""
+    if (!searchQuery) return null
+
+    const res = await fetch(
+      `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(url)}&display=1`,
+      {
+        headers: {
+          "X-Naver-Client-Id": clientId,
+          "X-Naver-Client-Secret": clientSecret,
+        },
+        signal: AbortSignal.timeout(5000),
+      }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const item = data.items?.[0]
+    if (!item) return null
+
+    return {
+      title: item.title?.replace(/<[^>]*>/g, "") || undefined,
+      category: [item.category1, item.category2, item.category3, item.category4].filter(Boolean).join(" > ") || undefined,
+      price: item.lprice ? `${Number(item.lprice).toLocaleString()}원` : undefined,
+      brand: item.brand || item.maker || undefined,
+      image: item.image || undefined,
+    }
+  } catch {
+    return null
+  }
+}
+
 async function fetchOEmbed(url: string): Promise<{ title?: string; author?: string; thumbnail?: string } | null> {
   try {
     const hostname = new URL(url).hostname.toLowerCase()
@@ -62,25 +105,47 @@ async function scrapeOg(url: string) {
       og_domain: domain,
     }
 
-    // If OG scraping returned no title, try oEmbed fallback
+    // If OG scraping returned no title, try fallbacks
     if (!ogData.og_title) {
+      // Try oEmbed (YouTube etc.)
       const oembed = await fetchOEmbed(url)
       if (oembed) {
         ogData.og_title = oembed.title
         ogData.og_description = ogData.og_description || (oembed.author ? `by ${oembed.author}` : undefined)
         ogData.og_image = ogData.og_image || oembed.thumbnail
       }
+
+      // Try Naver Shopping API for shopping domains
+      if (!ogData.og_title || /smartstore\.naver|shopping\.naver/i.test(domain)) {
+        const shop = await fetchNaverShopping(url)
+        if (shop?.title) {
+          ogData.og_title = ogData.og_title || shop.title
+          ogData.og_description = [shop.category, shop.price, shop.brand].filter(Boolean).join(" | ")
+          ogData.og_image = ogData.og_image || shop.image
+        }
+      }
     }
 
     return ogData
   } catch {
-    // OG scraping completely failed — try oEmbed as last resort
+    // OG scraping completely failed — try fallbacks
     const oembed = await fetchOEmbed(url)
     if (oembed?.title) {
       return {
         og_title: oembed.title,
         og_description: oembed.author ? `by ${oembed.author}` : undefined,
         og_image: oembed.thumbnail,
+        og_url: url,
+        og_domain: domain,
+      }
+    }
+
+    const shop = await fetchNaverShopping(url)
+    if (shop?.title) {
+      return {
+        og_title: shop.title,
+        og_description: [shop.category, shop.price, shop.brand].filter(Boolean).join(" | "),
+        og_image: shop.image,
         og_url: url,
         og_domain: domain,
       }

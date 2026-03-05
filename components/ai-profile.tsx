@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   Sparkles,
   TrendingUp,
@@ -21,6 +21,7 @@ import {
   Search,
   Users,
   Gauge,
+  Download,
 } from "lucide-react"
 import { DotLineLogo } from "@/components/dotline-logo"
 import {
@@ -358,6 +359,21 @@ export function AIProfile() {
   const [profile, setProfile] = useState<ProfileResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  const handleDownloadPNG = useCallback(async () => {
+    if (!profileRef.current) return
+    const html2canvas = (await import("html2canvas")).default
+    const canvas = await html2canvas(profileRef.current, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+    })
+    const link = document.createElement("a")
+    link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`
+    link.href = canvas.toDataURL("image/png")
+    link.click()
+  }, [])
 
   const fetchProfile = () => {
     fetch("/api/ai/profile")
@@ -440,7 +456,7 @@ export function AIProfile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div ref={profileRef} className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -459,16 +475,27 @@ export function AIProfile() {
               )}
             </div>
           </div>
-          {!isFree && (
-            <button
-              onClick={runAnalysis}
-              disabled={analyzing}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
-            >
-              {analyzing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {analyzing ? "분석 중..." : "분석하기"}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {!isFree && (
+              <button
+                onClick={handleDownloadPNG}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="이미지로 저장"
+              >
+                <Download className="h-4 w-4" />
+              </button>
+            )}
+            {!isFree && (
+              <button
+                onClick={runAnalysis}
+                disabled={analyzing}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              >
+                {analyzing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {analyzing ? "분석 중..." : "분석하기"}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 1. Thinking Style Card (Pro) */}

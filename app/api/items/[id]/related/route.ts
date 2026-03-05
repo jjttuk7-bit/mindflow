@@ -32,10 +32,24 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  // Filter out the current item
-  const related = (data || []).filter(
-    (r: { id: string }) => r.id !== id
-  ).slice(0, 3)
+  // Filter out the current item and deleted items
+  const filteredIds = (data || [])
+    .filter((r: { id: string }) => r.id !== id)
+    .map((r: { id: string }) => r.id)
+
+  if (filteredIds.length === 0) return NextResponse.json([])
+
+  // Check which items are not deleted
+  const { data: activeItems } = await supabase
+    .from("items")
+    .select("id")
+    .in("id", filteredIds)
+    .is("deleted_at", null)
+
+  const activeIds = new Set((activeItems || []).map((i: { id: string }) => i.id))
+  const related = (data || [])
+    .filter((r: { id: string }) => r.id !== id && activeIds.has(r.id))
+    .slice(0, 3)
 
   return NextResponse.json(related)
 }

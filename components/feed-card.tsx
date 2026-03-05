@@ -129,8 +129,67 @@ export function FeedCard({
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedLoaded, setRelatedLoaded] = useState(false)
   const [showProjectMenu, setShowProjectMenu] = useState(false)
+  const [isJustSaved, setIsJustSaved] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { projects } = useStore()
+  const cardRef = useRef<HTMLElement>(null)
+  const { projects, justSavedId, setJustSavedId } = useStore()
+
+  // Highlight animation for just-saved items
+  useEffect(() => {
+    if (justSavedId === item.id) {
+      setIsJustSaved(true)
+      // Scroll the card into view
+      setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      }, 100)
+      // Clear highlight after animation
+      const timer = setTimeout(() => {
+        setIsJustSaved(false)
+        setJustSavedId(null)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [justSavedId, item.id, setJustSavedId])
+
+  // Connection discovery — use ref to avoid cleanup killing the timer
+  const connCheckedRef = useRef(false)
+  useEffect(() => {
+    if (justSavedId !== item.id || connCheckedRef.current) return
+    connCheckedRef.current = true
+
+    // Fire-and-forget with retry: embedding may not be ready on first attempt
+    const showConnectionToast = (conn: { created_at: string; summary?: string; content: string }) => {
+      const daysAgo = Math.floor((Date.now() - new Date(conn.created_at).getTime()) / (1000 * 60 * 60 * 24))
+      if (daysAgo < 3) return
+      const timeLabel = daysAgo >= 30
+        ? `${Math.floor(daysAgo / 30)}달 전`
+        : `${daysAgo}일 전`
+      const connTitle = conn.summary || conn.content
+      const preview = connTitle.length > 30 ? connTitle.slice(0, 30) + "..." : connTitle
+      toast(`과거 기록과 연결되었어요`, {
+        description: `${timeLabel}에 저장한 "${preview}"`,
+        icon: <Sparkles className="h-4 w-4 text-amber-500" />,
+        duration: 6000,
+      })
+    }
+
+    const checkConnections = async (retriesLeft: number) => {
+      try {
+        const res = await fetch(`/api/items/${item.id}/related`)
+        if (!res.ok) return
+        const related = await res.json()
+        if (Array.isArray(related) && related.length > 0) {
+          showConnectionToast(related[0])
+        } else if (retriesLeft > 0) {
+          setTimeout(() => checkConnections(retriesLeft - 1), 8000)
+        }
+      } catch {}
+    }
+
+    // First attempt at 8s, retry at 16s if embedding wasn't ready
+    setTimeout(() => checkConnections(1), 8000)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justSavedId, item.id])
   const config = typeConfig[item.type] ?? typeConfig.text
   const meta = item.metadata
   const isOfflineItem = item._offline === true
@@ -377,12 +436,15 @@ export function FeedCard({
 
   return (
     <article
+      ref={cardRef}
       className={`group relative rounded-xl border bg-card px-5 py-4 transition-all duration-300 ${
-        isOfflineItem
-          ? "border-dashed border-muted-foreground/30 opacity-80"
-          : hovered
-            ? "shadow-[0_2px_16px_-4px_oklch(0.5_0.05_55/0.08)] border-border"
-            : "border-border/40 shadow-none"
+        isJustSaved
+          ? "ring-2 ring-primary/40 shadow-[0_0_20px_-4px_oklch(0.6_0.15_250/0.15)] animate-in fade-in zoom-in-95 duration-500"
+          : isOfflineItem
+            ? "border-dashed border-muted-foreground/30 opacity-80"
+            : hovered
+              ? "shadow-[0_2px_16px_-4px_oklch(0.5_0.05_55/0.08)] border-border"
+              : "border-border/40 shadow-none"
       } ${item.is_pinned ? "ring-1 ring-primary/20" : ""}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

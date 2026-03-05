@@ -224,29 +224,33 @@ export async function generateInsight(content: string, type: string, context?: I
     messages: [{
       role: "user",
       content: `당신은 사용자의 개인 지식 베이스를 관리하는 AI입니다.
-새로 저장된 콘텐츠를 사용자의 기존 지식 맥락에서 분석하고,
-이 사용자만을 위한 구체적인 인사이트를 제공하세요.
+새로 저장된 콘텐츠에 대해 짧은 코멘트를 작성하세요.
 ${knowledgeSection}
 [새로 저장된 콘텐츠]
 유형: ${type}
 내용: ${content}
 
-[인사이트 유형 — 가장 적절한 하나를 선택]
-1. 연결: 기존 저장 항목과의 구체적 연결점 제시
-2. 패턴: 사용자의 학습/관심 패턴 인식 + 의미 부여
-3. 실행: 콘텐츠 기반 구체적 다음 행동 제안
-4. 관점: 사용자가 놓칠 수 있는 새로운 각도
-5. 성장: 과거 대비 변화/발전 짚어주기
+[코멘트 전략 — 가장 적절한 하나를 선택]
+1. 연결: 기존 저장 항목 중 구체적으로 관련된 것이 있을 때만 언급
+2. 맥락 보강: 콘텐츠에 명시된 정보를 기반으로 유용한 팁 제공
+3. 실행: 콘텐츠 내용에서 직접 도출 가능한 다음 행동 제안
+
+[최우선 원칙 — 원본 왜곡 금지]
+- 콘텐츠에 적힌 내용만 근거로 삼을 것
+- 콘텐츠에 없는 내용을 추측하거나 지어내지 말 것
+- "중복", "이미 저장된", "비슷한" 같은 판단은 기존 항목 목록에서 실제로 확인된 경우에만
+- 사용자의 의도, 목적, 감정을 추측하지 말 것
+- 콘텐츠에 없는 주제(AI, 네트워킹, 비즈니스 등)를 끌어오지 말 것
 
 [절대 규칙]
-- 2~3문장, 최대 200자
+- 1~2문장, 최대 120자
 - 한국어, "~에요/~해요" 톤
-- 기존 항목 참조 시 구체적 주제/제목 언급
 - 금지: "좋은 기록이에요", "흥미롭네요", "잘 하고 계세요" 같은 뻔한 격려
 - 금지: 콘텐츠를 요약하거나 반복하는 것
-- 반드시 사용자의 맥락에서만 나올 수 있는 코멘트를 작성
-- 맥락 연결이 불가능하면, 콘텐츠 안의 비자명한 포인트를 짚어주기
-- 시간대 언급 금지 ("늦은 시간", "아침에", "밤늦게" 등)
+- 금지: 콘텐츠에 없는 내용을 근거로 조언하는 것
+- 금지: 시간대 언급 ("늦은 시간", "아침에", "밤늦게" 등)
+- 기존 항목과 연결할 근거가 없으면, 콘텐츠 자체에서 유용한 포인트만 짚기
+- 확실하지 않으면 짧고 사실적인 코멘트가 낫다
 - 콘텐츠만 반환. 다른 텍스트 없이.`,
     }],
   })
@@ -270,12 +274,12 @@ export async function generateLinkAnalysis(
     if (hostname.includes("github.com")) {
       domainHint = "GitHub 링크입니다. 레포/이슈/PR의 목적, 기술 스택, 활용 방법에 초점을 맞추세요."
     } else if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
-      domainHint = "YouTube 영상입니다. 영상의 주제, 핵심 내용, 시청할 가치에 초점을 맞추세요."
+      domainHint = "YouTube 영상입니다. 영상 제목과 채널명을 기반으로 콘텐츠의 주제, 어떤 내용을 다루는지, 시청 포인트를 구체적으로 분석해주세요. '영상입니다' 같은 당연한 말은 하지 마세요."
     } else if (hostname.includes("arxiv.org") || hostname.includes("scholar.google")) {
       domainHint = "학술 논문/자료입니다. 연구 주제, 핵심 발견, 실용적 시사점에 초점을 맞추세요."
     } else if (/news|times|post|bbc|cnn|reuters/i.test(hostname)) {
       domainHint = "뉴스 기사입니다. 핵심 사건, 영향, 시사점에 초점을 맞추세요."
-    } else if (/smartstore\.naver|coupang|kurly|ssg\.com|11st\.co|gmarket|auction|tmon|wemake/i.test(hostname)) {
+    } else if (/smartstore\.naver|brand\.naver|m\.smartstore|coupang|kurly|ssg\.com|11st\.co|gmarket|auction|tmon|wemake/i.test(hostname)) {
       domainHint = "쇼핑몰 상품 페이지입니다. 상품명, 카테고리, 가격대, 특징에 초점을 맞추세요."
     }
   } catch { /* ignore invalid URL */ }

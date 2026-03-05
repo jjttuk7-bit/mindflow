@@ -72,6 +72,9 @@ interface DotLineStore {
   setArchivePinSet: (set: boolean) => void
   showPinDialog: boolean
   setShowPinDialog: (show: boolean) => void
+
+  justSavedId: string | null
+  setJustSavedId: (id: string | null) => void
 }
 
 export const useStore = create<DotLineStore>((set) => ({
@@ -163,4 +166,7 @@ export const useStore = create<DotLineStore>((set) => ({
   setArchivePinSet: (archivePinSet) => set({ archivePinSet }),
   showPinDialog: false,
   setShowPinDialog: (showPinDialog) => set({ showPinDialog }),
+
+  justSavedId: null,
+  setJustSavedId: (justSavedId) => set({ justSavedId }),
 }))

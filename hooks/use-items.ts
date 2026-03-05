@@ -8,7 +8,7 @@ import { getCachedItems } from "@/lib/offline-store"
 const PAGE_SIZE = 20
 
 export function useItems() {
-  const { setItems, setTags, setIsOffline, activeFilter, activeTag, activeProject } = useStore()
+  const { setItems, setTags, setIsOffline, activeFilter, activeTag, activeProject, showTrash } = useStore()
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -118,6 +118,34 @@ export function useItems() {
     fetchItems()
     fetchTags()
   }, [fetchItems, fetchTags])
+
+  // When entering trash view, fetch trashed items and merge into store
+  const trashLoadedRef = useRef(false)
+  useEffect(() => {
+    if (!showTrash) {
+      trashLoadedRef.current = false
+      return
+    }
+    if (trashLoadedRef.current) return
+    trashLoadedRef.current = true
+
+    async function fetchTrash() {
+      try {
+        const res = await fetch(`/api/items?trash=true&limit=50&offset=0`)
+        if (!res.ok) return
+        const trashItems = await res.json()
+        if (trashItems.length > 0) {
+          const currentItems = useStore.getState().items
+          const existingIds = new Set(currentItems.map((i: { id: string }) => i.id))
+          const newTrashItems = trashItems.filter((i: { id: string }) => !existingIds.has(i.id))
+          if (newTrashItems.length > 0) {
+            setItems([...currentItems, ...newTrashItems])
+          }
+        }
+      } catch {}
+    }
+    fetchTrash()
+  }, [showTrash, setItems])
 
   const refetch = useCallback(() => {
     setLoading(true)

@@ -128,7 +128,7 @@ export function MoreMenu() {
           {dark ? "Light Mode" : "Dark Mode"}
         </button>
         <div className="px-1 pt-2">
-          <ExportMenu />
+          <ExportMenu showLabel />
         </div>
 
         <div className="flex items-center gap-3 px-4 pt-6 pb-4">

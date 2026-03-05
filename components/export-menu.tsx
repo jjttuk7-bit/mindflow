@@ -401,7 +401,7 @@ function AISummaryDialog({
   )
 }
 
-export function ExportMenu() {
+export function ExportMenu({ showLabel = false }: { showLabel?: boolean }) {
   const { items } = useStore()
   const [open, setOpen] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
@@ -449,10 +449,14 @@ export function ExportMenu() {
       <div ref={ref} className="relative">
         <button
           onClick={() => setOpen(!open)}
-          className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+          className={showLabel
+            ? "w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors"
+            : "h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-accent transition-all duration-200"
+          }
           aria-label="Export data"
         >
-          <Download className="h-4 w-4" />
+          <Download className={showLabel ? "h-5 w-5 text-muted-foreground/60" : "h-4 w-4"} />
+          {showLabel && "데이터 다운로드"}
         </button>
         {open && (
           <div className="absolute bottom-full left-0 mb-1 w-44 rounded-lg border border-border/60 bg-popover shadow-lg z-50 py-1">

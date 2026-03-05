@@ -23,8 +23,9 @@ export function ShareButton({ item }: { item: Item }) {
   async function handleShare() {
     const text = buildShareText(item)
 
-    // Mobile: use native Web Share API
-    if (navigator.share) {
+    // Mobile only: use native Web Share API
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    if (isMobile && navigator.share) {
       try {
         await navigator.share({
           title: item.summary || item.content.slice(0, 50),

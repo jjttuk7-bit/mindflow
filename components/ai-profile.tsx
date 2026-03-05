@@ -366,19 +366,31 @@ export function AIProfile() {
     if (!el) return
     try {
       const { toPng } = await import("html-to-image")
-      // Force full height to avoid viewport clipping
-      const origHeight = el.style.height
-      const origOverflow = el.style.overflow
-      el.style.height = "auto"
-      el.style.overflow = "visible"
+      // Scroll to top and temporarily remove all ancestor overflow clipping
+      window.scrollTo(0, 0)
+      await new Promise((r) => setTimeout(r, 100))
+
+      const ancestors: { el: HTMLElement; overflow: string }[] = []
+      let parent = el.parentElement
+      while (parent) {
+        const cs = getComputedStyle(parent)
+        if (cs.overflow !== "visible" || cs.overflowY !== "visible") {
+          ancestors.push({ el: parent, overflow: parent.style.overflow })
+          parent.style.overflow = "visible"
+        }
+        parent = parent.parentElement
+      }
+
+      // Double-render trick: first call warms up fonts/images, second captures fully
+      await toPng(el, { pixelRatio: 1, backgroundColor: "#ffffff" })
       const dataUrl = await toPng(el, {
         pixelRatio: 2,
         backgroundColor: "#ffffff",
-        width: el.scrollWidth,
-        height: el.scrollHeight,
       })
-      el.style.height = origHeight
-      el.style.overflow = origOverflow
+
+      // Restore ancestor overflows
+      ancestors.forEach((a) => { a.el.style.overflow = a.overflow })
+
       const link = document.createElement("a")
       link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`
       link.href = dataUrl

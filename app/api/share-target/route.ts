@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
   const { supabase, user } = await getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL("/login", req.url))
+    // PWA share target: redirect to login, preserve intent
+    const loginUrl = new URL("/login", req.url)
+    loginUrl.searchParams.set("redirect", "/")
+    loginUrl.searchParams.set("share_pending", "true")
+    return NextResponse.redirect(loginUrl)
   }
 
   try {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "dotline-v1"
+const CACHE_NAME = "dotline-v2"
 const STATIC_ASSETS = ["/", "/login"]
 
 self.addEventListener("install", (event) => {
@@ -22,6 +22,12 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event
   const url = new URL(request.url)
+
+  // Handle share target POST — pass through to network
+  if (request.method === "POST" && url.pathname === "/api/share-target") {
+    event.respondWith(fetch(request))
+    return
+  }
 
   // Skip non-GET requests
   if (request.method !== "GET") return

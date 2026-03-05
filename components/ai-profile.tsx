@@ -363,16 +363,19 @@ export function AIProfile() {
 
   const handleDownloadPNG = useCallback(async () => {
     if (!profileRef.current) return
-    const html2canvas = (await import("html2canvas")).default
-    const canvas = await html2canvas(profileRef.current, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-    })
-    const link = document.createElement("a")
-    link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`
-    link.href = canvas.toDataURL("image/png")
-    link.click()
+    try {
+      const { toPng } = await import("html-to-image")
+      const dataUrl = await toPng(profileRef.current, {
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+      })
+      const link = document.createElement("a")
+      link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (err) {
+      console.error("PNG download failed:", err)
+    }
   }, [])
 
   const fetchProfile = () => {

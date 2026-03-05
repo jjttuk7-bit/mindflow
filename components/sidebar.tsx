@@ -491,7 +491,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             {filters.map((f) => (
               <button
                 key={f.value}
-                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false); if (showTrash) setShowTrash(false); setSmartFolder(null) }}
+                onClick={() => { setActiveFilter(f.value); if (showArchived) setShowArchived(false); if (showTrash) setShowTrash(false); setSmartFolder(null); setActiveProject(null) }}
                 className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                   activeFilter === f.value && !showArchived
                     ? "bg-primary/10 text-primary font-medium"

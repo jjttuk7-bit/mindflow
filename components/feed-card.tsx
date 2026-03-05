@@ -136,18 +136,21 @@ export function FeedCard({
 
   // Highlight animation for just-saved items
   useEffect(() => {
-    if (justSavedId === item.id) {
-      setIsJustSaved(true)
-      // Scroll the card into view
-      setTimeout(() => {
-        cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-      }, 100)
-      // Clear highlight after animation
-      const timer = setTimeout(() => {
-        setIsJustSaved(false)
-        setJustSavedId(null)
-      }, 2000)
-      return () => clearTimeout(timer)
+    if (justSavedId !== item.id) return
+    setIsJustSaved(true)
+    // Scroll the card into view (try ref first, then fallback to DOM query)
+    const scrollTimer = setTimeout(() => {
+      const el = cardRef.current || document.querySelector(`[data-item-id="${item.id}"]`)
+      el?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 300)
+    // Clear highlight after animation
+    const clearTimer = setTimeout(() => {
+      setIsJustSaved(false)
+      setJustSavedId(null)
+    }, 3000)
+    return () => {
+      clearTimeout(scrollTimer)
+      clearTimeout(clearTimer)
     }
   }, [justSavedId, item.id, setJustSavedId])
 
@@ -436,9 +439,10 @@ export function FeedCard({
   return (
     <article
       ref={cardRef}
+      data-item-id={item.id}
       className={`group relative rounded-xl border bg-card px-5 py-4 transition-all duration-300 ${
         isJustSaved
-          ? "ring-2 ring-primary/40 shadow-[0_0_20px_-4px_oklch(0.6_0.15_250/0.15)] animate-in fade-in zoom-in-95 duration-500"
+          ? "ring-2 ring-primary bg-primary/5 shadow-lg scale-[1.01]"
           : isOfflineItem
             ? "border-dashed border-muted-foreground/30 opacity-80"
             : hovered

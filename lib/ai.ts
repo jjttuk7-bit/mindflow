@@ -183,6 +183,15 @@ export interface InsightContext {
 export async function generateInsight(content: string, type: string, context?: InsightContext): Promise<string | null> {
   if (!content || content.length < 10) return null
 
+  // Skip insight for links with no meaningful content (URL only)
+  if (type === "link") {
+    const parts = content.split(" — ").filter(Boolean)
+    const hasOnlyUrl = parts.length <= 1 || parts.every(p => {
+      try { new URL(p.trim()); return true } catch { return false }
+    })
+    if (hasOnlyUrl) return null
+  }
+
   // Build user knowledge context section
   const knowledgeLines: string[] = []
 

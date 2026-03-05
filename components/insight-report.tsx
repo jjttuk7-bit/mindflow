@@ -26,7 +26,6 @@ import {
   Link,
   ListTodo,
   Pin,
-  Lock,
   CheckCircle2,
   Circle,
   Sparkles,
@@ -72,23 +71,6 @@ function getHeatmapLevel(count: number, max: number): string {
   return HEATMAP_LEVELS[4]
 }
 
-function ProGate({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px] z-10 rounded-xl flex flex-col items-center justify-center gap-2">
-        <Lock className="h-5 w-5 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground/70 font-medium">Pro 기능</p>
-        <a
-          href="/settings"
-          className="text-xs text-primary hover:underline"
-        >
-          업그레이드하여 잠금 해제
-        </a>
-      </div>
-      <div className="opacity-30 pointer-events-none">{children}</div>
-    </div>
-  )
-}
 
 function SectionCard({
   title,
@@ -854,11 +836,10 @@ function KnowledgeHealthSection({ data }: { data: NonNullable<WeeklyInsightData[
 
 export function InsightReport({
   data,
-  isPro,
   reportType = "monthly",
 }: {
   data: InsightReportData
-  isPro: boolean
+  isPro?: boolean
   reportType?: "weekly" | "monthly"
 }) {
   const { stats, reminders, digest } = data
@@ -881,88 +862,29 @@ export function InsightReport({
         <StreakSection data={data.streak} />
       )}
 
-      {/* 4. Productivity Score (Pro) */}
-      {data.productivity_score ? (
-        isPro ? (
-          <ProductivityScoreSection data={data.productivity_score} />
-        ) : (
-          <ProGate>
-            <ProductivityScoreSection data={data.productivity_score} />
-          </ProGate>
-        )
-      ) : !isPro ? (
-        <ProGate>
-          <SectionCard title="생산성 점수" icon={<Gauge className="h-4 w-4 text-primary" />}>
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-muted" />
-              <ul className="space-y-1.5">
-                <li className="text-xs text-muted-foreground">AI-powered score...</li>
-              </ul>
-            </div>
-          </SectionCard>
-        </ProGate>
-      ) : null}
+      {/* 4. Productivity Score */}
+      {data.productivity_score && (
+        <ProductivityScoreSection data={data.productivity_score} />
+      )}
 
       {/* 5. Utilization */}
       {(data as unknown as WeeklyInsightData).utilization && (
         <UtilizationSection data={(data as unknown as WeeklyInsightData).utilization!} />
       )}
 
-      {/* 6. Knowledge Health (Pro) */}
-      {(data as unknown as WeeklyInsightData).knowledge_health ? (
-        isPro ? (
-          <KnowledgeHealthSection data={(data as unknown as WeeklyInsightData).knowledge_health!} />
-        ) : (
-          <ProGate>
-            <KnowledgeHealthSection data={(data as unknown as WeeklyInsightData).knowledge_health!} />
-          </ProGate>
-        )
-      ) : null}
-
-      {/* 7. MoM Comparison (Pro, monthly only) */}
-      {!isWeekly && (
-        data.mom_comparison ? (
-          isPro ? (
-            <MoMComparisonSection data={data.mom_comparison} />
-          ) : (
-            <ProGate>
-              <MoMComparisonSection data={data.mom_comparison} />
-            </ProGate>
-          )
-        ) : !isPro ? (
-          <ProGate>
-            <SectionCard title="전월 대비" icon={<ArrowUpDown className="h-4 w-4 text-primary" />}>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg bg-muted/40 p-3 text-center">
-                  <p className="text-2xl font-display text-muted-foreground">--</p>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-3 text-center">
-                  <p className="text-2xl font-display text-muted-foreground">--</p>
-                </div>
-              </div>
-            </SectionCard>
-          </ProGate>
-        ) : null
+      {/* 6. Knowledge Health */}
+      {(data as unknown as WeeklyInsightData).knowledge_health && (
+        <KnowledgeHealthSection data={(data as unknown as WeeklyInsightData).knowledge_health!} />
       )}
 
-      {/* 6. Interests (Pro, monthly only) */}
+      {/* 7. MoM Comparison (monthly only) */}
+      {!isWeekly && data.mom_comparison && (
+        <MoMComparisonSection data={data.mom_comparison} />
+      )}
+
+      {/* 6. Interests (monthly only) */}
       {!isWeekly && (
-        isPro ? (
-          <InterestsSection interests={data.interests} />
-        ) : (
-          <ProGate>
-            <SectionCard title="관심사" icon={<Lightbulb className="h-4 w-4 text-amber-accent" />}>
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-muted">Topic 1</span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-muted">Topic 2</span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-muted">Topic 3</span>
-                </div>
-                <p className="text-sm text-muted-foreground">AI-powered topic analysis and trends...</p>
-              </div>
-            </SectionCard>
-          </ProGate>
-        )
+        <InterestsSection interests={data.interests} />
       )}
 
       {/* 7. Weekly Breakdown (monthly only) */}
@@ -973,25 +895,9 @@ export function InsightReport({
       {/* 8. Reminders */}
       <RemindersSection reminders={reminders} />
 
-      {/* 9. Digest (Pro) */}
-      {isPro ? (
-        digest?.one_liner || digest?.full_summary || (digest?.key_insights && digest.key_insights.length > 0) ? (
-          <DigestSection digest={digest} title={digestTitle} />
-        ) : null
-      ) : (
-        <ProGate>
-          <SectionCard title={digestTitle} icon={<Sparkles className="h-4 w-4 text-primary" />}>
-            <div className="space-y-3">
-              <p className="text-lg font-display text-muted-foreground">
-                &ldquo;Your {isWeekly ? "weekly" : "monthly"} highlight goes here&rdquo;
-              </p>
-              <ul className="space-y-2">
-                <li className="text-sm text-muted-foreground">Key insight placeholder...</li>
-                <li className="text-sm text-muted-foreground">Another insight placeholder...</li>
-              </ul>
-            </div>
-          </SectionCard>
-        </ProGate>
+      {/* 9. Digest */}
+      {(digest?.one_liner || digest?.full_summary || (digest?.key_insights && digest.key_insights.length > 0)) && (
+        <DigestSection digest={digest} title={digestTitle} />
       )}
     </div>
   )

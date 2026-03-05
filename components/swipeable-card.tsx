@@ -64,6 +64,8 @@ export function SwipeableCard({ children, onSwipeLeft, onSwipeRight, onLongPress
     }
 
     if (!isHorizontal.current) return
+    // Prevent browser default (scroll/navigation) during horizontal swipe
+    e.preventDefault()
     setDeltaX(dx)
   }
 
@@ -108,6 +110,7 @@ export function SwipeableCard({ children, onSwipeLeft, onSwipeRight, onLongPress
         style={{
           transform: `translateX(${deltaX}px)`,
           transition: swiping ? "none" : "transform 0.3s ease-out",
+          touchAction: "pan-y",
         }}
         className="relative bg-card rounded-xl"
       >

@@ -362,13 +362,23 @@ export function AIProfile() {
   const profileRef = useRef<HTMLDivElement>(null)
 
   const handleDownloadPNG = useCallback(async () => {
-    if (!profileRef.current) return
+    const el = profileRef.current
+    if (!el) return
     try {
       const { toPng } = await import("html-to-image")
-      const dataUrl = await toPng(profileRef.current, {
+      // Force full height to avoid viewport clipping
+      const origHeight = el.style.height
+      const origOverflow = el.style.overflow
+      el.style.height = "auto"
+      el.style.overflow = "visible"
+      const dataUrl = await toPng(el, {
         pixelRatio: 2,
         backgroundColor: "#ffffff",
+        width: el.scrollWidth,
+        height: el.scrollHeight,
       })
+      el.style.height = origHeight
+      el.style.overflow = origOverflow
       const link = document.createElement("a")
       link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`
       link.href = dataUrl

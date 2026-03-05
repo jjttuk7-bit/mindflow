@@ -129,30 +129,30 @@ export function FeedCard({
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedLoaded, setRelatedLoaded] = useState(false)
   const [showProjectMenu, setShowProjectMenu] = useState(false)
-  const [isJustSaved, setIsJustSaved] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cardRef = useRef<HTMLElement>(null)
   const { projects, justSavedId, setJustSavedId } = useStore()
 
-  // Highlight animation for just-saved items
+  // Highlight is computed directly from store (no useState delay)
+  const isJustSaved = justSavedId === item.id
+
+  // Scroll into view and auto-clear highlight after 3s
   useEffect(() => {
-    if (justSavedId !== item.id) return
-    setIsJustSaved(true)
-    // Scroll the card into view (try ref first, then fallback to DOM query)
+    if (!isJustSaved) return
+    // Scroll the card into view
     const scrollTimer = setTimeout(() => {
       const el = cardRef.current || document.querySelector(`[data-item-id="${item.id}"]`)
       el?.scrollIntoView({ behavior: "smooth", block: "center" })
     }, 300)
-    // Clear highlight after animation
+    // Clear highlight after 3s
     const clearTimer = setTimeout(() => {
-      setIsJustSaved(false)
       setJustSavedId(null)
     }, 3000)
     return () => {
       clearTimeout(scrollTimer)
       clearTimeout(clearTimer)
     }
-  }, [justSavedId, item.id, setJustSavedId])
+  }, [isJustSaved, item.id, setJustSavedId])
 
   // Connection discovery — use ref to avoid cleanup killing the timer
   const connCheckedRef = useRef(false)

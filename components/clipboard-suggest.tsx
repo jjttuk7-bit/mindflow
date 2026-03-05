@@ -14,6 +14,27 @@ function isValidUrl(str: string): boolean {
   }
 }
 
+const HANDLED_KEY = "clipboard-handled"
+const MAX_HANDLED = 50
+
+function getHandledClips(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(HANDLED_KEY) || "[]")
+  } catch {
+    return []
+  }
+}
+
+function addHandledClip(text: string) {
+  const list = getHandledClips()
+  if (!list.includes(text)) {
+    list.push(text)
+    // Keep only the last 50 entries
+    if (list.length > MAX_HANDLED) list.splice(0, list.length - MAX_HANDLED)
+  }
+  localStorage.setItem(HANDLED_KEY, JSON.stringify(list))
+}
+
 export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
   const [clipText, setClipText] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -28,13 +49,8 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
 
       const trimmed = text.trim()
 
-      // Don't suggest if already dismissed this text
-      const lastDismissed = sessionStorage.getItem("clipboard-dismissed")
-      if (lastDismissed === trimmed) return
-
-      // Don't suggest if it was just saved
-      const lastSaved = sessionStorage.getItem("clipboard-saved")
-      if (lastSaved === trimmed) return
+      // Don't suggest if already saved or dismissed
+      if (getHandledClips().includes(trimmed)) return
 
       setClipText(trimmed)
     } catch {
@@ -76,7 +92,7 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
       if (!res.ok) throw new Error()
       const item = await res.json()
       addItem({ ...item, tags: [] })
-      sessionStorage.setItem("clipboard-saved", clipText)
+      addHandledClip(clipText)
       setClipText(null)
       toast.success("클립보드 내용이 저장되었습니다!")
       onSaved?.()
@@ -111,7 +127,7 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
   }
 
   function handleDismiss() {
-    if (clipText) sessionStorage.setItem("clipboard-dismissed", clipText)
+    if (clipText) addHandledClip(clipText)
     setClipText(null)
   }
 

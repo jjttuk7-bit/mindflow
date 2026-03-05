@@ -181,14 +181,6 @@ export async function generateInsight(content: string, type: string, context?: I
   if (!content || content.length < 10) return null
 
   const contextHints: string[] = []
-  if (context?.timeOfDay) {
-    const timeComments: Record<string, string> = {
-      night: "심야 시간(0~6시)에 저장한 항목이에요. '늦은 시간까지~' 같은 공감 코멘트를 고려하세요.",
-      morning: "아침 시간에 저장한 항목이에요.",
-      evening: "저녁 시간에 저장한 항목이에요.",
-    }
-    if (timeComments[context.timeOfDay]) contextHints.push(timeComments[context.timeOfDay])
-  }
   if (context?.recentTopics?.length) {
     contextHints.push(`사용자가 최근 비슷한 주제를 연속 저장 중: [${context.recentTopics.join(", ")}]. "이 주제에 관심이 많으시네요" 같은 패턴 인식 코멘트를 고려하세요.`)
   }
@@ -217,6 +209,7 @@ ${contextSection}
 - 1~2문장, 최대 80자
 - 한국어로 작성
 - "~입니다" 대신 "~이에요/~해요" 친근한 톤
+- 시간대 언급 금지 ("늦은 시간", "아침에", "밤늦게" 등) — 시간 정보가 부정확할 수 있음
 - 콘텐츠만 반환. 다른 텍스트 없이.
 
 콘텐츠 유형: ${type}

@@ -30,6 +30,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname.startsWith("/share") ||
+    request.nextUrl.pathname.startsWith("/share-target") ||
     request.nextUrl.pathname.startsWith("/api/share") ||
     request.nextUrl.pathname.startsWith("/api/telegram/webhook") ||
     request.nextUrl.pathname.startsWith("/api/stripe/webhook") ||

@@ -17,14 +17,16 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icon-192",
         sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/icon",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
       {
-        src: "/icon",
+        src: "/icon-maskable",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
@@ -33,6 +35,21 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/apple-icon",
         sizes: "180x180",
         type: "image/png",
+      },
+    ],
+    prefer_related_applications: false,
+    screenshots: [
+      {
+        src: "/screenshot-wide.png",
+        sizes: "1280x800",
+        type: "image/png",
+        form_factor: "wide",
+      },
+      {
+        src: "/screenshot-narrow.png",
+        sizes: "1594x3102",
+        type: "image/png",
+        form_factor: "narrow",
       },
     ],
     share_target: {

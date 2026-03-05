@@ -366,30 +366,29 @@ export function AIProfile() {
     if (!el) return
     try {
       const { toPng } = await import("html-to-image")
-      // Scroll to top and temporarily remove all ancestor overflow clipping
-      window.scrollTo(0, 0)
-      await new Promise((r) => setTimeout(r, 100))
 
-      const ancestors: { el: HTMLElement; overflow: string }[] = []
-      let parent = el.parentElement
-      while (parent) {
-        const cs = getComputedStyle(parent)
-        if (cs.overflow !== "visible" || cs.overflowY !== "visible") {
-          ancestors.push({ el: parent, overflow: parent.style.overflow })
-          parent.style.overflow = "visible"
-        }
-        parent = parent.parentElement
-      }
+      // Clone element offscreen at full size to avoid viewport clipping
+      const clone = el.cloneNode(true) as HTMLElement
+      clone.style.position = "absolute"
+      clone.style.left = "-9999px"
+      clone.style.top = "0"
+      clone.style.width = "720px"
+      clone.style.height = "auto"
+      clone.style.overflow = "visible"
+      clone.style.maxWidth = "none"
+      document.body.appendChild(clone)
 
-      // Double-render trick: first call warms up fonts/images, second captures fully
-      await toPng(el, { pixelRatio: 1, backgroundColor: "#ffffff" })
-      const dataUrl = await toPng(el, {
+      // Wait for layout and fonts
+      await new Promise((r) => setTimeout(r, 200))
+
+      // Double-render for font/image warmup
+      await toPng(clone, { pixelRatio: 1, backgroundColor: "#ffffff" })
+      const dataUrl = await toPng(clone, {
         pixelRatio: 2,
         backgroundColor: "#ffffff",
       })
 
-      // Restore ancestor overflows
-      ancestors.forEach((a) => { a.el.style.overflow = a.overflow })
+      document.body.removeChild(clone)
 
       const link = document.createElement("a")
       link.download = `ai-profile-${new Date().toISOString().slice(0, 10)}.png`

@@ -313,8 +313,9 @@ export async function classifyProject(
 - 명확한 주제가 있을 때만 새 프로젝트 생성
 - 일상적이거나 짧은 메모는 "none" 반환
 - 프로젝트 이름은 간결하게 (2~4단어)
+- confidence는 0~100으로 표시 (70 미만이면 만들지 마세요)
 
-JSON만 반환: {"action":"new","name":"프로젝트 이름"} 또는 {"action":"none"}
+JSON만 반환: {"action":"new","name":"프로젝트 이름","confidence":80} 또는 {"action":"none"}
 
 콘텐츠: ${content}`
   } else {
@@ -339,13 +340,15 @@ ${projectList}
 콘텐츠 유형: ${type}
 
 규칙:
-- 기존 프로젝트의 최근 항목을 참고하여 콘텐츠가 맞는 프로젝트에 분류
+- 기존 프로젝트의 최근 항목을 참고하여 콘텐츠의 핵심 주제가 프로젝트와 직접적으로 관련될 때만 분류
+- 단순히 키워드가 겹치는 것이 아니라, 콘텐츠의 목적/맥락이 프로젝트의 주제와 일치해야 함
+- confidence는 0~100으로 표시 (70 미만이면 분류하지 마세요)
 - 일상적이거나 짧은 메모는 "none" 반환${suppressNew}
 
 JSON만 반환:
-- {"action":"existing","project_id":"<id>"} 기존 프로젝트에 맞을 때
-- {"action":"new","name":"프로젝트 이름"} 새 프로젝트가 필요할 때
-- {"action":"none"} 어디에도 맞지 않을 때
+- {"action":"existing","project_id":"<id>","confidence":85} 기존 프로젝트에 확실히 맞을 때
+- {"action":"new","name":"프로젝트 이름","confidence":80} 새 프로젝트가 필요할 때
+- {"action":"none"} 확신이 부족하거나 어디에도 맞지 않을 때
 
 콘텐츠: ${content}`
   }
@@ -356,15 +359,25 @@ JSON만 반환:
   })
 
   const text = result.choices[0].message.content?.trim() || ""
+  let parsed: Record<string, unknown>
   try {
-    return JSON.parse(text)
+    parsed = JSON.parse(text)
   } catch {
     const match = text.match(/\{[\s\S]*\}/)
     if (match) {
-      try { return JSON.parse(match[0]) } catch { /* ignore */ }
+      try { parsed = JSON.parse(match[0]) } catch { return { action: "none" } }
+    } else {
+      return { action: "none" }
     }
+  }
+
+  // Filter by confidence threshold — only classify when AI is reasonably sure
+  const confidence = typeof parsed.confidence === "number" ? parsed.confidence : 0
+  if (parsed.action !== "none" && confidence < 70) {
     return { action: "none" }
   }
+
+  return parsed as { action: "none" } | { action: "new"; name: string } | { action: "existing"; project_id: string }
 }
 
 export async function extractTodos(content: string): Promise<string[]> {

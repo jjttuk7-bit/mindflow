@@ -16,6 +16,7 @@ import {
   FileText,
   Copy,
   Check,
+  CheckCircle2,
   Trash2,
 } from "lucide-react"
 import { ChatExportMenu } from "@/components/chat-export-menu"
@@ -52,6 +53,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   const [addedSuggestions, setAddedSuggestions] = useState<Set<string>>(new Set())
   const [keyboardHeight, setKeyboardHeight] = useState(0)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [toolSteps, setToolSteps] = useState<Array<{ tool: string; status: "running" | "done"; summary?: string }>>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -123,6 +125,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     setCurrentSessionId(null)
     setSourcesMap({})
     setAddedSuggestions(new Set())
+    setToolSteps([])
     setInput("")
     inputRef.current?.focus()
   }
@@ -237,6 +240,19 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                 setCurrentSessionId(data.session_id)
                 fetchSessions()
               }
+            } else if (data.type === "tool_start") {
+              setToolSteps((prev) => [
+                ...prev,
+                { tool: data.tool, status: "running" },
+              ])
+            } else if (data.type === "tool_result") {
+              setToolSteps((prev) =>
+                prev.map((s) =>
+                  s.tool === data.tool && s.status === "running"
+                    ? { ...s, status: "done", summary: data.summary }
+                    : s
+                )
+              )
             } else if (data.type === "chunk") {
               fullText += data.text
               setStreamingText(fullText)
@@ -260,6 +276,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
       }
       setMessages((prev) => [...prev, assistantMsg])
       setStreamingText("")
+      setToolSteps([])
 
       if (sessionSources.length > 0) {
         setSourcesMap((prev) => ({
@@ -280,6 +297,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     } finally {
       setLoading(false)
       setStreamingText("")
+      setToolSteps([])
     }
   }
 
@@ -345,6 +363,37 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         )}
       </>
+    )
+  }
+
+  const toolLabels: Record<string, string> = {
+    search: "검색 중...",
+    summarize: "요약 중...",
+    compare: "비교 분석 중...",
+    create_memo: "생성 중...",
+  }
+
+  function renderToolSteps() {
+    if (toolSteps.length === 0) return null
+    return (
+      <div className="flex justify-start">
+        <div className="max-w-[85%] rounded-2xl rounded-bl-md px-4 py-3 bg-muted/50 space-y-1.5">
+          {toolSteps.map((step, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs">
+              {step.status === "running" ? (
+                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+              ) : (
+                <CheckCircle2 className="h-3 w-3 text-green-500" />
+              )}
+              <span className={step.status === "done" ? "text-muted-foreground/60" : "text-foreground/70"}>
+                {step.status === "done" && step.summary
+                  ? step.summary
+                  : toolLabels[step.tool] || `${step.tool}...`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
@@ -426,6 +475,9 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             </div>
           </div>
         ))}
+
+        {/* Tool step indicators */}
+        {renderToolSteps()}
 
         {/* Streaming text (real-time typing) */}
         {streamingText && (

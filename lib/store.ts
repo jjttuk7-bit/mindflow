@@ -60,6 +60,8 @@ interface DotLineStore {
 
   composerOpen: boolean
   setComposerOpen: (open: boolean) => void
+  composerDefaultType: ContentType | null
+  setComposerDefaultType: (type: ContentType | null) => void
   activeTab: "feed" | "projects" | "todos" | "chat" | "more"
   setActiveTab: (tab: "feed" | "projects" | "todos" | "chat" | "more") => void
 
@@ -149,6 +151,8 @@ export const useStore = create<DotLineStore>((set) => ({
 
   composerOpen: false,
   setComposerOpen: (composerOpen) => set({ composerOpen }),
+  composerDefaultType: null,
+  setComposerDefaultType: (composerDefaultType) => set({ composerDefaultType }),
   activeTab: "feed",
   setActiveTab: (activeTab) => set({ activeTab }),
 

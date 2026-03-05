@@ -19,9 +19,9 @@ const typeButtons: { type: ContentType; icon: React.ReactNode; label: string }[]
 ]
 
 export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
-  const { setComposerOpen, addItem, updateItem } = useStore()
+  const { setComposerOpen, addItem, updateItem, composerDefaultType, setComposerDefaultType } = useStore()
   const [content, setContent] = useState("")
-  const [activeType, setActiveType] = useState<ContentType>("text")
+  const [activeType, setActiveType] = useState<ContentType>(composerDefaultType || "text")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -33,6 +33,11 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Clear default type after using it
+  useEffect(() => {
+    if (composerDefaultType) setComposerDefaultType(null)
+  }, [composerDefaultType, setComposerDefaultType])
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && navigator.mediaDevices?.enumerateDevices) {

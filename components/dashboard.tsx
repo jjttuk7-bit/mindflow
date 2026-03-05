@@ -24,6 +24,7 @@ const TodoList = dynamic(() => import("@/components/todo-list").then(m => m.Todo
 const MoreMenu = dynamic(() => import("@/components/more-menu").then(m => m.MoreMenu))
 const MobileProjectList = dynamic(() => import("@/components/mobile-project-list").then(m => m.MobileProjectList))
 const PushPrompt = dynamic(() => import("@/components/push-prompt").then(m => m.PushPrompt), { ssr: false })
+const ClipboardSuggest = dynamic(() => import("@/components/clipboard-suggest").then(m => m.ClipboardSuggest), { ssr: false })
 const ArchivePinDialog = dynamic(() => import("@/components/archive-pin-dialog").then(m => m.ArchivePinDialog), { ssr: false })
 
 export function Dashboard() {
@@ -109,6 +110,7 @@ export function Dashboard() {
       <div className="md:hidden flex flex-col w-full h-screen">
         <MobileHeader />
         {activeTab === "feed" && <PushPrompt />}
+        {activeTab === "feed" && <ClipboardSuggest onSaved={refetch} />}
         {activeTab === "feed" && <FilterChips />}
         <div className="flex-1 overflow-hidden">
           {renderMobileContent()}

@@ -108,6 +108,45 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Save to DB if requested
+    if (body.save) {
+      let monthStr: string
+      if (type === "weekly") {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const dayOfWeek = today.getDay()
+        const mondayOffset = (dayOfWeek + 6) % 7
+        const monday = new Date(today.getTime() - mondayOffset * 24 * 60 * 60 * 1000)
+        monthStr = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`
+      } else {
+        monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`
+      }
+
+      const { data: upserted, error: upsertError } = await supabase
+        .from("insight_reports")
+        .upsert(
+          {
+            user_id: user.id,
+            month: monthStr,
+            report_type: type,
+            report_data: reportData,
+          },
+          { onConflict: "user_id,month,report_type" }
+        )
+        .select("id")
+        .single()
+
+      if (upsertError) {
+        return NextResponse.json({ error: upsertError.message }, { status: 500 })
+      }
+
+      return NextResponse.json({
+        report_type: type,
+        report_data: reportData,
+        saved: true,
+        report_id: upserted.id,
+      })
+    }
+
     return NextResponse.json({
       report_type: type,
       report_data: reportData,

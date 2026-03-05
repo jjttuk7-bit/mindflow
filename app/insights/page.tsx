@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { InsightReport } from "@/components/insight-report"
 import { InsightReportData } from "@/lib/supabase/types"
-import { ArrowLeft, BarChart3, Loader2, Calendar, Eye } from "lucide-react"
+import { ArrowLeft, BarChart3, Loader2, Calendar, Eye, Save } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface ReportListItem {
@@ -48,6 +48,7 @@ export default function InsightsPage() {
   const [isPro, setIsPro] = useState(false)
   const [previewData, setPreviewData] = useState<InsightReportData | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
+  const [saveLoading, setSaveLoading] = useState(false)
 
   // Fetch reports list
   const fetchReports = useCallback(async (type: "weekly" | "monthly") => {
@@ -133,6 +134,36 @@ export default function InsightsPage() {
       // ignore
     } finally {
       setPreviewLoading(false)
+    }
+  }
+
+  // Save preview to DB
+  const handleSave = async () => {
+    setSaveLoading(true)
+    try {
+      const res = await fetch("/api/insights/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: tab, save: true }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.saved) {
+          setPreviewData(null)
+          // Refresh list without clearing selection
+          const listRes = await fetch(`/api/insights?type=${tab}`)
+          if (listRes.ok) {
+            const listData = await listRes.json()
+            setReports(listData)
+            // Auto-select the saved report
+            setSelectedId(data.report_id)
+          }
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaveLoading(false)
     }
   }
 
@@ -286,6 +317,18 @@ export default function InsightsPage() {
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-accent/10 text-amber-accent">
                     Preview
                   </span>
+                  <button
+                    onClick={handleSave}
+                    disabled={saveLoading}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors disabled:opacity-50"
+                  >
+                    {saveLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Save className="h-3 w-3" />
+                    )}
+                    저장하기
+                  </button>
                 </div>
                 <InsightReport data={previewData} isPro={isPro} reportType={tab} />
               </div>

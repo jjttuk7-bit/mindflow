@@ -160,7 +160,6 @@ export function FeedCard({
     // Fire-and-forget with retry: embedding may not be ready on first attempt
     const showConnectionToast = (conn: { created_at: string; summary?: string; content: string }) => {
       const daysAgo = Math.floor((Date.now() - new Date(conn.created_at).getTime()) / (1000 * 60 * 60 * 24))
-      if (daysAgo < 3) return
       const timeLabel = daysAgo >= 30
         ? `${Math.floor(daysAgo / 30)}달 전`
         : `${daysAgo}일 전`

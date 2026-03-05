@@ -9,7 +9,7 @@ export const ZOMBIE_THRESHOLDS = {
 } as const
 
 export const SIMILARITY_THRESHOLDS = {
-  RELATED: 0.6,
+  RELATED: 0.45,
   RESURFACE: 0.4,
   SEARCH: 0.1,
 } as const

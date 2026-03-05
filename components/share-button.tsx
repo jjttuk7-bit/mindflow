@@ -6,32 +6,15 @@ import { Item, LinkMeta } from "@/lib/supabase/types"
 import { toast } from "sonner"
 
 function buildShareText(item: Item): string {
-  const parts: string[] = []
-
   if (item.type === "link") {
-    const meta = item.metadata as LinkMeta | undefined
-    if (meta?.og_title) parts.push(meta.og_title)
-    if (meta?.og_description) parts.push(meta.og_description)
-    parts.push(item.content) // URL
+    return item.content // URL only
   } else if (item.type === "voice") {
     const meta = item.metadata as { transcript?: string } | undefined
-    parts.push(meta?.transcript || item.content)
+    return meta?.transcript || item.content
   } else {
     // text, image
-    parts.push(item.content)
+    return item.content
   }
-
-  // Add AI comment if available
-  if (item.context?.ai_comment) {
-    parts.push(`\n💡 ${item.context.ai_comment}`)
-  }
-
-  // Add tags
-  if (item.tags && item.tags.length > 0) {
-    parts.push(`\n${item.tags.map((t) => `#${t.name}`).join(" ")}`)
-  }
-
-  return parts.filter(Boolean).join("\n")
 }
 
 export function ShareButton({ item }: { item: Item }) {

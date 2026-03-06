@@ -478,7 +478,7 @@ export function SearchDialog() {
                     </Badge>
                   ))}
                   <span className="text-[10px] text-muted-foreground/40 ml-auto tabular-nums flex items-center gap-1">
-                    {item.matchType === "semantic" && (
+                    {(item as Item & { matchType?: string }).matchType === "semantic" && (
                       <Sparkles className="h-2.5 w-2.5 text-primary/40" />
                     )}
                     {timeAgo(item.created_at)}

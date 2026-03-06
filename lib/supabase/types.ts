@@ -36,6 +36,7 @@ export interface LinkMeta {
   og_image?: string
   og_url?: string
   og_domain?: string
+  page_snapshot?: string
 }
 
 export interface ScreenshotData {

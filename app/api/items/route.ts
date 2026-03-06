@@ -6,6 +6,71 @@ import { after } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import ogs from "open-graph-scraper"
 
+/** Follow redirects to resolve short URLs (naver.me, bit.ly, etc.) */
+async function resolveUrl(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+      },
+    })
+    return res.url || url
+  } catch {
+    // Try GET as fallback (some servers don't support HEAD)
+    try {
+      const res = await fetch(url, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(5000),
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
+        },
+      })
+      return res.url || url
+    } catch {
+      return url
+    }
+  }
+}
+
+/** Check if URL is a short/redirect URL that needs resolution */
+function isShortUrl(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase()
+    return /^(naver\.me|bit\.ly|t\.co|goo\.gl|tinyurl\.com|url\.kr|vo\.la|han\.gl|me2\.do|hoy\.kr)$/.test(hostname)
+  } catch {
+    return false
+  }
+}
+
+/** Extract readable text content from HTML, stripping scripts/styles/nav */
+function extractPageText(html: string, maxLen = 1000): string {
+  // Remove scripts, styles, nav, header, footer, aside
+  let text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+    .replace(/<header[\s\S]*?<\/header>/gi, "")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+    .replace(/<aside[\s\S]*?<\/aside>/gi, "")
+    .replace(/<[^>]+>/g, " ")          // strip remaining tags
+    .replace(/&[a-z]+;/gi, " ")        // strip HTML entities
+    .replace(/\s+/g, " ")             // collapse whitespace
+    .trim()
+
+  // Take first maxLen chars, break at word boundary
+  if (text.length > maxLen) {
+    text = text.slice(0, maxLen)
+    const lastSpace = text.lastIndexOf(" ")
+    if (lastSpace > maxLen * 0.8) text = text.slice(0, lastSpace)
+    text += "…"
+  }
+
+  return text
+}
+
 function getServiceSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,18 +84,38 @@ async function fetchNaverShopping(url: string, ogTitle?: string): Promise<{ titl
   if (!clientId || !clientSecret) return null
 
   try {
-    // Use OG title as search query first, fallback to URL path decoding
+    // Use OG title as search query first
     let searchQuery = ogTitle?.replace(/<[^>]*>/g, "").trim() || ""
 
     if (!searchQuery) {
-      // Try to extract meaningful text from URL path
+      // Try nl-query param (present in redirected Naver mobile URLs)
       const urlObj = new URL(url)
+      const nlQuery = urlObj.searchParams.get("nl-query") || urlObj.searchParams.get("query")
+      if (nlQuery) {
+        searchQuery = decodeURIComponent(nlQuery).trim()
+      }
+    }
+
+    if (!searchQuery) {
+      const urlObj = new URL(url)
+      const hostname = urlObj.hostname.toLowerCase()
       const pathParts = urlObj.pathname.split("/").filter(Boolean)
-      // Decode URI components and filter out IDs
-      searchQuery = pathParts
-        .map(p => decodeURIComponent(p))
-        .filter(p => !/^\d+$/.test(p) && p !== "products" && p !== "items")
-        .pop() || ""
+
+      // For smartstore/brand.naver URLs, DON'T search by store name alone
+      // (e.g. "goodsea" → returns wrong product like 연어 instead of 당면만두)
+      if (/smartstore\.naver|brand\.naver|m\.smartstore/i.test(hostname)) {
+        // Only use meaningful non-store, non-ID path segments
+        const meaningful = pathParts
+          .map(p => decodeURIComponent(p))
+          .filter(p => !/^\d+$/.test(p) && p !== "products" && p !== "items" && p !== pathParts[0])
+        searchQuery = meaningful.pop() || ""
+      } else {
+        // For other shopping sites, try path-based extraction
+        const meaningful = pathParts
+          .map(p => decodeURIComponent(p))
+          .filter(p => !/^\d+$/.test(p) && p !== "products" && p !== "items")
+        searchQuery = meaningful.pop() || ""
+      }
     }
 
     if (!searchQuery || searchQuery.length < 2) return null
@@ -84,16 +169,29 @@ async function fetchOEmbed(url: string): Promise<{ title?: string; author?: stri
   }
 }
 
-async function scrapeOg(url: string) {
+async function scrapeOg(inputUrl: string) {
+  // Resolve short URLs (naver.me, bit.ly, etc.) to get actual destination
+  let url = inputUrl
+  if (isShortUrl(inputUrl)) {
+    url = await resolveUrl(inputUrl)
+  }
+
+  // Convert brand.naver.com to m.smartstore.naver.com BEFORE OG scraping
+  // brand.naver.com is a JS SPA that returns "에러페이지" for server-side requests
+  let scrapeUrl = url
+  if (/brand\.naver\.com/i.test(url)) {
+    scrapeUrl = url.replace("brand.naver.com", "m.smartstore.naver.com")
+  }
+
   const domain = new URL(url).hostname.replace("www.", "")
 
   try {
-    const { result } = await ogs({
-      url,
+    const { result, html } = await ogs({
+      url: scrapeUrl,
       timeout: 8000,
       fetchOptions: {
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "User-Agent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
           "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
         },
       },
@@ -103,12 +201,19 @@ async function scrapeOg(url: string) {
         ? result.ogImage[0].url
         : undefined
 
-    let ogData = {
-      og_title: result.ogTitle || undefined,
+    // Filter out error/generic page titles from Naver SPA pages
+    const rawTitle = result.ogTitle && !/에러페이지|error page/i.test(result.ogTitle) ? result.ogTitle : undefined
+
+    // Extract page text snapshot for preservation
+    const pageSnapshot = typeof html === "string" ? extractPageText(html) : undefined
+
+    let ogData: Record<string, string | undefined> = {
+      og_title: rawTitle,
       og_description: result.ogDescription || undefined,
       og_image: ogImage,
       og_url: result.ogUrl || url,
       og_domain: domain,
+      page_snapshot: pageSnapshot && pageSnapshot.length > 30 ? pageSnapshot : undefined,
     }
 
     // Always try oEmbed for YouTube (OG scraping often returns empty/generic titles)
@@ -117,7 +222,9 @@ async function scrapeOg(url: string) {
       const oembed = await fetchOEmbed(url)
       if (oembed?.title) {
         ogData.og_title = oembed.title
-        ogData.og_description = ogData.og_description || (oembed.author ? `by ${oembed.author}` : undefined)
+        // Include author in description so AI can produce richer comments
+        const descParts = [oembed.author ? `채널: ${oembed.author}` : null, ogData.og_description].filter(Boolean)
+        ogData.og_description = descParts.join(" — ") || undefined
         ogData.og_image = ogData.og_image || oembed.thumbnail
       }
     } else if (!ogData.og_title) {
@@ -131,7 +238,13 @@ async function scrapeOg(url: string) {
     }
 
     // Always try Naver Shopping for shopping domains (even if OG succeeded, enrich with category/price)
-    if (/smartstore\.naver|shopping\.naver|coupang|kurly|ssg\.com|11st\.co|gmarket|auction/i.test(domain)) {
+    const isShopping = /smartstore\.naver|brand\.naver|shopping\.naver|m\.smartstore|coupang|kurly|ssg\.com|11st\.co|gmarket|auction/i.test(domain)
+    if (isShopping) {
+      // Filter out error pages from OG title
+      if (ogData.og_title && /에러페이지|error/i.test(ogData.og_title)) {
+        ogData.og_title = undefined
+      }
+
       const shop = await fetchNaverShopping(url, ogData.og_title)
       if (shop?.title) {
         ogData.og_title = ogData.og_title || shop.title
@@ -139,7 +252,6 @@ async function scrapeOg(url: string) {
         ogData.og_image = ogData.og_image || shop.image
       }
     } else if (!ogData.og_title) {
-      // Generic fallback for unknown sites
       const shop = await fetchNaverShopping(url, ogData.og_title)
       if (shop?.title) {
         ogData.og_title = shop.title

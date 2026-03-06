@@ -8,7 +8,7 @@ import { FeedSkeleton } from "@/components/feed-skeleton"
 import { PullToRefresh } from "@/components/pull-to-refresh"
 import { NudgeCards } from "@/components/nudge-card"
 import { useStore } from "@/lib/store"
-import { Archive, List, Clock, Trash2 } from "lucide-react"
+import { Archive, List, Clock, Trash2, Search } from "lucide-react"
 import { toast } from "sonner"
 
 interface MainFeedProps {
@@ -42,7 +42,22 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
       {!showArchived && !showTrash && !mobile && (
         <>
           <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-6">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-2xl mx-auto space-y-4">
+              {/* Search bar trigger */}
+              <button
+                onClick={() => {
+                  document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border border-border/40 bg-muted/30 hover:bg-muted/60 hover:border-border transition-all duration-200 group"
+              >
+                <Search className="h-4 w-4 text-muted-foreground/40 group-hover:text-muted-foreground/60" />
+                <span className="text-sm text-muted-foreground/40 group-hover:text-muted-foreground/60">
+                  무엇이든 검색하세요...
+                </span>
+                <kbd className="ml-auto hidden sm:inline-flex px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground/40">
+                  Ctrl+K
+                </kbd>
+              </button>
               <Composer onSaved={onRefetch} />
             </div>
           </div>

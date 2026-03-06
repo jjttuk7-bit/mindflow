@@ -38,7 +38,7 @@ function addHandledClip(text: string) {
 export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
   const [clipText, setClipText] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const { addItem, updateItem } = useStore()
+  const { addItem, updateItem, setJustSavedId } = useStore()
 
   const checkClipboard = useCallback(async () => {
     try {
@@ -94,7 +94,9 @@ export function ClipboardSuggest({ onSaved }: { onSaved?: () => void }) {
       addItem({ ...item, tags: [] })
       addHandledClip(clipText)
       setClipText(null)
-      toast.success("클립보드 내용이 저장되었습니다!")
+      const previewText = clipText.length > 40 ? clipText.slice(0, 40) + "..." : clipText
+      toast.success(`저장됨! ${previewText}`)
+      setJustSavedId(item.id)
       onSaved?.()
 
       // AI tagging is handled server-side via after() in the API route

@@ -41,7 +41,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const isSubmittingRef = useRef(false)
   const [showCamera, setShowCamera] = useState(false)
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
-  const { addItem, updateItem } = useStore()
+  const { addItem, updateItem, setJustSavedId } = useStore()
 
   // Detect camera availability
   useEffect(() => {
@@ -237,6 +237,7 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
         toast.success("음성 메모 저장됨!", { id: toastId })
+        setJustSavedId(item.id)
         onSaved?.()
 
         // AI tagging if transcript exists
@@ -370,7 +371,14 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
         setContent("")
         clearFile()
         setLinkError(null)
-        toast.success("저장됨!", { id: toastId })
+        const preview = activeType === "link"
+          ? (item.metadata?.og_title || submitContent)
+          : submitContent
+        const previewText = typeof preview === "string" && preview.length > 40
+          ? preview.slice(0, 40) + "..."
+          : preview
+        toast.success(`저장됨! ${previewText || ""}`, { id: toastId })
+        setJustSavedId(item.id)
         onSaved?.()
 
         if (savedFile) {

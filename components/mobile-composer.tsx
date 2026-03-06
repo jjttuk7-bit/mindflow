@@ -19,7 +19,7 @@ const typeButtons: { type: ContentType; icon: React.ReactNode; label: string }[]
 ]
 
 export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
-  const { setComposerOpen, addItem, updateItem, composerDefaultType, setComposerDefaultType } = useStore()
+  const { setComposerOpen, addItem, updateItem, composerDefaultType, setComposerDefaultType, setJustSavedId } = useStore()
   const [content, setContent] = useState("")
   const [activeType, setActiveType] = useState<ContentType>(composerDefaultType || "text")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -154,6 +154,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         const item = await res.json()
         addItem({ ...item, tags: [] })
         toast.success("음성 메모 저장됨!", { id: toastId })
+        setJustSavedId(item.id)
         setComposerOpen(false)
         onSaved?.()
 
@@ -287,7 +288,14 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         }
 
         setLinkError(null)
-        toast.success("저장됨!", { id: toastId })
+        const preview = activeType === "link"
+          ? (item.metadata?.og_title || submitContent)
+          : submitContent
+        const previewText = typeof preview === "string" && preview.length > 40
+          ? preview.slice(0, 40) + "..."
+          : preview
+        toast.success(`저장됨! ${previewText || ""}`, { id: toastId })
+        setJustSavedId(item.id)
         setComposerOpen(false)
         onSaved?.()
 

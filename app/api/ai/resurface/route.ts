@@ -70,12 +70,60 @@ export async function GET() {
       }
     }
 
-    // Strategy 2: Fallback - random old item
+    // Strategy 2: "On this day" — items saved on same date in previous weeks/months
+    const today = new Date()
+    const dayOfMonth = today.getDate()
+    const month = today.getMonth()
+    const dayOfWeek = today.getDay()
+
+    // Check same day of week, 2-8 weeks ago
+    const onThisDayCandidates: string[] = []
+    for (let weeksAgo = 2; weeksAgo <= 8; weeksAgo++) {
+      const d = new Date(today)
+      d.setDate(d.getDate() - weeksAgo * 7)
+      const dayStart = new Date(d)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(d)
+      dayEnd.setHours(23, 59, 59, 999)
+      onThisDayCandidates.push(`created_at.gte.${dayStart.toISOString()}`)
+    }
+
+    // Same date last month
+    const lastMonth = new Date(today)
+    lastMonth.setMonth(lastMonth.getMonth() - 1)
+    const lastMonthStart = new Date(lastMonth)
+    lastMonthStart.setHours(0, 0, 0, 0)
+    const lastMonthEnd = new Date(lastMonth)
+    lastMonthEnd.setHours(23, 59, 59, 999)
+
+    const { data: onThisDayItems } = await supabase
+      .from("items")
+      .select("*, item_tags(tags(id, name))")
+      .eq("user_id", user.id)
+      .is("deleted_at", null)
+      .gte("created_at", lastMonthStart.toISOString())
+      .lte("created_at", lastMonthEnd.toISOString())
+      .limit(5)
+
+    if (onThisDayItems && onThisDayItems.length > 0) {
+      const picked = onThisDayItems[Math.floor(Math.random() * onThisDayItems.length)]
+      const tags = (picked.item_tags as { tags: unknown }[])
+        ?.map((t) => t.tags)
+        .filter(Boolean) || []
+
+      return NextResponse.json({
+        item: { ...picked, tags, item_tags: undefined },
+        reason: "이 날의 기억",
+      })
+    }
+
+    // Strategy 3: Fallback - random old item
     const { data: oldItems } = await supabase
       .from("items")
       .select("*, item_tags(tags(id, name))")
       .eq("user_id", user.id)
       .lt("created_at", sevenDaysAgo.toISOString())
+      .is("deleted_at", null)
       .eq("is_archived", false)
       .order("created_at", { ascending: true })
       .limit(20)

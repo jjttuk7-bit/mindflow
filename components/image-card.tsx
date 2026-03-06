@@ -4,7 +4,8 @@ import { useState } from "react"
 import Image from "next/image"
 import dynamic from "next/dynamic"
 import { ScreenshotData } from "@/lib/supabase/types"
-import { ExternalLink, CheckSquare, Clock, MapPin, User, Info } from "lucide-react"
+import { ExternalLink, CheckSquare, Clock, User, Info, RefreshCw } from "lucide-react"
+import { toast } from "sonner"
 
 const ImageLightbox = dynamic(() => import("@/components/image-lightbox").then(m => m.ImageLightbox), { ssr: false })
 
@@ -24,25 +25,101 @@ const screenshotTypeLabels: Record<string, { label: string; color: string }> = {
 export function ImageCard({
   imageUrl,
   caption,
-  screenshot,
+  screenshot: initialScreenshot,
+  itemId,
+  onScreenshotUpdate,
 }: {
   imageUrl: string
   caption?: string
   screenshot?: ScreenshotData
+  itemId?: string
+  onScreenshotUpdate?: (screenshot: ScreenshotData) => void
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [reanalyzing, setReanalyzing] = useState(false)
+  const [screenshot, setScreenshot] = useState(initialScreenshot)
+  const [hovered, setHovered] = useState(false)
 
   const typeInfo = screenshot ? screenshotTypeLabels[screenshot.type] || screenshotTypeLabels.other : null
 
+  const handleReanalyze = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!itemId || reanalyzing) return
+    setReanalyzing(true)
+    try {
+      // Fetch image and convert to base64
+      const imgRes = await fetch(imageUrl)
+      const blob = await imgRes.blob()
+      const formData = new FormData()
+      formData.append("image", new File([blob], "image.jpg", { type: blob.type }))
+
+      // Re-analyze
+      const analysisRes = await fetch("/api/ai/analyze-screenshot", {
+        method: "POST",
+        body: formData,
+      })
+      if (!analysisRes.ok) throw new Error("Analysis failed")
+      const analysis = await analysisRes.json()
+
+      const newScreenshot: ScreenshotData = {
+        type: analysis.type || "other",
+        urls: analysis.extracted?.urls || [],
+        dates: analysis.extracted?.dates || [],
+        todos: analysis.extracted?.todos || [],
+        people: analysis.extracted?.people || [],
+        key_info: analysis.extracted?.key_info || [],
+        expiry: analysis.extracted?.expiry,
+      }
+
+      // Update item metadata
+      const patchRes = await fetch(`/api/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          metadata: { image_url: imageUrl, screenshot: newScreenshot },
+        }),
+      })
+
+      if (patchRes.ok) {
+        setScreenshot(newScreenshot)
+        onScreenshotUpdate?.(newScreenshot)
+        toast.success("재분석 완료!")
+      } else {
+        throw new Error("Update failed")
+      }
+    } catch {
+      toast.error("재분석 실패")
+    } finally {
+      setReanalyzing(false)
+    }
+  }
+
   return (
     <>
-      <div className="space-y-2">
-        {/* Screenshot type badge */}
-        {screenshot && typeInfo && (
-          <span className={`inline-flex items-center gap-1 text-[10px] tracking-wide px-2 py-0.5 rounded-md font-semibold ${typeInfo.color}`}>
-            {typeInfo.label}
-          </span>
-        )}
+      <div
+        className="space-y-2"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Screenshot type badge + re-analyze button */}
+        <div className="flex items-center gap-1.5">
+          {screenshot && typeInfo && (
+            <span className={`inline-flex items-center gap-1 text-[10px] tracking-wide px-2 py-0.5 rounded-md font-semibold ${typeInfo.color}`}>
+              {typeInfo.label}
+            </span>
+          )}
+          {itemId && hovered && (
+            <button
+              onClick={handleReanalyze}
+              disabled={reanalyzing}
+              title="재분석"
+              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-all"
+            >
+              <RefreshCw className={`h-3 w-3 ${reanalyzing ? "animate-spin" : ""}`} />
+              {reanalyzing ? "분석 중..." : "재분석"}
+            </button>
+          )}
+        </div>
 
         <button
           onClick={() => setLightboxOpen(true)}

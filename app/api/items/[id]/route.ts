@@ -140,6 +140,26 @@ export async function DELETE(
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+  // Clean up storage files after response
+  const softMeta = data.metadata as Record<string, string> | null
+  if (softMeta) {
+    after(async () => {
+      try {
+        if (softMeta.image_url) {
+          const path = extractStoragePath(softMeta.image_url, "items-images")
+          if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
+        }
+        if (softMeta.file_url) {
+          const path = extractStoragePath(softMeta.file_url, "items-audio")
+          if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
+        }
+      } catch {
+        // Storage cleanup is best-effort
+      }
+    })
+  }
+
   return NextResponse.json(data)
 }
 

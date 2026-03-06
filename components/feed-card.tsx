@@ -61,10 +61,9 @@ function timeAgo(dateStr: string) {
   return `${date.getFullYear()}.${month}.${day}`
 }
 
-function getExpiryBadge(meta: unknown): React.ReactNode {
+function getExpiryInfo(meta: unknown): { expiry: ExpiryMeta; daysLeft: number } | null {
   if (!meta || typeof meta !== "object") return null
   const m = meta as { expiry?: ExpiryMeta; screenshot?: { expiry?: { detected?: boolean; expiry_date?: string } } }
-  // Check top-level expiry first, fallback to screenshot.expiry
   const expiry = m.expiry?.expiry_date ? m.expiry : (
     m.screenshot?.expiry?.detected && m.screenshot.expiry.expiry_date
       ? { expiry_date: m.screenshot.expiry.expiry_date } as ExpiryMeta
@@ -76,16 +75,65 @@ function getExpiryBadge(meta: unknown): React.ReactNode {
   const expiryDate = new Date(expiry.expiry_date)
   expiryDate.setHours(0, 0, 0, 0)
   const daysLeft = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  return { expiry, daysLeft }
+}
+
+function ExpiryBadge({ meta, itemId, onUpdate }: { meta: unknown; itemId: string; onUpdate: (id: string, updates: Partial<Item>) => void }) {
+  const [editingExpiry, setEditingExpiry] = useState(false)
+  const info = getExpiryInfo(meta)
+
+  const handleDateChange = async (newDate: string) => {
+    setEditingExpiry(false)
+    if (!newDate) return
+    try {
+      const res = await fetch(`/api/items/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ metadata: { ...(meta as Record<string, unknown>), expiry: { ...info?.expiry, expiry_date: newDate } } }),
+      })
+      if (res.ok) {
+        const updated = await res.json()
+        onUpdate(itemId, updated)
+        toast.success("만료일 수정됨")
+      }
+    } catch {
+      toast.error("만료일 수정 실패")
+    }
+  }
+
+  if (!info) return null
+  const { daysLeft } = info
   const label = daysLeft > 0 ? `D-${daysLeft}` : "만료"
   const colorClass =
     daysLeft <= 0 ? "bg-red-500/10 text-red-500 line-through" :
     daysLeft <= 3 ? "bg-red-500/10 text-red-500" :
     daysLeft <= 7 ? "bg-amber-500/10 text-amber-500" :
     "bg-muted text-muted-foreground"
+
+  if (editingExpiry) {
+    return (
+      <input
+        type="date"
+        defaultValue={info.expiry.expiry_date}
+        autoFocus
+        className="text-[11px] px-1.5 py-0.5 rounded-md border border-border bg-background"
+        onBlur={(e) => handleDateChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleDateChange((e.target as HTMLInputElement).value)
+          if (e.key === "Escape") setEditingExpiry(false)
+        }}
+      />
+    )
+  }
+
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${colorClass}`}>
+    <button
+      onClick={() => setEditingExpiry(true)}
+      title="클릭하여 만료일 수정"
+      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all ${colorClass}`}
+    >
       {label}
-    </span>
+    </button>
   )
 }
 
@@ -456,6 +504,7 @@ export function FeedCard({
             imageUrl={meta.image_url}
             caption={!editing && item.content !== "Image" ? item.content : undefined}
             screenshot={meta.screenshot}
+            itemId={item.id}
           />
           {editing && (
             <>
@@ -564,7 +613,7 @@ export function FeedCard({
 
           {/* Tags + Meta */}
           <div className="flex items-center gap-2 flex-wrap">
-            {getExpiryBadge(item.metadata)}
+            <ExpiryBadge meta={item.metadata} itemId={item.id} onUpdate={onUpdate} />
             {item.project_id && (() => {
               const proj = projects.find((p) => p.id === item.project_id)
               return proj ? (

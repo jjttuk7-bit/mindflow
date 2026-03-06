@@ -177,8 +177,10 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   }, [])
 
   async function uploadImage(file: File): Promise<string | null> {
+    const { compressImage } = await import("@/lib/image-utils")
+    const compressed = await compressImage(file)
     const formData = new FormData()
-    formData.append("file", file)
+    formData.append("file", compressed)
     formData.append("bucket", "items-images")
     const res = await fetch("/api/upload", { method: "POST", body: formData })
     if (!res.ok) return null

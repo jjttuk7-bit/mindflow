@@ -52,6 +52,40 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
     }
   }, [])
 
+  async function handleBatchUpload(files: File[]) {
+    const valid = files.filter(f => f.type.startsWith("image/") && f.size <= 10 * 1024 * 1024)
+    if (valid.length === 0) return
+    if (valid.length === 1) { handleFileSelect(valid[0]); return }
+
+    setIsSubmitting(true)
+    isSubmittingRef.current = true
+    const toastId = toast.loading(`0/${valid.length} 이미지 업로드 중...`)
+    try {
+      for (let i = 0; i < valid.length; i++) {
+        toast.loading(`${i + 1}/${valid.length} 이미지 업로드 중...`, { id: toastId })
+        const imageUrl = await uploadImage(valid[i])
+        if (!imageUrl) continue
+        const res = await fetch("/api/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "image", content: "Image", metadata: { image_url: imageUrl } }),
+        })
+        if (res.ok) {
+          const item = await res.json()
+          addItem({ ...item, tags: [] })
+          if (i === 0) setJustSavedId(item.id)
+        }
+      }
+      toast.success(`${valid.length}장 이미지 저장 완료!`, { id: toastId })
+      onSaved?.()
+    } catch {
+      toast.error("일부 이미지 업로드 실패", { id: toastId })
+    } finally {
+      setIsSubmitting(false)
+      isSubmittingRef.current = false
+    }
+  }
+
   function handleFileSelect(file: File) {
     if (!file.type.startsWith("image/")) return
     const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -172,8 +206,13 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file) handleFileSelect(file)
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"))
+    if (files.length > 1) {
+      handleBatchUpload(files)
+    } else if (files[0]) {
+      handleFileSelect(files[0])
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function uploadImage(file: File): Promise<string | null> {
@@ -530,10 +569,15 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             className="hidden"
             onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleFileSelect(file)
+              const files = e.target.files
+              if (files && files.length > 1) {
+                handleBatchUpload(Array.from(files))
+              } else if (files?.[0]) {
+                handleFileSelect(files[0])
+              }
               e.target.value = ""
             }}
           />

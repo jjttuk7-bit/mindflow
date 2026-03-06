@@ -166,13 +166,21 @@ export function FeedCard({
     }
   }, [isJustSaved, item.id, setJustSavedId])
 
-  // Connection discovery — use ref to avoid cleanup killing the timer
+  // Connection discovery — capture justSavedId match immediately, run check later
   const connCheckedRef = useRef(false)
+  const shouldCheckConnection = useRef(false)
+
+  // Capture the match immediately (before justSavedId gets cleared at 4s)
   useEffect(() => {
-    if (justSavedId !== item.id || connCheckedRef.current) return
+    if (justSavedId === item.id && !connCheckedRef.current) {
+      shouldCheckConnection.current = true
+    }
+  }, [justSavedId, item.id])
+
+  useEffect(() => {
+    if (!shouldCheckConnection.current || connCheckedRef.current) return
     connCheckedRef.current = true
 
-    // Fire-and-forget with retry: embedding may not be ready on first attempt
     const showConnectionToast = (conn: { created_at: string; summary?: string; content: string }) => {
       const daysAgo = Math.floor((Date.now() - new Date(conn.created_at).getTime()) / (1000 * 60 * 60 * 24))
       const timeLabel = daysAgo >= 30
@@ -200,8 +208,8 @@ export function FeedCard({
       } catch {}
     }
 
-    // First attempt at 8s, retry at 16s if embedding wasn't ready
-    setTimeout(() => checkConnections(1), 8000)
+    // First attempt at 5s, retries at 13s, 21s (3 attempts total)
+    setTimeout(() => checkConnections(2), 5000)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [justSavedId, item.id])
   const config = typeConfig[item.type] ?? typeConfig.text

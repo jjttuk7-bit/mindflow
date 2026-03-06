@@ -20,34 +20,14 @@ export default function AppleIcon() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
             gap: 0,
           }}
         >
-          <span
-            style={{
-              color: "white",
-              fontSize: 120,
-              fontWeight: 900,
-              fontFamily: "Georgia, serif",
-              lineHeight: 0.85,
-              letterSpacing: -4,
-              marginTop: -5,
-            }}
-          >
-            M
-          </span>
-          <div
-            style={{
-              display: "flex",
-              width: 90,
-              height: 5,
-              marginTop: -10,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+          <div style={{ display: "flex", width: 13, height: 13, borderRadius: 7, background: "rgba(255,255,255,0.4)", marginRight: 8 }} />
+          <div style={{ display: "flex", width: 21, height: 21, borderRadius: 11, background: "rgba(255,255,255,0.65)", marginRight: 8 }} />
+          <div style={{ display: "flex", width: 30, height: 30, borderRadius: 15, background: "white", marginRight: -7 }} />
+          <div style={{ display: "flex", width: 50, height: 14, borderRadius: 7, background: "white" }} />
         </div>
       </div>
     ),

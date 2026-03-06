@@ -20,34 +20,19 @@ export default function Icon() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
+            justifyContent: "center",
             gap: 0,
           }}
         >
-          <span
-            style={{
-              color: "white",
-              fontSize: 340,
-              fontWeight: 900,
-              fontFamily: "Georgia, serif",
-              lineHeight: 0.85,
-              letterSpacing: -10,
-              marginTop: -15,
-            }}
-          >
-            M
-          </span>
-          <div
-            style={{
-              display: "flex",
-              width: 260,
-              height: 14,
-              marginTop: -30,
-              borderRadius: 7,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+          {/* Small dot */}
+          <div style={{ display: "flex", width: 42, height: 42, borderRadius: 21, background: "rgba(255,255,255,0.4)", marginRight: 20 }} />
+          {/* Medium dot */}
+          <div style={{ display: "flex", width: 70, height: 70, borderRadius: 35, background: "rgba(255,255,255,0.65)", marginRight: 18 }} />
+          {/* Large dot merging into line */}
+          <div style={{ display: "flex", width: 96, height: 96, borderRadius: 48, background: "white", marginRight: -24 }} />
+          {/* Line extending from large dot */}
+          <div style={{ display: "flex", width: 110, height: 44, borderRadius: 22, background: "white" }} />
         </div>
       </div>
     ),

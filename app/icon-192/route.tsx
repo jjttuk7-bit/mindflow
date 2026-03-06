@@ -19,34 +19,14 @@ export async function GET() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
             gap: 0,
           }}
         >
-          <span
-            style={{
-              color: "white",
-              fontSize: 128,
-              fontWeight: 900,
-              fontFamily: "Georgia, serif",
-              lineHeight: 0.85,
-              letterSpacing: -4,
-              marginTop: -5,
-            }}
-          >
-            M
-          </span>
-          <div
-            style={{
-              display: "flex",
-              width: 96,
-              height: 5,
-              marginTop: -10,
-              borderRadius: 3,
-              background: "rgba(255,255,255,0.2)",
-            }}
-          />
+          <div style={{ display: "flex", width: 14, height: 14, borderRadius: 7, background: "rgba(255,255,255,0.4)", marginRight: 9 }} />
+          <div style={{ display: "flex", width: 22, height: 22, borderRadius: 11, background: "rgba(255,255,255,0.65)", marginRight: 9 }} />
+          <div style={{ display: "flex", width: 32, height: 32, borderRadius: 16, background: "white", marginRight: -8 }} />
+          <div style={{ display: "flex", width: 52, height: 15, borderRadius: 8, background: "white" }} />
         </div>
       </div>
     ),

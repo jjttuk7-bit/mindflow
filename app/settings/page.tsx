@@ -31,8 +31,13 @@ import {
   Info,
   Bell,
   Lock,
+  Sun,
+  Moon,
+  Monitor,
+  Smartphone,
 } from "lucide-react"
 import Link from "next/link"
+import { useTheme } from "next-themes"
 import { toast } from "sonner"
 
 const PRO_FEATURES = [
@@ -84,6 +89,7 @@ function SettingsContent() {
   const [pinAuthError, setPinAuthError] = useState("")
   const [pinAuthLoading, setPinAuthLoading] = useState(false)
 
+  const { theme, setTheme } = useTheme()
   const supabase = createClient()
 
   const fetchSettings = useCallback(async () => {
@@ -468,6 +474,45 @@ function SettingsContent() {
                   {isPro ? "Pro" : "Free"}
                 </Badge>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Theme Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sun className="h-4 w-4" />
+                테마
+              </CardTitle>
+              <CardDescription>앱의 외관을 설정하세요</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { value: "system", label: "시스템", icon: Monitor },
+                  { value: "light", label: "라이트", icon: Sun },
+                  { value: "dark", label: "다크", icon: Moon },
+                  { value: "black", label: "OLED", icon: Smartphone },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTheme(opt.value)}
+                    className={`flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-xs font-medium transition-all ${
+                      theme === opt.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/60 text-muted-foreground hover:border-border hover:bg-muted/30"
+                    }`}
+                  >
+                    <opt.icon className="h-4 w-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {theme === "black" && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  AMOLED 디스플레이에 최적화된 순수 검정 배경
+                </p>
+              )}
             </CardContent>
           </Card>
 

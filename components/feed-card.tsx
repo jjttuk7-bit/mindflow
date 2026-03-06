@@ -5,7 +5,7 @@ import { Item, LinkMeta, ImageMeta, ExpiryMeta, ItemContext } from "@/lib/supaba
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff } from "lucide-react"
+import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff, Plus, Tag as TagIcon } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
 import {
   DropdownMenu,
@@ -129,9 +129,12 @@ export function FeedCard({
   const [related, setRelated] = useState<RelatedItem[]>([])
   const [relatedLoaded, setRelatedLoaded] = useState(false)
   const [showProjectMenu, setShowProjectMenu] = useState(false)
+  const [tagEditing, setTagEditing] = useState(false)
+  const [newTagName, setNewTagName] = useState("")
+  const tagInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cardRef = useRef<HTMLElement>(null)
-  const { projects, justSavedId, setJustSavedId } = useStore()
+  const { projects, tags: allTags, justSavedId, setJustSavedId } = useStore()
 
   // Highlight is computed directly from store (no useState delay)
   const isJustSaved = justSavedId === item.id
@@ -315,6 +318,61 @@ export function FeedCard({
       toast.error("Failed to move item")
     }
   }
+
+  async function handleAddTag(name: string) {
+    const trimmed = name.trim().toLowerCase()
+    if (!trimmed) return
+    // Optimistic: check if already has this tag
+    if (item.tags?.some((t) => t.name.toLowerCase() === trimmed)) {
+      setNewTagName("")
+      return
+    }
+    try {
+      const res = await fetch(`/api/items/${item.id}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      })
+      if (!res.ok) throw new Error()
+      const tag = await res.json()
+      const currentTags = item.tags || []
+      onUpdate(item.id, { tags: [...currentTags, tag] } as Partial<Item>)
+      setNewTagName("")
+    } catch {
+      toast.error("태그 추가 실패")
+    }
+  }
+
+  async function handleRemoveTag(tagId: string) {
+    const prevTags = item.tags || []
+    onUpdate(item.id, { tags: prevTags.filter((t) => t.id !== tagId) } as Partial<Item>)
+    try {
+      const res = await fetch(`/api/items/${item.id}/tags`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag_id: tagId }),
+      })
+      if (!res.ok) throw new Error()
+    } catch {
+      onUpdate(item.id, { tags: prevTags } as Partial<Item>)
+      toast.error("태그 제거 실패")
+    }
+  }
+
+  // Focus tag input when editing starts
+  useEffect(() => {
+    if (tagEditing && tagInputRef.current) {
+      tagInputRef.current.focus()
+    }
+  }, [tagEditing])
+
+  // Filter suggestions for tag autocomplete
+  const tagSuggestions = newTagName.trim()
+    ? allTags
+        .filter((t) => t.name.toLowerCase().includes(newTagName.trim().toLowerCase()))
+        .filter((t) => !item.tags?.some((it) => it.id === t.id))
+        .slice(0, 5)
+    : []
 
   const editControls = (
     <div className="flex items-center gap-1.5 mt-2">
@@ -501,16 +559,73 @@ export function FeedCard({
                 <Badge
                   key={tag.id}
                   variant="secondary"
-                  className="text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0 hover:bg-muted"
+                  className={`text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0 ${
+                    tagEditing ? "hover:bg-destructive/10 hover:text-destructive cursor-pointer pr-1" : "hover:bg-muted"
+                  }`}
+                  onClick={tagEditing ? () => handleRemoveTag(tag.id) : undefined}
                 >
                   {tag.name}
+                  {tagEditing && <X className="h-2.5 w-2.5 ml-1 inline" />}
                 </Badge>
               ))
-            ) : (
+            ) : !tagEditing ? (
               <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/50 italic">
                 <span className="h-1 w-1 rounded-full bg-amber-accent animate-pulse" />
                 분석 중
               </span>
+            ) : null}
+            {/* Tag add input */}
+            {tagEditing && (
+              <div className="relative inline-flex">
+                <input
+                  ref={tagInputRef}
+                  type="text"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      handleAddTag(newTagName)
+                    }
+                    if (e.key === "Escape") {
+                      setTagEditing(false)
+                      setNewTagName("")
+                    }
+                  }}
+                  placeholder="태그 입력..."
+                  className="h-5 w-24 text-[10px] px-2 py-0.5 rounded-md border border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
+                />
+                {tagSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 mt-1 w-36 bg-popover border border-border rounded-md shadow-md z-20 py-0.5">
+                    {tagSuggestions.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => handleAddTag(t.name)}
+                        className="w-full text-left px-2 py-1 text-[11px] text-foreground/70 hover:bg-accent truncate"
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Tag edit toggle button */}
+            {!showTrash && (
+              <button
+                onClick={() => {
+                  setTagEditing(!tagEditing)
+                  setNewTagName("")
+                }}
+                className={`h-4 w-4 flex items-center justify-center rounded transition-colors ${
+                  tagEditing
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground/30 hover:text-muted-foreground/60"
+                }`}
+                title={tagEditing ? "태그 편집 완료" : "태그 편집"}
+              >
+                {tagEditing ? <Check className="h-2.5 w-2.5" /> : <Plus className="h-2.5 w-2.5" />}
+              </button>
             )}
             {isOfflineItem && (
               <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-600">

@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Item, LinkMeta, ImageMeta, ExpiryMeta, ItemContext } from "@/lib/supabase/types"
+import { Item, LinkMeta, ImageMeta, ExpiryMeta, FileMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
 import { ImageCard } from "@/components/image-card"
-import { FileText, Link, Image, Mic, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff, Plus, Tag as TagIcon } from "lucide-react"
+import { FileText, Link, Image, Mic, Paperclip, Trash2, ChevronDown, ChevronUp, Pin, Archive, ArchiveRestore, Pencil, Check, X, FolderOpen, Sparkles, Undo2, CloudOff, Plus, Tag as TagIcon } from "lucide-react"
 import { ShareButton } from "@/components/share-button"
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { VoiceCard } from "@/components/voice-card"
+import { FileCard } from "@/components/file-card"
 import { VoiceMeta } from "@/lib/supabase/types"
 import { useStore } from "@/lib/store"
 import { toast } from "sonner"
@@ -39,6 +40,11 @@ const typeConfig: Record<string, { icon: React.ReactNode; color: string; label: 
     icon: <Mic className="h-3.5 w-3.5" />,
     color: "text-amber-accent bg-amber-accent/10",
     label: "Voice",
+  },
+  file: {
+    icon: <Paperclip className="h-3.5 w-3.5" />,
+    color: "text-indigo-500 bg-indigo-500/10",
+    label: "File",
   },
 }
 
@@ -146,7 +152,11 @@ function isImageMeta(meta: unknown): meta is ImageMeta {
 }
 
 function isVoiceMeta(meta: unknown): meta is VoiceMeta {
-  return !!meta && typeof meta === "object" && "file_url" in meta
+  return !!meta && typeof meta === "object" && "file_url" in meta && "duration" in meta
+}
+
+function isFileMeta(meta: unknown): meta is FileMeta {
+  return !!meta && typeof meta === "object" && "file_url" in meta && "file_name" in meta
 }
 
 interface RelatedItem {
@@ -528,6 +538,20 @@ export function FeedCard({
           {editing && (
             <>
               {editTextarea("Edit transcript...")}
+              {editControls}
+            </>
+          )}
+        </div>
+      )
+    }
+
+    if (item.type === "file" && isFileMeta(meta)) {
+      return (
+        <div className="space-y-2">
+          <FileCard meta={meta} itemId={item.id} />
+          {editing && (
+            <>
+              {editTextarea("메모 수정...")}
               {editControls}
             </>
           )}

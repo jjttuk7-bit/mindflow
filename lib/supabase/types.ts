@@ -1,4 +1,4 @@
-export type ContentType = "text" | "link" | "image" | "voice"
+export type ContentType = "text" | "link" | "image" | "voice" | "file"
 
 export interface Item {
   id: string
@@ -9,7 +9,7 @@ export interface Item {
   is_archived?: boolean
   deleted_at?: string | null
   user_id?: string
-  metadata: LinkMeta | ImageMeta | VoiceMeta | Record<string, never>
+  metadata: LinkMeta | ImageMeta | VoiceMeta | FileMeta | Record<string, never>
   created_at: string
   updated_at: string
   tags?: Tag[]
@@ -74,6 +74,15 @@ export interface VoiceMeta {
   file_url: string
   duration: number
   transcript?: string
+}
+
+export interface FileMeta {
+  file_url: string
+  file_name: string
+  file_size: number
+  file_type: string
+  extracted_text?: string
+  ai_summary?: string
 }
 
 export interface ItemContext {

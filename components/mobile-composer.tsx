@@ -6,7 +6,7 @@ import { ContentType } from "@/lib/supabase/types"
 import { VoiceRecorder } from "@/components/voice-recorder"
 import { toast } from "sonner"
 import {
-  FileText, Link, Image, Mic, X, Upload, Camera, ArrowUp, Loader2,
+  FileText, Link, Image, Mic, X, Upload, Camera, ArrowUp, Loader2, Paperclip,
 } from "lucide-react"
 import { ScreenshotData } from "@/lib/supabase/types"
 import { addToOfflineQueue, createOfflineItem } from "@/lib/offline-store"
@@ -16,6 +16,7 @@ const typeButtons: { type: ContentType; icon: React.ReactNode; label: string }[]
   { type: "link", icon: <Link className="h-4 w-4" />, label: "Link" },
   { type: "image", icon: <Image className="h-4 w-4" />, label: "Image" },
   { type: "voice", icon: <Mic className="h-4 w-4" />, label: "Voice" },
+  { type: "file", icon: <Paperclip className="h-4 w-4" />, label: "File" },
 ]
 
 export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
@@ -105,6 +106,16 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
     const formData = new FormData()
     formData.append("file", compressed)
     formData.append("bucket", "items-images")
+    const res = await fetch("/api/upload", { method: "POST", body: formData })
+    if (!res.ok) return null
+    const { url } = await res.json()
+    return url
+  }
+
+  async function uploadFile(file: File): Promise<string | null> {
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("bucket", "items-files")
     const res = await fetch("/api/upload", { method: "POST", body: formData })
     if (!res.ok) return null
     const { url } = await res.json()
@@ -212,7 +223,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
   async function handleSubmit() {
     if (isSubmittingRef.current) return
 
-    if (activeType === "image") {
+    if (activeType === "image" || activeType === "file") {
       if (!selectedFile) return
     } else if (activeType === "link") {
       const normalized = normalizeUrl(content)
@@ -229,7 +240,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
 
     isSubmittingRef.current = true
     setIsSubmitting(true)
-    const toastId = toast.loading(activeType === "image" ? "이미지 업로드 중..." : "저장 중...")
+    const toastId = toast.loading(activeType === "image" ? "이미지 업로드 중..." : activeType === "file" ? "파일 업로드 중..." : "저장 중...")
     try {
       let metadata = {}
       const submitContent = activeType === "link" ? normalizeUrl(content) : content.trim()
@@ -245,12 +256,26 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
           : { image_url: imageUrl }
       }
 
+      if (activeType === "file" && selectedFile) {
+        const fileUrl = await uploadFile(selectedFile)
+        if (!fileUrl) {
+          toast.error("파일 업로드에 실패했습니다", { id: toastId })
+          return
+        }
+        metadata = {
+          file_url: fileUrl,
+          file_name: selectedFile.name,
+          file_size: selectedFile.size,
+          file_type: selectedFile.type,
+        }
+      }
+
       const res = await fetch("/api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: activeType,
-          content: activeType === "image" ? content.trim() || "Image" : submitContent,
+          content: activeType === "image" ? content.trim() || "Image" : activeType === "file" ? content.trim() || "File" : submitContent,
           metadata,
         }),
       })
@@ -261,8 +286,31 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
         // If image saved without caption, analyze async and update
         const savedFile = activeType === "image" && !content.trim() ? selectedFile : null
 
+        // For file: trigger AI analysis
+        if (activeType === "file" && item.metadata?.file_url) {
+          fetch("/api/ai/analyze-file", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemId: item.id, fileUrl: item.metadata.file_url, fileName: item.metadata.file_name }),
+          })
+            .then(async (r) => {
+              if (!r.ok) return
+              const itemRes = await fetch(`/api/items/${item.id}`)
+              if (!itemRes.ok) return
+              const updated = await itemRes.json()
+              updateItem(item.id, {
+                content: updated.content,
+                metadata: updated.metadata,
+                summary: updated.summary,
+                context: updated.context,
+                tags: updated.tags || [],
+              })
+            })
+            .catch(console.error)
+        }
+
         // For text/link: trigger AI tagging directly from client
-        if (activeType !== "image") {
+        if (activeType !== "image" && activeType !== "file") {
           const tagContent = activeType === "link" && item.metadata
             ? [item.metadata.og_title, item.metadata.og_description, item.content].filter(Boolean).join(" — ")
             : item.content
@@ -510,6 +558,65 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={isAnalyzing ? "분석 중..." : "설명을 추가하세요..."}
+              className="w-full min-h-[60px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
+            />
+          </div>
+        ) : activeType === "file" ? (
+          <div className="p-4 space-y-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.doc,.txt,.csv,.xlsx,.xls,.md,.hwp,.rtf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) {
+                  if (f.size > 20 * 1024 * 1024) {
+                    toast.error("파일 크기는 20MB까지 지원됩니다")
+                    return
+                  }
+                  setSelectedFile(f)
+                }
+                e.target.value = ""
+              }}
+            />
+
+            {!selectedFile ? (
+              <div className="flex flex-col items-center justify-center h-48 rounded-xl border-2 border-dashed border-border/50">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium bg-primary/10 text-primary"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  파일 선택
+                </button>
+                <p className="text-xs text-muted-foreground/40 mt-2">
+                  PDF, DOCX, TXT, CSV, XLSX (최대 20MB)
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+                <Paperclip className="h-5 w-5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+                  <p className="text-[11px] text-muted-foreground/60">
+                    {(selectedFile.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+                <button
+                  onClick={clearFile}
+                  className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="메모를 추가하세요 (선택사항)..."
               className="w-full min-h-[60px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
             />
           </div>

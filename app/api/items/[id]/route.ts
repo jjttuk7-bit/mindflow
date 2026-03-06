@@ -118,9 +118,13 @@ export async function DELETE(
           const path = extractStoragePath(meta.image_url, "items-images")
           if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
         }
-        if (meta.file_url) {
+        if (meta.file_url && item?.type === "voice") {
           const path = extractStoragePath(meta.file_url, "items-audio")
           if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
+        }
+        if (meta.file_url && item?.type === "file") {
+          const path = extractStoragePath(meta.file_url, "items-files")
+          if (path) await getSupabaseAdmin().storage.from("items-files").remove([path])
         }
       } catch {
         // Storage cleanup is best-effort
@@ -143,6 +147,7 @@ export async function DELETE(
 
   // Clean up storage files after response
   const softMeta = data.metadata as Record<string, string> | null
+  const softType = data.type as string
   if (softMeta) {
     after(async () => {
       try {
@@ -150,9 +155,13 @@ export async function DELETE(
           const path = extractStoragePath(softMeta.image_url, "items-images")
           if (path) await getSupabaseAdmin().storage.from("items-images").remove([path])
         }
-        if (softMeta.file_url) {
+        if (softMeta.file_url && softType === "voice") {
           const path = extractStoragePath(softMeta.file_url, "items-audio")
           if (path) await getSupabaseAdmin().storage.from("items-audio").remove([path])
+        }
+        if (softMeta.file_url && softType === "file") {
+          const path = extractStoragePath(softMeta.file_url, "items-files")
+          if (path) await getSupabaseAdmin().storage.from("items-files").remove([path])
         }
       } catch {
         // Storage cleanup is best-effort

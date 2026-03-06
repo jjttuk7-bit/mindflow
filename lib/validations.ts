@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 // ── Shared Schemas ──
 
 export const itemCreateSchema = z.object({
-  type: z.enum(["text", "link", "image", "voice"]),
+  type: z.enum(["text", "link", "image", "voice", "file"]),
   content: z.string().min(1).max(50000),
   metadata: z.record(z.string(), z.unknown()).optional().default({}),
 })
@@ -79,7 +79,7 @@ export const exportSummarySchema = z.object({
 export const aiTagSchema = z.object({
   item_id: z.string().uuid(),
   content: z.string().min(1).max(50000),
-  type: z.enum(["text", "link", "image", "voice"]),
+  type: z.enum(["text", "link", "image", "voice", "file"]),
 })
 
 // ── Validation Helper ──

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing file or bucket" }, { status: 400 })
   }
 
-  if (!["items-images", "items-audio"].includes(bucket)) {
+  if (!["items-images", "items-audio", "items-files"].includes(bucket)) {
     return NextResponse.json({ error: "Invalid bucket" }, { status: 400 })
   }
 

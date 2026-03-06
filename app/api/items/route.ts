@@ -322,6 +322,9 @@ export async function POST(req: NextRequest) {
     const m = meta as Record<string, string>
     const parts = [m.og_title, m.og_description, content].filter(Boolean)
     tagContent = parts.join(" — ")
+  } else if (type === "file" && meta && typeof meta === "object" && "file_name" in meta) {
+    const fm = meta as Record<string, unknown>
+    tagContent = [content, fm.file_name as string, fm.ai_summary as string].filter(Boolean).join(" — ")
   } else if (type === "image" && meta && typeof meta === "object" && "screenshot" in meta) {
     const sm = meta as Record<string, unknown>
     const screenshot = sm.screenshot as Record<string, unknown> | undefined

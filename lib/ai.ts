@@ -579,8 +579,7 @@ export async function transcribeAudio(file: File): Promise<string> {
   const result = await getOpenAI().audio.transcriptions.create({
     model: "whisper-1",
     file: audioFile,
-    language: "ko",
-    prompt: "메모, 할 일, 아이디어, 회의 내용을 기록합니다.",
+    prompt: "메모, 할 일, 아이디어, 회의 내용을 기록합니다. Memo, todo, idea, meeting notes.",
   })
 
   return result.text

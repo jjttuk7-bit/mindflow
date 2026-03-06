@@ -523,6 +523,7 @@ export function FeedCard({
             fileUrl={meta.file_url}
             duration={meta.duration}
             transcript={!editing ? meta.transcript : undefined}
+            itemId={item.id}
           />
           {editing && (
             <>

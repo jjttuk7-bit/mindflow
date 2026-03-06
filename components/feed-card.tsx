@@ -181,7 +181,7 @@ export function FeedCard({
     if (!shouldCheckConnection.current || connCheckedRef.current) return
     connCheckedRef.current = true
 
-    const showConnectionToast = (conn: { created_at: string; summary?: string; content: string }) => {
+    const showConnectionToast = (conn: { id: string; created_at: string; summary?: string; content: string }) => {
       const daysAgo = Math.floor((Date.now() - new Date(conn.created_at).getTime()) / (1000 * 60 * 60 * 24))
       const timeLabel = daysAgo >= 30
         ? `${Math.floor(daysAgo / 30)}달 전`
@@ -191,7 +191,19 @@ export function FeedCard({
       toast(`과거 기록과 연결되었어요`, {
         description: `${timeLabel}에 저장한 "${preview}"`,
         icon: <Sparkles className="h-4 w-4 text-amber-500" />,
-        duration: 6000,
+        duration: 15000,
+        closeButton: true,
+        action: {
+          label: "보러가기",
+          onClick: () => {
+            const el = document.querySelector(`[data-item-id="${conn.id}"]`)
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth", block: "center" })
+              el.classList.add("ring-2", "ring-amber-500/50")
+              setTimeout(() => el.classList.remove("ring-2", "ring-amber-500/50"), 3000)
+            }
+          },
+        },
       })
     }
 

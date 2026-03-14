@@ -287,11 +287,11 @@ export function SearchDialog() {
               placeholder="무엇이든 검색하세요... (예: 지난주 커피 관련 링크)"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent py-4 text-[15px] focus:outline-none placeholder:text-muted-foreground/40"
+              className="flex-1 bg-transparent py-4 text-ui-base focus:outline-none placeholder:text-muted-foreground/40"
               autoFocus
             />
             {isSearching && <Loader2 className="h-4 w-4 text-muted-foreground/40 animate-spin" />}
-            <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground/50">
+            <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded bg-muted text-ui-xs font-mono text-muted-foreground/50">
               ESC
             </kbd>
           </div>
@@ -299,7 +299,7 @@ export function SearchDialog() {
           <div className="flex items-center gap-1.5 px-5 py-1.5 border-b border-border/20">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-ui-sm font-medium transition-colors ${
                 showFilters || filterType || filterTag
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50"
@@ -308,27 +308,27 @@ export function SearchDialog() {
               <SlidersHorizontal className="h-3 w-3" />
               필터
               {(filterType || filterTag) && (
-                <span className="ml-0.5 px-1 py-0 rounded-full bg-primary text-primary-foreground text-[9px]">
+                <span className="ml-0.5 px-1 py-0 rounded-full bg-primary text-primary-foreground text-ui-2xs">
                   {(filterType ? 1 : 0) + (filterTag ? 1 : 0)}
                 </span>
               )}
             </button>
             {/* Active filter chips */}
             {filterType && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/70 text-[10px] font-medium text-muted-foreground">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/70 text-ui-xs font-medium text-muted-foreground">
                 {typeIcons[filterType]}
                 {filterType}
                 <button onClick={() => setFilterType(null)} className="hover:text-foreground"><X className="h-2.5 w-2.5" /></button>
               </span>
             )}
             {filterTag && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/70 text-[10px] font-medium text-muted-foreground">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/70 text-ui-xs font-medium text-muted-foreground">
                 #{filterTag}
                 <button onClick={() => setFilterTag(null)} className="hover:text-foreground"><X className="h-2.5 w-2.5" /></button>
               </span>
             )}
             {timeCutoff && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-medium text-primary/70">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-ui-xs font-medium text-primary/70">
                 <Clock className="h-2.5 w-2.5" />
                 {timeCutoff.toLocaleDateString("ko-KR", { month: "long", day: "numeric" })} 이후
               </span>
@@ -336,7 +336,7 @@ export function SearchDialog() {
             {/* Sort toggle */}
             <button
               onClick={() => setSortByDate(!sortByDate)}
-              className={`ml-auto flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors ${
+              className={`ml-auto flex items-center gap-1 px-2 py-1 rounded-md text-ui-xs font-medium transition-colors ${
                 sortByDate
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -351,13 +351,13 @@ export function SearchDialog() {
             <div className="px-5 py-3 border-b border-border/20 bg-muted/20 space-y-3">
               {/* Type filter */}
               <div>
-                <p className="text-[10px] text-muted-foreground/50 font-medium mb-1.5">타입</p>
+                <p className="text-ui-xs text-muted-foreground/50 font-medium mb-1.5">타입</p>
                 <div className="flex gap-1.5">
                   {(["text", "link", "image", "voice"] as ContentType[]).map((t) => (
                     <button
                       key={t}
                       onClick={() => setFilterType(filterType === t ? null : t)}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-ui-sm font-medium transition-colors ${
                         filterType === t
                           ? "bg-primary/10 text-primary border border-primary/20"
                           : "bg-muted/50 text-muted-foreground/60 hover:bg-muted border border-transparent"
@@ -372,13 +372,13 @@ export function SearchDialog() {
               {/* Tag filter */}
               {allTags.length > 0 && (
                 <div>
-                  <p className="text-[10px] text-muted-foreground/50 font-medium mb-1.5">태그</p>
+                  <p className="text-ui-xs text-muted-foreground/50 font-medium mb-1.5">태그</p>
                   <div className="flex gap-1.5 flex-wrap max-h-20 overflow-y-auto">
                     {allTags.slice(0, 20).map((t) => (
                       <button
                         key={t.id}
                         onClick={() => setFilterTag(filterTag === t.name ? null : t.name)}
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${
+                        className={`px-2 py-0.5 rounded-md text-ui-xs font-medium transition-colors ${
                           filterTag === t.name
                             ? "bg-primary/10 text-primary border border-primary/20"
                             : "bg-muted/50 text-muted-foreground/60 hover:bg-muted border border-transparent"
@@ -401,10 +401,10 @@ export function SearchDialog() {
               {searchHistory.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[11px] text-muted-foreground/40 font-medium">최근 검색</p>
+                    <p className="text-ui-sm text-muted-foreground/40 font-medium">최근 검색</p>
                     <button
                       onClick={() => { clearSearchHistory(); setSearchHistory([]) }}
-                      className="text-[10px] text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+                      className="text-ui-xs text-muted-foreground/30 hover:text-muted-foreground transition-colors"
                     >
                       지우기
                     </button>
@@ -424,7 +424,7 @@ export function SearchDialog() {
                 </div>
               )}
               <div>
-                <p className="text-[11px] text-muted-foreground/40 font-medium mb-2">검색 제안</p>
+                <p className="text-ui-sm text-muted-foreground/40 font-medium mb-2">검색 제안</p>
                 <div className="flex flex-wrap gap-1.5">
                   {defaultSuggestions.map((s) => (
                     <button
@@ -472,12 +472,12 @@ export function SearchDialog() {
                     <Badge
                       key={tag.id}
                       variant="secondary"
-                      className="text-[10px] tracking-wide px-1.5 py-0 rounded font-medium bg-muted/70 text-muted-foreground/60 border-0"
+                      className="text-ui-xs tracking-wide px-1.5 py-0 rounded font-medium bg-muted/70 text-muted-foreground/60 border-0"
                     >
                       {tag.name}
                     </Badge>
                   ))}
-                  <span className="text-[10px] text-muted-foreground/40 ml-auto tabular-nums flex items-center gap-1">
+                  <span className="text-ui-xs text-muted-foreground/40 ml-auto tabular-nums flex items-center gap-1">
                     {(item as Item & { matchType?: string }).matchType === "semantic" && (
                       <Sparkles className="h-2.5 w-2.5 text-primary/40" />
                     )}
@@ -490,7 +490,7 @@ export function SearchDialog() {
 
           {/* Semantic search status */}
           {query.trim() && keywordResults.length > 0 && isSearching && (
-            <div className="flex items-center justify-center gap-1.5 py-3 text-[11px] text-muted-foreground/40">
+            <div className="flex items-center justify-center gap-1.5 py-3 text-ui-sm text-muted-foreground/40">
               <Sparkles className="h-3 w-3 animate-pulse" />
               AI 의미 검색 중...
             </div>

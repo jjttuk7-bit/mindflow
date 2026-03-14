@@ -122,7 +122,7 @@ function ExpiryBadge({ meta, itemId, onUpdate }: { meta: unknown; itemId: string
         type="date"
         defaultValue={info.expiry.expiry_date}
         autoFocus
-        className="text-[11px] px-1.5 py-0.5 rounded-md border border-border bg-background"
+        className="text-ui-sm px-1.5 py-0.5 rounded-md border border-border bg-background"
         onBlur={(e) => handleDateChange(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") handleDateChange((e.target as HTMLInputElement).value)
@@ -136,7 +136,7 @@ function ExpiryBadge({ meta, itemId, onUpdate }: { meta: unknown; itemId: string
     <button
       onClick={() => setEditingExpiry(true)}
       title="클릭하여 만료일 수정"
-      className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all ${colorClass}`}
+      className={`text-ui-xs px-1.5 py-0.5 rounded-full font-medium cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all ${colorClass}`}
     >
       {label}
     </button>
@@ -468,7 +468,7 @@ export function FeedCard({
         <X className="h-3 w-3" />
         취소
       </button>
-      <span className="text-[10px] text-muted-foreground/40 ml-auto hidden sm:inline">Ctrl+Enter로 저장</span>
+      <span className="text-ui-xs text-muted-foreground/40 ml-auto hidden sm:inline">Ctrl+Enter로 저장</span>
     </div>
   )
 
@@ -482,7 +482,7 @@ export function FeedCard({
         e.target.style.height = e.target.scrollHeight + "px"
       }}
       placeholder={placeholder}
-      className="w-full text-[15px] leading-relaxed bg-muted/30 border border-border/60 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+      className="w-full text-ui-base leading-relaxed bg-muted/30 border border-border/60 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
       onKeyDown={(e) => {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleEditSave()
         if (e.key === "Escape") handleEditCancel()
@@ -572,13 +572,13 @@ export function FeedCard({
     // Default: text content (with optional summary)
     return (
       <div>
-        <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
+        <p className="text-ui-base leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
           {displayText}
         </p>
         {hasSummary && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 mt-1.5 text-[11px] text-primary/60 hover:text-primary transition-colors"
+            className="flex items-center gap-1 mt-1.5 text-ui-sm text-primary/60 hover:text-primary transition-colors"
           >
             {expanded ? (
               <>
@@ -615,7 +615,7 @@ export function FeedCard({
     >
       {/* Just-saved indicator */}
       {isJustSaved && (
-        <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold tracking-wide z-10">
+        <div className="absolute -top-2 left-4 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-ui-xs font-bold tracking-wide z-10">
           NEW
         </div>
       )}
@@ -642,7 +642,7 @@ export function FeedCard({
             {item.project_id && (() => {
               const proj = projects.find((p) => p.id === item.project_id)
               return proj ? (
-                <span className="inline-flex items-center gap-1 text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-sage/10 text-sage border-0">
+                <span className="inline-flex items-center gap-1 text-ui-xs tracking-wide px-2 py-0.5 rounded-md font-medium bg-sage/10 text-sage border-0">
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: proj.color }} />
                   {proj.name}
                 </span>
@@ -653,7 +653,7 @@ export function FeedCard({
                 <Badge
                   key={tag.id}
                   variant="secondary"
-                  className={`text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0 ${
+                  className={`text-ui-xs tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0 ${
                     tagEditing ? "hover:bg-destructive/10 hover:text-destructive cursor-pointer pr-1" : "hover:bg-muted"
                   }`}
                   onClick={tagEditing ? () => handleRemoveTag(tag.id) : undefined}
@@ -663,7 +663,7 @@ export function FeedCard({
                 </Badge>
               ))
             ) : !tagEditing ? (
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/50 italic">
+              <span className="inline-flex items-center gap-1.5 text-ui-sm text-muted-foreground/50 italic">
                 <span className="h-1 w-1 rounded-full bg-amber-accent animate-pulse" />
                 분석 중
               </span>
@@ -687,7 +687,7 @@ export function FeedCard({
                     }
                   }}
                   placeholder="태그 입력..."
-                  className="h-5 w-24 text-[10px] px-2 py-0.5 rounded-md border border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
+                  className="h-5 w-24 text-ui-xs px-2 py-0.5 rounded-md border border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
                 />
                 {tagSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 mt-1 w-36 bg-popover border border-border rounded-md shadow-md z-20 py-0.5">
@@ -695,7 +695,7 @@ export function FeedCard({
                       <button
                         key={t.id}
                         onClick={() => handleAddTag(t.name)}
-                        className="w-full text-left px-2 py-1 text-[11px] text-foreground/70 hover:bg-accent truncate"
+                        className="w-full text-left px-2 py-1 text-ui-sm text-foreground/70 hover:bg-accent truncate"
                       >
                         {t.name}
                       </button>
@@ -722,12 +722,12 @@ export function FeedCard({
               </button>
             )}
             {isOfflineItem && (
-              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-600">
+              <span className="inline-flex items-center gap-1 text-ui-xs px-1.5 py-0.5 rounded-md font-medium bg-amber-500/10 text-amber-600">
                 <CloudOff className="h-3 w-3" />
                 Sync pending
               </span>
             )}
-            <span className="text-[11px] text-muted-foreground/40 ml-auto tabular-nums">
+            <span className="text-ui-sm text-muted-foreground/40 ml-auto tabular-nums">
               {timeAgo(item.created_at)}
             </span>
           </div>
@@ -736,7 +736,7 @@ export function FeedCard({
           {item.context?.ai_comment && !(item.type === "link" && item.context?.link_analysis) && (
             <div className="flex items-start gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2.5">
               <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-              <p className="text-[13px] text-foreground/80 leading-relaxed">
+              <p className="text-ui-sm text-foreground/80 leading-relaxed">
                 {item.context.ai_comment}
               </p>
             </div>
@@ -745,7 +745,7 @@ export function FeedCard({
           {/* Related items (exclude self, deduplicate) */}
           {related.length > 0 && (
             <div className="pt-2 border-t border-border/30">
-              <p className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/40 mb-1.5">
+              <p className="text-ui-xs tracking-[0.15em] uppercase font-semibold text-muted-foreground/40 mb-1.5">
                 Related
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -755,7 +755,7 @@ export function FeedCard({
                   .map((r) => (
                   <span
                     key={r.id}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-[11px] text-muted-foreground/70 hover:bg-muted/70 transition-colors cursor-default"
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-ui-sm text-muted-foreground/70 hover:bg-muted/70 transition-colors cursor-default"
                   >
                     {typeConfig[r.type]?.icon}
                     <span className="truncate max-w-[180px]">
@@ -831,7 +831,7 @@ export function FeedCard({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44 !max-h-60">
-                  <DropdownMenuLabel className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
+                  <DropdownMenuLabel className="text-ui-xs tracking-[0.15em] uppercase font-semibold text-muted-foreground/50">
                     Move to
                   </DropdownMenuLabel>
                   {item.project_id && (

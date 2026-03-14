@@ -24,6 +24,7 @@ import {
   BarChart3,
   GitBranch,
   Settings,
+  Briefcase,
   Plus,
   ChevronDown,
   Pin,
@@ -119,7 +120,7 @@ function TagItem({
           } transition-colors`} />
           {tag.name}
         </span>
-        <span className={`text-[11px] tabular-nums ${
+        <span className={`text-ui-sm tabular-nums ${
           active ? "text-primary/70" : "text-muted-foreground/50"
         }`}>
           {count}
@@ -271,7 +272,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         <h1 className="font-display text-2xl tracking-tight text-foreground">
           DotLine
         </h1>
-        <p className="text-[11px] tracking-[0.15em] uppercase text-muted-foreground mt-1 font-medium">
+        <p className="text-ui-sm tracking-[0.15em] uppercase text-muted-foreground mt-1 font-medium">
           Personal Knowledge Hub
         </p>
       </button>
@@ -284,7 +285,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           <div className="flex items-center justify-between px-2 mb-3">
             <button
               onClick={() => setProjectsExpanded(!projectsExpanded)}
-              className="flex items-center gap-1 text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70"
+              className="flex items-center gap-1 text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70"
             >
               <ChevronDown className={`h-3 w-3 transition-transform ${projectsExpanded ? "" : "-rotate-90"}`} />
               Projects
@@ -323,7 +324,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                       />
                       <span className="truncate">{project.name}</span>
                     </span>
-                    <span className={`text-[11px] tabular-nums flex-shrink-0 ${
+                    <span className={`text-ui-sm tabular-nums flex-shrink-0 ${
                       activeProject === project.id ? "text-primary/70" : "text-muted-foreground/50"
                     }`}>
                       {getItemCountForProject(project.id)}
@@ -381,7 +382,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Smart Folders */}
         <div className="px-4">
-          <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
+          <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
             Quick Access
           </p>
           <div className="space-y-0.5">
@@ -409,7 +410,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 <CalendarDays className={`h-4 w-4 ${smartFolder === "this-week" ? "text-primary" : "text-muted-foreground/50"}`} />
                 This Week
               </span>
-              <span className={`text-[11px] tabular-nums ${
+              <span className={`text-ui-sm tabular-nums ${
                 smartFolder === "this-week" ? "text-primary/70" : "text-muted-foreground/50"
               }`}>
                 {thisWeekCount}
@@ -440,7 +441,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 Pinned
               </span>
               {pinnedCount > 0 && (
-                <span className={`text-[11px] tabular-nums ${
+                <span className={`text-ui-sm tabular-nums ${
                   smartFolder === "pinned" ? "text-primary/70" : "text-muted-foreground/50"
                 }`}>
                   {pinnedCount}
@@ -454,7 +455,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Tags */}
         <div className="px-4">
-          <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
+          <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
             Tags
           </p>
           {tagCounts.length === 0 && (
@@ -495,7 +496,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Type Filters */}
         <div className="px-4">
-          <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
+          <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
             Types
           </p>
           <div className="space-y-0.5">
@@ -535,7 +536,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               Todo
             </span>
             {pendingTodoCount > 0 && (
-              <span className={`text-[11px] tabular-nums px-1.5 py-0.5 rounded-full ${
+              <span className={`text-ui-sm tabular-nums px-1.5 py-0.5 rounded-full ${
                 sidebarView === "todos"
                   ? "bg-primary/20 text-primary"
                   : "bg-muted text-muted-foreground/60"
@@ -551,6 +552,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
             Insights
+          </a>
+          <a
+            href="/sales"
+            onClick={onClose}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+          >
+            <Briefcase className="h-4 w-4 text-muted-foreground/50" />
+            Sales
           </a>
           <a
             href="/knowledge-map"
@@ -595,7 +604,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               Archive
             </span>
             {archivedCount > 0 && (
-              <span className={`text-[11px] tabular-nums ${
+              <span className={`text-ui-sm tabular-nums ${
                 showArchived ? "text-primary/70" : "text-muted-foreground/50"
               }`}>
                 {archivedCount}
@@ -615,7 +624,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               Trash
             </span>
             {trashedCount > 0 && (
-              <span className={`text-[11px] tabular-nums ${
+              <span className={`text-ui-sm tabular-nums ${
                 showTrash ? "text-destructive/70" : "text-muted-foreground/50"
               }`}>
                 {trashedCount}
@@ -629,13 +638,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       <div className="px-4 py-3 border-t border-border/40 space-y-3">
         <UserMenu />
         <div className="flex items-center gap-2 px-1">
-          <a href="/terms" className="text-[10px] text-muted-foreground/35 hover:text-muted-foreground transition-colors">이용약관</a>
-          <span className="text-muted-foreground/20 text-[10px]">|</span>
-          <a href="/privacy" className="text-[10px] text-muted-foreground/35 hover:text-muted-foreground transition-colors">개인정보처리방침</a>
+          <a href="/terms" className="text-ui-xs text-muted-foreground/35 hover:text-muted-foreground transition-colors">이용약관</a>
+          <span className="text-muted-foreground/20 text-ui-xs">|</span>
+          <a href="/privacy" className="text-ui-xs text-muted-foreground/35 hover:text-muted-foreground transition-colors">개인정보처리방침</a>
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground/40 tracking-wide">
-            <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">Ctrl+K</kbd>
+          <p className="text-ui-xs text-muted-foreground/40 tracking-wide">
+            <kbd className="px-1.5 py-0.5 rounded bg-muted text-ui-xs font-mono">Ctrl+K</kbd>
             <span className="ml-2">검색</span>
           </p>
           <div className="flex items-center gap-1">

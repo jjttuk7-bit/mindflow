@@ -108,10 +108,10 @@ export function DailyBriefing() {
           <Sparkles className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1">
-          <span className="text-[13px] font-semibold text-foreground/90">
+          <span className="text-ui-sm font-semibold text-foreground/90">
             {data.greeting}
           </span>
-          <span className="text-[11px] text-muted-foreground/50 ml-2">
+          <span className="text-ui-sm text-muted-foreground/50 ml-2">
             총 {totalItems}개의 기억
           </span>
         </div>
@@ -127,44 +127,44 @@ export function DailyBriefing() {
       <div className="grid grid-cols-4 gap-2 mb-3">
         {/* Yesterday */}
         <div className="rounded-lg bg-muted/40 px-3 py-2">
-          <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5">어제</p>
+          <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-0.5">어제</p>
           <p className="text-lg font-bold text-foreground/80 leading-tight">
             {yesterday.total}
-            <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
+            <span className="text-ui-xs font-normal text-muted-foreground/40 ml-0.5">개</span>
           </p>
         </div>
 
         {/* This week */}
         <div className="rounded-lg bg-muted/40 px-3 py-2">
-          <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5">이번 주</p>
+          <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-0.5">이번 주</p>
           <p className="text-lg font-bold text-foreground/80 leading-tight">
             {week.total}
-            <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
+            <span className="text-ui-xs font-normal text-muted-foreground/40 ml-0.5">개</span>
           </p>
         </div>
 
         {/* Todos */}
         <div className="rounded-lg bg-muted/40 px-3 py-2">
-          <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5">할 일</p>
+          <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-0.5">할 일</p>
           <p className="text-lg font-bold text-foreground/80 leading-tight">
             {todos.pending}
-            <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
+            <span className="text-ui-xs font-normal text-muted-foreground/40 ml-0.5">개</span>
           </p>
         </div>
 
         {/* Zombie counter */}
         {zombie && zombie.total > 0 && (
           <div className="rounded-lg bg-muted/40 px-3 py-2 group relative cursor-default">
-            <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-0.5 flex items-center gap-1">
+            <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-0.5 flex items-center gap-1">
               <Ghost className="h-3 w-3" />
               방치
             </p>
             <p className="text-lg font-bold text-foreground/80 leading-tight">
               {zombie.total}
-              <span className="text-[10px] font-normal text-muted-foreground/40 ml-0.5">개</span>
+              <span className="text-ui-xs font-normal text-muted-foreground/40 ml-0.5">개</span>
             </p>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20">
-              <div className="rounded-lg bg-popover border border-border shadow-lg px-3 py-2 text-[11px] text-muted-foreground whitespace-nowrap">
+              <div className="rounded-lg bg-popover border border-border shadow-lg px-3 py-2 text-ui-sm text-muted-foreground whitespace-nowrap">
                 링크 {zombie.links}개 · 할 일 {zombie.todos}개 · 핀 {zombie.pins}개
               </div>
             </div>
@@ -176,7 +176,7 @@ export function DailyBriefing() {
       {todos.overdue > 0 && (
         <div className="flex items-center gap-2 rounded-lg bg-destructive/8 px-3 py-1.5 mb-3">
           <AlertCircle className="h-3.5 w-3.5 text-destructive/70 shrink-0" />
-          <span className="text-[11px] text-destructive/70">
+          <span className="text-ui-sm text-destructive/70">
             기한이 지난 할 일이 {todos.overdue}개 있어요
           </span>
         </div>
@@ -186,7 +186,7 @@ export function DailyBriefing() {
       {zombie && zombie.total >= 5 && (
         <button
           onClick={() => setShowCleanup(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-primary/8 px-3 py-1.5 mb-3 text-[11px] text-primary hover:bg-primary/15 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg bg-primary/8 px-3 py-1.5 mb-3 text-ui-sm text-primary hover:bg-primary/15 transition-colors"
         >
           <Wand2 className="h-3.5 w-3.5" />
           AI로 정리하기
@@ -196,7 +196,7 @@ export function DailyBriefing() {
       {/* Expandable details */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1 text-[11px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+        className="flex items-center gap-1 text-ui-sm text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
       >
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         {expanded ? "접기" : "자세히 보기"}
@@ -207,14 +207,14 @@ export function DailyBriefing() {
           {/* Yesterday's type breakdown */}
           {yesterday.total > 0 && (
             <div>
-              <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-1.5">
+              <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-1.5">
                 어제의 기록
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(yesterday.counts).map(([type, count]) => (
                   <span
                     key={type}
-                    className="inline-flex items-center gap-1 rounded-md bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground/60"
+                    className="inline-flex items-center gap-1 rounded-md bg-muted/50 px-2 py-0.5 text-ui-sm text-muted-foreground/60"
                   >
                     {typeIcons[type]}
                     {typeLabels[type] || type} {count}
@@ -227,7 +227,7 @@ export function DailyBriefing() {
           {/* Yesterday's snippets */}
           {yesterday.snippets.length > 0 && (
             <div>
-              <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-1.5">
+              <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-1.5">
                 어제 저장한 내용
               </p>
               <div className="space-y-1">
@@ -236,7 +236,7 @@ export function DailyBriefing() {
                     <span className="mt-0.5 text-muted-foreground/40 shrink-0">
                       {typeIcons[s.type]}
                     </span>
-                    <p className="text-[12px] text-foreground/60 line-clamp-1">{s.text}</p>
+                    <p className="text-ui-xs text-foreground/60 line-clamp-1">{s.text}</p>
                   </div>
                 ))}
               </div>
@@ -246,14 +246,14 @@ export function DailyBriefing() {
           {/* Pending todos */}
           {todos.items.length > 0 && (
             <div>
-              <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-1.5">
+              <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-1.5">
                 진행 중인 할 일
               </p>
               <div className="space-y-1">
                 {todos.items.map((todo, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <CheckCircle2 className="h-3 w-3 mt-0.5 text-muted-foreground/30 shrink-0" />
-                    <p className="text-[12px] text-foreground/60 line-clamp-1">{todo}</p>
+                    <p className="text-ui-xs text-foreground/60 line-clamp-1">{todo}</p>
                   </div>
                 ))}
               </div>
@@ -263,7 +263,7 @@ export function DailyBriefing() {
           {/* Week type breakdown */}
           {week.total > 0 && (
             <div>
-              <p className="text-[10px] tracking-wide uppercase text-muted-foreground/50 mb-1.5">
+              <p className="text-ui-xs tracking-wide uppercase text-muted-foreground/50 mb-1.5">
                 이번 주 타입별
               </p>
               <div className="flex gap-1">
@@ -294,7 +294,7 @@ export function DailyBriefing() {
                     voice: "#ec4899",
                   }
                   return (
-                    <span key={type} className="text-[10px] text-muted-foreground/40 flex items-center gap-1">
+                    <span key={type} className="text-ui-xs text-muted-foreground/40 flex items-center gap-1">
                       <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dotColors[type] || "#6366f1" }} />
                       {typeLabels[type] || type} {count}
                     </span>
@@ -309,7 +309,7 @@ export function DailyBriefing() {
             <div>
               <div className="flex items-center gap-1.5 mb-2">
                 <RotateCcw className="h-3.5 w-3.5 text-amber-500" />
-                <p className="text-[10px] tracking-wide uppercase font-semibold text-amber-500">
+                <p className="text-ui-xs tracking-wide uppercase font-semibold text-amber-500">
                   오늘의 재발견
                 </p>
               </div>
@@ -325,7 +325,7 @@ export function DailyBriefing() {
                         {typeIcons[rd.item.type] || typeIcons.text}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] leading-relaxed text-foreground/70 line-clamp-2 group-hover:text-foreground/90 transition-colors">
+                        <p className="text-ui-xs leading-relaxed text-foreground/70 line-clamp-2 group-hover:text-foreground/90 transition-colors">
                           {rd.item.summary || rd.item.content}
                         </p>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -333,12 +333,12 @@ export function DailyBriefing() {
                             <Badge
                               key={tag.id}
                               variant="secondary"
-                              className="text-[9px] tracking-wide px-1.5 py-0 rounded font-medium bg-amber-500/8 text-amber-700/60 dark:text-amber-400/60 border-0"
+                              className="text-ui-2xs tracking-wide px-1.5 py-0 rounded font-medium bg-amber-500/8 text-amber-700/60 dark:text-amber-400/60 border-0"
                             >
                               {tag.name}
                             </Badge>
                           ))}
-                          <span className="text-[10px] text-muted-foreground/40">
+                          <span className="text-ui-xs text-muted-foreground/40">
                             {rd.reason}
                           </span>
                         </div>
@@ -355,7 +355,7 @@ export function DailyBriefing() {
             <div>
               <div className="flex items-center gap-1.5 mb-2">
                 <Link className="h-3.5 w-3.5 text-blue-500" />
-                <p className="text-[10px] tracking-wide uppercase font-semibold text-blue-500">
+                <p className="text-ui-xs tracking-wide uppercase font-semibold text-blue-500">
                   읽지 않은 링크
                 </p>
               </div>
@@ -367,10 +367,10 @@ export function DailyBriefing() {
                     className="w-full text-left flex items-center gap-2.5 rounded-lg border border-blue-500/10 bg-blue-500/5 px-3 py-2 hover:bg-blue-500/10 transition-colors"
                   >
                     <Link className="h-3.5 w-3.5 text-blue-500/50 shrink-0" />
-                    <span className="text-[12px] text-foreground/70 line-clamp-1 flex-1">
+                    <span className="text-ui-xs text-foreground/70 line-clamp-1 flex-1">
                       {link.title}
                     </span>
-                    <span className="text-[10px] text-muted-foreground/40 shrink-0">
+                    <span className="text-ui-xs text-muted-foreground/40 shrink-0">
                       {link.days_ago}일 전
                     </span>
                   </button>

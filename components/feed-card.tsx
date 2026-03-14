@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, memo } from "react"
 import { Item, LinkMeta, ImageMeta, ExpiryMeta, FileMeta, ItemContext } from "@/lib/supabase/types"
 import { Badge } from "@/components/ui/badge"
 import { LinkCard } from "@/components/link-card"
@@ -167,7 +167,7 @@ interface RelatedItem {
   similarity: number
 }
 
-export function FeedCard({
+export const FeedCard = memo(function FeedCard({
   item,
   onDelete,
   onUpdate,
@@ -893,4 +893,4 @@ export function FeedCard({
       </div>
     </article>
   )
-}
+})

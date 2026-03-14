@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useStore } from "@/lib/store"
 import { FeedCard } from "@/components/feed-card"
 import { SwipeableCard } from "@/components/swipeable-card"
@@ -34,49 +34,44 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
     return () => observer.disconnect()
   }, [loadMore])
 
-  const baseFiltered = items.filter((item) => {
-    // Trash filter
-    if (showTrash) return !!item.deleted_at
-    if (item.deleted_at) return false
-    // Archive filter
-    if (showArchived) return !!item.is_archived
-    if (item.is_archived) return false
-    // Type filter
-    if (activeFilter !== "all" && item.type !== activeFilter) return false
-    // Tag filter
-    if (activeTag && !item.tags?.some((t) => t.name === activeTag)) return false
-    // Project filter
-    if (activeProject && item.project_id !== activeProject) return false
-    // Search filter
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase()
-      const matchContent = item.content.toLowerCase().includes(q)
-      const matchSummary = item.summary?.toLowerCase().includes(q)
-      const matchTag = item.tags?.some((t) => t.name.toLowerCase().includes(q))
-      if (!matchContent && !matchSummary && !matchTag) return false
-    }
-    // Smart folder filter
-    if (smartFolder === "this-week") {
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      if (new Date(item.created_at) < weekAgo) return false
-    }
-    if (smartFolder === "pinned") {
-      if (!item.is_pinned) return false
-    }
-    return true
-  })
+  const { pinned, unpinned } = useMemo(() => {
+    const baseFiltered = items.filter((item) => {
+      if (showTrash) return !!item.deleted_at
+      if (item.deleted_at) return false
+      if (showArchived) return !!item.is_archived
+      if (item.is_archived) return false
+      if (activeFilter !== "all" && item.type !== activeFilter) return false
+      if (activeTag && !item.tags?.some((t) => t.name === activeTag)) return false
+      if (activeProject && item.project_id !== activeProject) return false
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        const matchContent = item.content.toLowerCase().includes(q)
+        const matchSummary = item.summary?.toLowerCase().includes(q)
+        const matchTag = item.tags?.some((t) => t.name.toLowerCase().includes(q))
+        if (!matchContent && !matchSummary && !matchTag) return false
+      }
+      if (smartFolder === "this-week") {
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        if (new Date(item.created_at) < weekAgo) return false
+      }
+      if (smartFolder === "pinned") {
+        if (!item.is_pinned) return false
+      }
+      return true
+    })
 
-  // Sort
-  const sorted = [...baseFiltered].sort((a, b) => {
-    if (sortBy === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    if (sortBy === "type") return a.type.localeCompare(b.type)
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  })
+    const sorted = [...baseFiltered].sort((a, b) => {
+      if (sortBy === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      if (sortBy === "type") return a.type.localeCompare(b.type)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
 
-  // Separate pinned and unpinned (only when not in archive/trash mode)
-  const pinned = (showArchived || showTrash) ? [] : sorted.filter((i) => i.is_pinned)
-  const unpinned = (showArchived || showTrash) ? sorted : sorted.filter((i) => !i.is_pinned)
+    return {
+      pinned: (showArchived || showTrash) ? [] : sorted.filter((i) => i.is_pinned),
+      unpinned: (showArchived || showTrash) ? sorted : sorted.filter((i) => !i.is_pinned),
+    }
+  }, [items, showTrash, showArchived, activeFilter, activeTag, activeProject, searchQuery, smartFolder, sortBy])
 
   async function handleDelete(id: string) {
     const prev = items.find((i) => i.id === id)

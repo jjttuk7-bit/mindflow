@@ -14,6 +14,7 @@ export function useOfflineSync(refetch: () => void) {
   useEffect(() => {
     function handleOnline() {
       setIsOffline(false)
+      toast.success("네트워크가 복원되었습니다")
       syncQueue()
     }
 

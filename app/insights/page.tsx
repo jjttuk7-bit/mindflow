@@ -1,8 +1,13 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { InsightReport } from "@/components/insight-report"
+import dynamic from "next/dynamic"
 import { InsightReportData } from "@/lib/supabase/types"
+
+const InsightReport = dynamic(
+  () => import("@/components/insight-report").then(m => m.InsightReport),
+  { ssr: false, loading: () => <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> }
+)
 import { ArrowLeft, BarChart3, Loader2, Calendar, Eye, Save } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 

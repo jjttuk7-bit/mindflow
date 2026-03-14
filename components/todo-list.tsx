@@ -47,7 +47,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
         const data = await res.json()
         setRelatedItems((prev) => ({ ...prev, [todoId]: data }))
       }
-    } catch { /* ignore */ }
+    } catch { toast.error("관련 기록을 불러오지 못했습니다") }
     setLoadingRelated(null)
   }, [expandedTodo, relatedItems])
 
@@ -88,6 +88,8 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
       const todo = await res.json()
       addTodo(todo)
       toast.success("할 일이 추가되었습니다")
+    } else {
+      toast.error("할 일 추가에 실패했습니다")
     }
     setNewContent("")
   }
@@ -95,17 +97,36 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
   async function handleToggle(id: string, currentCompleted: boolean) {
     updateTodo(id, { is_completed: !currentCompleted })
     toast.success(!currentCompleted ? "완료되었습니다" : "진행 중으로 변경되었습니다")
-    await fetch(`/api/todos/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ is_completed: !currentCompleted }),
-    })
+    try {
+      const res = await fetch(`/api/todos/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_completed: !currentCompleted }),
+      })
+      if (!res.ok) {
+        updateTodo(id, { is_completed: currentCompleted })
+        toast.error("상태 변경에 실패했습니다")
+      }
+    } catch {
+      updateTodo(id, { is_completed: currentCompleted })
+      toast.error("상태 변경에 실패했습니다")
+    }
   }
 
   async function handleDelete(id: string) {
+    const prev = todos.find(t => t.id === id)
     removeTodo(id)
     toast.success("삭제되었습니다")
-    await fetch(`/api/todos/${id}`, { method: "DELETE" })
+    try {
+      const res = await fetch(`/api/todos/${id}`, { method: "DELETE" })
+      if (!res.ok) {
+        if (prev) addTodo(prev)
+        toast.error("삭제에 실패했습니다")
+      }
+    } catch {
+      if (prev) addTodo(prev)
+      toast.error("삭제에 실패했습니다")
+    }
   }
 
   return (

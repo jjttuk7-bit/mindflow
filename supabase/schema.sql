@@ -1,6 +1,6 @@
 CREATE TABLE items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  type TEXT NOT NULL CHECK (type IN ('text', 'link', 'image', 'voice')),
+  type TEXT NOT NULL CHECK (type IN ('text', 'link', 'image', 'voice', 'file')),
   content TEXT NOT NULL,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now(),

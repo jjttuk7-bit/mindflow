@@ -686,6 +686,10 @@ export function FeedCard({
                       setNewTagName("")
                     }
                   }}
+                  onBlur={() => {
+                    if (newTagName.trim()) handleAddTag(newTagName)
+                    else { setTagEditing(false); setNewTagName("") }
+                  }}
                   placeholder="태그 입력..."
                   className="h-5 w-24 text-ui-xs px-2 py-0.5 rounded-md border border-border/60 bg-background focus:outline-none focus:ring-1 focus:ring-primary/30"
                 />

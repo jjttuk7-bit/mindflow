@@ -575,7 +575,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             onFocus={fullScreen ? () => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 300) : undefined}
             placeholder="무엇이든 물어보세요..."
             disabled={loading}
-            className="flex-1 bg-transparent text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
+            className="flex-1 bg-transparent text-[16px] md:text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
           />
           <button
             onClick={handleSend}
@@ -598,7 +598,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
   // Full-screen mode for mobile tab
   if (fullScreen) {
     return (
-      <div className="flex flex-col bg-background pb-16" style={{ height: keyboardHeight > 0 ? `calc(100dvh - ${keyboardHeight}px)` : '100dvh' }}>
+      <div className={`flex flex-col bg-background ${keyboardHeight > 0 ? "pb-0" : "pb-16"}`} style={{ height: keyboardHeight > 0 ? `calc(100dvh - ${keyboardHeight}px)` : '100dvh' }}>
         <header className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <MessageSquare className="h-5 w-5 text-primary" />

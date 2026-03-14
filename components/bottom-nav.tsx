@@ -23,6 +23,7 @@ export function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              aria-label={tab.label}
               className={`flex flex-col items-center justify-center gap-1 flex-1 h-full min-h-[48px] transition-colors ${
                 active ? "text-primary" : "text-muted-foreground/60"
               }`}

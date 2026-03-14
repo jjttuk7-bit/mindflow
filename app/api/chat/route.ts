@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 - search: 사용자의 질문에 답하기 위해 관련 항목을 검색할 때 사용
 - summarize: 검색 결과를 종합 요약할 때 사용 (search 결과의 item ID 필요)
 - compare: 두 개 이상 항목을 비교할 때 사용 (search 결과의 item ID 필요)
-- create_memo: 사용자가 메모/할일 생성을 요청할 때만 사용
+- create_memo: 사용자가 메모/할일 생성을 요청하거나, 대화 중 행동이 필요한 할 일이 감지되면 적극적으로 사용. 예: "내일까지 보고서 써야 해", "회의 준비해야겠다", "~해야 하는데" 등
 
 규칙:
 - 관련 컨텍스트가 없으면 솔직히 말하세요

@@ -269,3 +269,22 @@ body::before {
   background-repeat: repeat;
   background-size: 256px 256px;
 }
+
+/* Font size preferences */
+[data-font-size="small"] {
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+}
+
+/* "normal" uses :root defaults — no override needed */
+
+[data-font-size="large"] {
+  --text-2xs: 13px;
+  --text-xs: 14px;
+  --text-sm: 15px;
+  --text-base: 17px;
+  --text-lg: 19px;
+}

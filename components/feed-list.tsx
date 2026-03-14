@@ -14,7 +14,12 @@ import { toast } from "sonner"
 export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => void; loadingMore?: boolean; hasMore?: boolean }) {
   const { items, activeFilter, activeTag, showArchived, showTrash, sortBy, removeItem, updateItem, addItem, activeProject, smartFolder, searchQuery } = useStore()
   const [contextItem, setContextItem] = useState<Item | null>(null)
+  const [swipeHintSeen, setSwipeHintSeen] = useState(true)
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setSwipeHintSeen(!!localStorage.getItem("swipe-hint-seen"))
+  }, [])
 
   // Infinite scroll observer
   useEffect(() => {
@@ -127,6 +132,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
   }
 
   async function handleSwipeArchive(item: Item) {
+    if (!swipeHintSeen) { localStorage.setItem("swipe-hint-seen", "1"); setSwipeHintSeen(true) }
     updateItem(item.id, { is_archived: true })
     toast.success("Archived")
     try {
@@ -143,6 +149,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
   }
 
   async function handleSwipePin(item: Item) {
+    if (!swipeHintSeen) { localStorage.setItem("swipe-hint-seen", "1"); setSwipeHintSeen(true) }
     const newVal = !item.is_pinned
     updateItem(item.id, { is_pinned: newVal })
     toast.success(newVal ? "Pinned" : "Unpinned")
@@ -210,10 +217,17 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
       )}
 
       {/* Regular items */}
-      {unpinned.map((item) => (
-        <SwipeableCard key={item.id} onSwipeLeft={showTrash ? () => {} : () => handleSwipeArchive(item)} onSwipeRight={showTrash ? () => {} : () => handleSwipePin(item)} onLongPress={() => setContextItem(item)}>
-          <FeedCard item={item} onDelete={handleDelete} onUpdate={handleUpdate} onRestore={handleRestore} showTrash={showTrash} />
-        </SwipeableCard>
+      {unpinned.map((item, index) => (
+        <div key={item.id}>
+          <SwipeableCard onSwipeLeft={showTrash ? () => {} : () => handleSwipeArchive(item)} onSwipeRight={showTrash ? () => {} : () => handleSwipePin(item)} onLongPress={() => setContextItem(item)}>
+            <FeedCard item={item} onDelete={handleDelete} onUpdate={handleUpdate} onRestore={handleRestore} showTrash={showTrash} />
+          </SwipeableCard>
+          {index === 0 && !swipeHintSeen && (
+            <p className="text-xs text-muted-foreground/50 text-center py-1 md:hidden">
+              ← 고정 | 보관 →
+            </p>
+          )}
+        </div>
       ))}
 
       {/* Infinite scroll sentinel */}

@@ -267,7 +267,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           setSidebarView("feed")
           onClose()
         }}
-        className="px-6 pt-7 pb-5 text-left hover:opacity-80 transition-opacity"
+        className="px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-5 text-left hover:opacity-80 transition-opacity"
       >
         <h1 className="font-display text-2xl tracking-tight text-foreground">
           DotLine
@@ -635,7 +635,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       </ScrollArea>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-border/40 space-y-3">
+      <div className="px-4 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t border-border/40 space-y-3">
         <UserMenu />
         <div className="flex items-center gap-2 px-1">
           <a href="/terms" className="text-ui-xs text-muted-foreground/35 hover:text-muted-foreground transition-colors">이용약관</a>

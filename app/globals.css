@@ -257,6 +257,16 @@
   }
 }
 
+/* Improve text contrast on mobile for readability */
+@media screen and (max-width: 767px) {
+  .text-muted-foreground\/30 {
+    opacity: 0.5;
+  }
+  .text-muted-foreground\/40 {
+    opacity: 0.55;
+  }
+}
+
 /* Subtle noise texture on body */
 body::before {
   content: "";
@@ -287,4 +297,11 @@ body::before {
   --text-sm: 15px;
   --text-base: 17px;
   --text-lg: 19px;
+}
+
+/* Prevent iOS zoom on input focus — enforce 16px minimum */
+@media screen and (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }

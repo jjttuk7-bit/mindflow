@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, X } from "lucide-react"
+import { toast } from "sonner"
 
 export function PushPrompt() {
   const [show, setShow] = useState(false)
@@ -10,7 +11,7 @@ export function PushPrompt() {
   useEffect(() => {
     async function check() {
       // Don't show if already dismissed this session
-      if (sessionStorage.getItem("push_prompt_dismissed")) return
+      if (localStorage.getItem("push_prompt_dismissed")) return
 
       // Don't show if push not supported
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) return
@@ -41,7 +42,7 @@ export function PushPrompt() {
       const permission = await Notification.requestPermission()
       if (permission !== "granted") {
         setShow(false)
-        sessionStorage.setItem("push_prompt_dismissed", "1")
+        localStorage.setItem("push_prompt_dismissed", "1")
         return
       }
 
@@ -61,8 +62,11 @@ export function PushPrompt() {
         }),
       })
 
+      toast.success("알림이 설정되었습니다")
       setShow(false)
-    } catch {
+    } catch (err) {
+      console.error("Push subscription failed:", err)
+      toast.error("알림 설정에 실패했습니다")
       setShow(false)
     } finally {
       setLoading(false)
@@ -71,7 +75,7 @@ export function PushPrompt() {
 
   function handleDismiss() {
     setShow(false)
-    sessionStorage.setItem("push_prompt_dismissed", "1")
+    localStorage.setItem("push_prompt_dismissed", "1")
   }
 
   if (!show) return null

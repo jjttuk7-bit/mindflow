@@ -373,7 +373,7 @@ export function SearchDialog() {
               {allTags.length > 0 && (
                 <div>
                   <p className="text-ui-xs text-muted-foreground/50 font-medium mb-1.5">태그</p>
-                  <div className="flex gap-1.5 flex-wrap max-h-20 overflow-y-auto">
+                  <div className="flex gap-1.5 flex-wrap max-h-16 md:max-h-20 overflow-y-auto">
                     {allTags.slice(0, 20).map((t) => (
                       <button
                         key={t.id}
@@ -394,7 +394,7 @@ export function SearchDialog() {
           )}
         </DialogHeader>
 
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-[50dvh] md:max-h-80 overflow-y-auto">
           {/* Search history + Suggestions when empty */}
           {!query.trim() && !filterType && !filterTag && (
             <div className="px-5 py-4 space-y-3">

@@ -38,6 +38,20 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
     prefer_related_applications: false,
+    shortcuts: [
+      {
+        name: "새 기록 추가",
+        short_name: "추가",
+        url: "/?action=compose",
+        icons: [{ src: "/icon-192", sizes: "192x192", type: "image/png" }],
+      },
+      {
+        name: "AI 채팅",
+        short_name: "채팅",
+        url: "/?tab=chat",
+        icons: [{ src: "/icon-192", sizes: "192x192", type: "image/png" }],
+      },
+    ],
     screenshots: [
       {
         src: "/screenshot-wide.png",

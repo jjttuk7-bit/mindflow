@@ -38,10 +38,10 @@ export function MoreMenu() {
 
   return (
     <main className="flex-1 flex flex-col h-full overflow-hidden bg-background">
-      <div className="px-4 pt-4 pb-3">
+      <div className="pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pt-4 pb-3">
         <h2 className="font-display text-xl tracking-tight text-foreground">More</h2>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-1">
+      <div className="flex-1 overflow-y-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-20 space-y-1">
         <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
           Quick Access
         </p>

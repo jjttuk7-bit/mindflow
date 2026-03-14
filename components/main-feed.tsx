@@ -41,7 +41,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
       {/* Composer area (hidden in archive/trash mode; hidden on mobile where FAB is used) */}
       {!showArchived && !showTrash && !mobile && (
         <>
-          <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-6">
+          <div className="pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8 pt-6 md:pt-8 pb-6">
             <div className="max-w-2xl mx-auto space-y-4">
               {/* Search bar trigger */}
               <button
@@ -61,13 +61,13 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
               <Composer onSaved={onRefetch} />
             </div>
           </div>
-          <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-4 sm:mx-6 md:mx-8" />
+          <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent ml-[max(1rem,env(safe-area-inset-left))] mr-[max(1rem,env(safe-area-inset-right))] md:mx-8" />
         </>
       )}
 
       {/* Archive header */}
       {showArchived && (
-        <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
+        <div className="pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8 pt-6 md:pt-8 pb-4">
           <div className="max-w-2xl mx-auto flex items-center gap-2.5">
             <Archive className="h-5 w-5 text-muted-foreground/50" />
             <h2 className="font-display text-xl text-foreground/70">Archive</h2>
@@ -77,7 +77,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
 
       {/* Trash header */}
       {showTrash && (
-        <div className="px-4 sm:px-6 md:px-8 pt-6 md:pt-8 pb-4">
+        <div className="pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8 pt-6 md:pt-8 pb-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Trash2 className="h-5 w-5 text-destructive/50" />
@@ -94,7 +94,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
       )}
 
       {/* Sort bar + View toggle */}
-      <div className="px-4 sm:px-6 md:px-8 py-2">
+      <div className="pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8 py-2">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           {/* View toggle */}
           <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-muted/50">
@@ -133,7 +133,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
         onRefresh={async () => { onRefetch?.() }}
         className="flex-1 overflow-y-auto"
       >
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="max-w-2xl mx-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] md:px-8">
           <NudgeCards />
         </div>
         <div className="max-w-2xl mx-auto">

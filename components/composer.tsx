@@ -7,20 +7,11 @@ import { toast } from "sonner"
 import { ContentType } from "@/lib/supabase/types"
 import { addToOfflineQueue, createOfflineItem } from "@/lib/offline-store"
 import { VoiceRecorder } from "@/components/voice-recorder"
-import { FileText, Link, Image, Mic, ArrowUp, Upload, X, Camera, Loader2, Paperclip } from "lucide-react"
+import { Link } from "lucide-react"
 import { ScreenshotData } from "@/lib/supabase/types"
-
-const typeButtons: {
-  type: ContentType
-  icon: React.ReactNode
-  label: string
-}[] = [
-  { type: "text", icon: <FileText className="h-3.5 w-3.5" />, label: "Text" },
-  { type: "link", icon: <Link className="h-3.5 w-3.5" />, label: "Link" },
-  { type: "image", icon: <Image className="h-3.5 w-3.5" />, label: "Image" },
-  { type: "voice", icon: <Mic className="h-3.5 w-3.5" />, label: "Voice" },
-  { type: "file", icon: <Paperclip className="h-3.5 w-3.5" />, label: "File" },
-]
+import { ImageInput } from "@/components/composer/image-input"
+import { FileInput } from "@/components/composer/file-input"
+import { ComposerToolbar } from "@/components/composer/composer-toolbar"
 
 export function Composer({ onSaved }: { onSaved?: () => void }) {
   const [content, setContent] = useState("")
@@ -612,227 +603,22 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
           )}
         </div>
       ) : activeType === "image" ? (
-        <div className="px-5 pt-4 pb-2 space-y-3">
-          {/* Hidden file inputs */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={(e) => {
-              const files = e.target.files
-              if (files && files.length > 1) {
-                handleBatchUpload(Array.from(files))
-              } else if (files?.[0]) {
-                handleFileSelect(files[0])
-              }
-              e.target.value = ""
-            }}
-          />
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleFileSelect(file)
-              e.target.value = ""
-            }}
-          />
-          <canvas ref={canvasRef} className="hidden" />
-
-          {/* Option buttons + drop zone */}
-          {!selectedFile && !showCamera && (
-            <div
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              className={`flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed transition-all duration-200 ${
-                isDragging
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-border/50 hover:border-border/80"
-              }`}
-            >
-              <div className="flex gap-3 mb-2">
-                {hasCamera && (
-                  <button
-                    type="button"
-                    onClick={handleTakePhoto}
-                    className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                  >
-                    <Camera className="h-4 w-4" />
-                    촬영
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                >
-                  <Upload className="h-4 w-4" />
-                  업로드
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground/40">
-                또는 여기에 이미지를 드래그하세요
-              </p>
-            </div>
-          )}
-
-          {/* Desktop camera preview */}
-          {showCamera && (
-            <div className="space-y-2">
-              <div className="relative rounded-lg overflow-hidden bg-black">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full max-h-48 object-cover"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={capturePhoto}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  <Camera className="h-4 w-4" />
-                  저장
-                </button>
-                <button
-                  type="button"
-                  onClick={stopCamera}
-                  className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/50 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                  취소
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Image preview */}
-          {selectedFile && previewUrl && (
-            <div className="relative">
-              <img
-                src={previewUrl}
-                alt="Preview"
-                className="w-full max-h-48 object-cover rounded-lg"
-              />
-              <button
-                onClick={clearFile}
-                className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* Analyzing indicator */}
-          {isAnalyzing && (
-            <div className="flex items-center gap-2 text-sm text-primary/70">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span>AI가 스크린샷을 분석하고 있습니다...</span>
-            </div>
-          )}
-
-          {/* Caption */}
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={isAnalyzing ? "분석 중..." : "설명을 추가하세요..."}
-            className="w-full min-h-[44px] resize-none bg-transparent text-ui-base leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
-            disabled={isSubmitting}
-          />
-        </div>
+        <ImageInput
+          selectedFile={selectedFile} previewUrl={previewUrl} isDragging={isDragging}
+          isAnalyzing={isAnalyzing} isSubmitting={isSubmitting} hasCamera={hasCamera}
+          showCamera={showCamera} content={content} isFocused={isFocused}
+          videoRef={videoRef} canvasRef={canvasRef} fileInputRef={fileInputRef} cameraInputRef={cameraInputRef}
+          onFileSelect={handleFileSelect} onBatchUpload={handleBatchUpload} onClearFile={clearFile}
+          onTakePhoto={handleTakePhoto} onCapturePhoto={capturePhoto} onStopCamera={stopCamera}
+          onDrop={handleDrop} setIsDragging={setIsDragging} setContent={setContent} setIsFocused={setIsFocused}
+        />
       ) : activeType === "file" ? (
-        <div className="px-5 pt-4 pb-2 space-y-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.docx,.doc,.txt,.csv,.xlsx,.xls,.md,.hwp,.rtf"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) {
-                if (f.size > 20 * 1024 * 1024) {
-                  toast.error("파일 크기는 20MB까지 지원됩니다")
-                  return
-                }
-                setSelectedFile(f)
-              }
-              e.target.value = ""
-            }}
-          />
-
-          {!selectedFile ? (
-            <div
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-                const f = e.dataTransfer.files[0]
-                if (f) {
-                  if (f.size > 20 * 1024 * 1024) {
-                    toast.error("파일 크기는 20MB까지 지원됩니다")
-                    return
-                  }
-                  setSelectedFile(f)
-                }
-              }}
-              className={`flex flex-col items-center justify-center h-32 rounded-lg border-2 border-dashed transition-all duration-200 ${
-                isDragging
-                  ? "border-primary/50 bg-primary/5"
-                  : "border-border/50 hover:border-border/80"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-              >
-                <Paperclip className="h-4 w-4" />
-                파일 선택
-              </button>
-              <p className="text-xs text-muted-foreground/40 mt-2">
-                PDF, DOCX, TXT, CSV, XLSX (최대 20MB)
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
-              <Paperclip className="h-5 w-5 text-primary shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                <p className="text-ui-sm text-muted-foreground/60">
-                  {(selectedFile.size / 1024).toFixed(1)} KB
-                </p>
-              </div>
-              <button
-                onClick={clearFile}
-                className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
-
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder="메모를 추가하세요 (선택사항)..."
-            className="w-full min-h-[44px] resize-none bg-transparent text-ui-base leading-relaxed focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic"
-            disabled={isSubmitting}
-          />
-        </div>
+        <FileInput
+          selectedFile={selectedFile} isDragging={isDragging} isSubmitting={isSubmitting}
+          content={content} fileInputRef={fileInputRef} onClearFile={clearFile}
+          setSelectedFile={setSelectedFile} setIsDragging={setIsDragging}
+          setContent={setContent} setIsFocused={setIsFocused}
+        />
       ) : (
         <textarea
           value={content}
@@ -868,48 +654,13 @@ export function Composer({ onSaved }: { onSaved?: () => void }) {
       {error && (
         <p className="text-xs text-destructive px-4 pb-1">{error}</p>
       )}
-      <div className="flex items-center justify-between px-3 pb-3">
-        <div className="flex gap-0.5">
-          {typeButtons.map((btn) => (
-            <button
-              key={btn.type}
-              type="button"
-              onClick={() => {
-                setActiveType(btn.type)
-                clearFile()
-                setError(null)
-                setLinkError(null)
-              }}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ${
-                activeType === btn.type
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50"
-              }`}
-            >
-              {btn.icon}
-              <span className="hidden sm:inline">{btn.label}</span>
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onPointerDown={(e) => { e.preventDefault(); if (canSubmit) handleSubmit() }}
-          disabled={!canSubmit}
-          className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg h-10 sm:h-8 px-4 sm:px-3 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50 transition-all touch-manipulation"
-        >
-          {isSubmitting ? (
-            <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground animate-spin" />
-              저장 중
-            </span>
-          ) : (
-            <>
-              <ArrowUp className="h-3.5 w-3.5" />
-              저장
-            </>
-          )}
-        </button>
-      </div>
+      <ComposerToolbar
+        activeType={activeType}
+        canSubmit={canSubmit}
+        isSubmitting={isSubmitting}
+        onTypeChange={(type) => { setActiveType(type); clearFile(); setError(null); setLinkError(null) }}
+        onSubmit={handleSubmit}
+      />
     </div>
   )
 }

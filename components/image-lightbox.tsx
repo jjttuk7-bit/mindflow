@@ -73,7 +73,7 @@ export function ImageLightbox({
       </div>
 
       {/* Keyboard hints */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/30 text-[11px]">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/30 text-ui-sm">
         <span>R 회전</span>
         <span>+/- 확대/축소</span>
         <span>ESC 닫기</span>

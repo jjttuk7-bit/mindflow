@@ -53,7 +53,7 @@ export function RelatedItems({ itemId, onItemClick }: {
             <span className="truncate">
               {item.summary || item.content?.slice(0, 60)}
             </span>
-            <span className="ml-auto text-[10px] text-muted-foreground/60 shrink-0">
+            <span className="ml-auto text-ui-xs text-muted-foreground/60 shrink-0">
               {Math.round(item.similarity * 100)}%
             </span>
           </button>

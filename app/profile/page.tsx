@@ -112,7 +112,7 @@ export default function ProfilePage() {
                     <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${config.color} shrink-0`}>
                       {config.icon}
                     </div>
-                    <span className="text-[10px] text-muted-foreground/40 ml-auto">{date}</span>
+                    <span className="text-ui-xs text-muted-foreground/40 ml-auto">{date}</span>
                   </div>
 
                   {item.type === "image" && item.metadata && "image_url" in item.metadata && (
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                         <Badge
                           key={tag.id}
                           variant="secondary"
-                          className="text-[9px] tracking-wide px-1.5 py-0 rounded font-medium bg-muted/70 text-muted-foreground/60 border-0"
+                          className="text-ui-2xs tracking-wide px-1.5 py-0 rounded font-medium bg-muted/70 text-muted-foreground/60 border-0"
                         >
                           {tag.name}
                         </Badge>

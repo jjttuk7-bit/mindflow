@@ -22,7 +22,7 @@ export default function KnowledgeMapPage() {
         </Link>
         <div>
           <h1 className="text-base font-semibold text-foreground">지식 맵</h1>
-          <p className="text-[11px] text-muted-foreground/50">메모 간의 연결을 탐색하세요</p>
+          <p className="text-ui-sm text-muted-foreground/50">메모 간의 연결을 탐색하세요</p>
         </div>
       </header>
 

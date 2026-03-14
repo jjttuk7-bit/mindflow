@@ -310,7 +310,7 @@ function AISummaryDialog({
                   }`}
                 >
                   Brief
-                  <span className="block text-[11px] mt-0.5 opacity-70">Bullet-point summary</span>
+                  <span className="block text-ui-sm mt-0.5 opacity-70">Bullet-point summary</span>
                 </button>
                 <button
                   onClick={() => setDepth("detailed")}
@@ -321,7 +321,7 @@ function AISummaryDialog({
                   }`}
                 >
                   Detailed
-                  <span className="block text-[11px] mt-0.5 opacity-70">Structured document</span>
+                  <span className="block text-ui-sm mt-0.5 opacity-70">Structured document</span>
                 </button>
               </div>
             </div>

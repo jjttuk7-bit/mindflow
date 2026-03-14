@@ -134,7 +134,7 @@ export default function AdminPage() {
                   className="w-full rounded-sm bg-primary/70 min-h-[2px] transition-all"
                   style={{ height: `${(count / maxSignups) * 100}%` }}
                 />
-                <span className="text-[9px] text-muted-foreground/50 -rotate-45 origin-top-left whitespace-nowrap">
+                <span className="text-ui-2xs text-muted-foreground/50 -rotate-45 origin-top-left whitespace-nowrap">
                   {date.slice(5)}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export default function AdminPage() {
                     {new Date(u.created_at).toLocaleDateString("ko-KR")}
                   </p>
                   {u.last_sign_in && (
-                    <p className="text-[10px] text-muted-foreground/50">
+                    <p className="text-ui-xs text-muted-foreground/50">
                       마지막 로그인: {new Date(u.last_sign_in).toLocaleDateString("ko-KR")}
                     </p>
                   )}

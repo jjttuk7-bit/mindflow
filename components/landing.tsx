@@ -52,7 +52,7 @@ function Navbar() {
             <span className="font-display text-xl tracking-tight text-foreground leading-none">
               DotLine
             </span>
-            <p className="text-[9px] tracking-widest text-muted-foreground/50 leading-none mt-0.5">
+            <p className="text-ui-2xs tracking-widest text-muted-foreground/50 leading-none mt-0.5">
               Connecting dots, Drawing lines.
             </p>
           </div>
@@ -148,7 +148,7 @@ function CaptureSection() {
                 <Icon className={`w-6 h-6 ${color}`} />
               </div>
               <span className="text-sm font-medium text-foreground">{label}</span>
-              <span className="text-[11px] text-muted-foreground/60 text-center">{desc}</span>
+              <span className="text-ui-sm text-muted-foreground/60 text-center">{desc}</span>
             </div>
           ))}
         </div>
@@ -218,7 +218,7 @@ function FeaturesSection() {
           {coreFeatures.map(({ icon: Icon, title, description, badge }) => (
             <div key={title} className="group relative p-8 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
               {badge && (
-                <span className={`absolute top-5 right-5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                <span className={`absolute top-5 right-5 text-ui-xs font-semibold px-2 py-0.5 rounded-full ${
                   badge === "New" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-600"
                 }`}>
                   {badge}

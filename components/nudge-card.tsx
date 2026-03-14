@@ -60,7 +60,7 @@ export function NudgeCards() {
               {isConnection && nudge.related_item_ids?.length > 0 && (
                 <button
                   onClick={() => router.push(`/?highlight=${nudge.related_item_ids[0]}`)}
-                  className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="inline-flex items-center gap-1 mt-2 text-ui-sm font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   보기
                   <ArrowRight className="h-3 w-3" />

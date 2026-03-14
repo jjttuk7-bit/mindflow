@@ -128,7 +128,7 @@ function FeedbackDialog({ onClose }: { onClose: () => void }) {
                 required
                 className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring/30 resize-none"
               />
-              <p className="text-[11px] text-muted-foreground/40 mt-1 text-right">
+              <p className="text-ui-sm text-muted-foreground/40 mt-1 text-right">
                 {message.length}/2000
               </p>
             </div>

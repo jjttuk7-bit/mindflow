@@ -54,7 +54,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
                 <span className="text-sm text-muted-foreground/40 group-hover:text-muted-foreground/60">
                   무엇이든 검색하세요...
                 </span>
-                <kbd className="ml-auto hidden sm:inline-flex px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground/40">
+                <kbd className="ml-auto hidden sm:inline-flex px-1.5 py-0.5 rounded bg-muted text-ui-xs font-mono text-muted-foreground/40">
                   Ctrl+K
                 </kbd>
               </button>

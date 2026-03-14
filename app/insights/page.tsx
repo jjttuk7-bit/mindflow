@@ -246,7 +246,7 @@ export default function InsightsPage() {
               </button>
             </div>
 
-            <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 mb-3">
+            <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 mb-3">
               {tab === "weekly" ? "주간 리포트" : "월간 리포트"}
             </p>
 
@@ -291,7 +291,7 @@ export default function InsightsPage() {
                         >
                           {formatLabel(report)}
                         </p>
-                        <p className="text-[11px] text-muted-foreground/50">
+                        <p className="text-ui-sm text-muted-foreground/50">
                           {new Date(report.created_at).toLocaleDateString()}
                         </p>
                       </div>
@@ -314,7 +314,7 @@ export default function InsightsPage() {
                   <h2 className="font-display text-2xl text-foreground">
                     {formatDetailTitle()}
                   </h2>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-accent/10 text-amber-accent">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-ui-xs font-medium bg-amber-accent/10 text-amber-accent">
                     Preview
                   </span>
                   <button

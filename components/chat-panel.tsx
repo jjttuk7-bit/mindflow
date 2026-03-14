@@ -349,7 +349,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                   <button
                     onClick={() => handleAddSuggestion(s.type, s.text)}
                     disabled={isAdded}
-                    className={`shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md transition-colors ${
+                    className={`shrink-0 text-ui-xs font-medium px-2 py-0.5 rounded-md transition-colors ${
                       isAdded
                         ? "bg-green-500/10 text-green-600"
                         : "bg-primary/10 text-primary hover:bg-primary/20"
@@ -430,7 +430,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
               )}
               {msg.role === "assistant" ? (
                 <div className="flex items-center justify-between mt-1.5">
-                  <p className="text-[10px] text-muted-foreground/40">
+                  <p className="text-ui-xs text-muted-foreground/40">
                     {formatTime(msg.created_at)}
                   </p>
                   <button
@@ -446,7 +446,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                   </button>
                 </div>
               ) : (
-                <p className="text-[10px] mt-1.5 text-primary/40 text-right">
+                <p className="text-ui-xs mt-1.5 text-primary/40 text-right">
                   {formatTime(msg.created_at)}
                 </p>
               )}
@@ -460,7 +460,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                       <button
                         key={source.id}
                         onClick={() => setChatOpen(false)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background border border-border/40 text-[10px] text-muted-foreground/70 hover:text-primary hover:border-primary/30 transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-background border border-border/40 text-ui-xs text-muted-foreground/70 hover:text-primary hover:border-primary/30 transition-colors"
                         title={source.summary || source.content.slice(0, 100)}
                       >
                         <ExternalLink className="h-2.5 w-2.5" />
@@ -543,7 +543,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                   }`}
                 >
                   <p className="truncate">{session.title}</p>
-                  <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                  <p className="text-ui-xs text-muted-foreground/50 mt-0.5">
                     {new Date(session.created_at).toLocaleDateString()}
                   </p>
                 </button>
@@ -586,7 +586,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
             <Send className="h-4 w-4" />
           </button>
         </div>
-        <p className="text-[10px] text-muted-foreground/30 text-center mt-2">
+        <p className="text-ui-xs text-muted-foreground/30 text-center mt-2">
           저장된 항목을 기반으로 AI가 답변합니다
         </p>
       </footer>

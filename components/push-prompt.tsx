@@ -83,7 +83,7 @@ export function PushPrompt() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-foreground">매일 아침 브리핑 받기</p>
-        <p className="text-[10px] text-muted-foreground/70">어제 활동 요약 + 할 일 알림을 푸시로 받아보세요</p>
+        <p className="text-ui-xs text-muted-foreground/70">어제 활동 요약 + 할 일 알림을 푸시로 받아보세요</p>
       </div>
       <button
         onClick={handleEnable}

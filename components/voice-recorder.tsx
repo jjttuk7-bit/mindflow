@@ -204,7 +204,7 @@ export function VoiceRecorder({ onRecorded, disabled }: VoiceRecorderProps) {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             <div className={`w-2 h-2 rounded-full transition-colors ${levelColor}`} />
-            <span className="text-[10px] text-muted-foreground/50">
+            <span className="text-ui-xs text-muted-foreground/50">
               {micLevel > 0.3 ? "양호" : micLevel > 0.05 ? "보통" : "약함"}
             </span>
           </div>

@@ -558,7 +558,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={isAnalyzing ? "분석 중..." : "설명을 추가하세요..."}
-              className="w-full min-h-[60px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
+              className="w-full min-h-[60px] resize-none bg-transparent text-ui-base leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
             />
           </div>
         ) : activeType === "file" ? (
@@ -599,7 +599,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
                 <Paperclip className="h-5 w-5 text-primary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                  <p className="text-[11px] text-muted-foreground/60">
+                  <p className="text-ui-sm text-muted-foreground/60">
                     {(selectedFile.size / 1024).toFixed(1)} KB
                   </p>
                 </div>
@@ -617,7 +617,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="메모를 추가하세요 (선택사항)..."
-              className="w-full min-h-[60px] resize-none bg-transparent text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
+              className="w-full min-h-[60px] resize-none bg-transparent text-ui-base leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
             />
           </div>
         ) : activeType === "link" ? (
@@ -640,7 +640,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
                 }
               }}
               placeholder="URL을 붙여넣으세요..."
-              className="w-full bg-transparent px-1 py-2 text-[15px] leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
+              className="w-full bg-transparent px-1 py-2 text-ui-base leading-relaxed focus:outline-none placeholder:text-muted-foreground/40"
             />
             {linkError && (
               <p className="text-xs text-destructive px-1 pt-1">{linkError}</p>

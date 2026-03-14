@@ -186,7 +186,7 @@ export function CleanupGuide({ onClose }: { onClose: () => void }) {
                       {action !== "revisit" && pendingItems.length > 1 && (
                         <button
                           onClick={() => handleBulkAction(action)}
-                          className={`text-[11px] px-2 py-0.5 rounded-full ${config.bg} ${config.color} hover:opacity-80 transition-opacity`}
+                          className={`text-ui-sm px-2 py-0.5 rounded-full ${config.bg} ${config.color} hover:opacity-80 transition-opacity`}
                         >
                           전체 {config.label}
                         </button>
@@ -211,7 +211,7 @@ export function CleanupGuide({ onClose }: { onClose: () => void }) {
                                 <p className="text-sm text-foreground/80 line-clamp-1">
                                   {item.preview}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-ui-sm text-muted-foreground mt-0.5">
                                   {item.reason}
                                 </p>
                               </div>

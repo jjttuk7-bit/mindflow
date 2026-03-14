@@ -148,17 +148,17 @@ export function TimelineView() {
                   {item.context && (
                     <div className="flex gap-1.5 mb-1.5">
                       {item.context.time_of_day && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="text-ui-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                           {item.context.time_of_day}
                         </span>
                       )}
                       {item.context.source && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="text-ui-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                           {item.context.source}
                         </span>
                       )}
                       {item.context.topic_cluster && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                        <span className="text-ui-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                           {item.context.topic_cluster}
                         </span>
                       )}
@@ -167,7 +167,7 @@ export function TimelineView() {
                   {/* Source badge (fallback when no context) */}
                   {!item.context && item.source && (
                     <div className="flex gap-1.5 mb-1.5">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      <span className="text-ui-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                         {item.source}
                       </span>
                     </div>

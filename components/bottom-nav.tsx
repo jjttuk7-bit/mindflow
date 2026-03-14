@@ -28,7 +28,7 @@ export function BottomNav() {
               }`}
             >
               <tab.icon className={`h-5 w-5 ${active ? "stroke-[2.5]" : ""}`} />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <span className="text-ui-xs font-medium">{tab.label}</span>
             </button>
           )
         })}

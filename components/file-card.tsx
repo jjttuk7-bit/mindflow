@@ -62,7 +62,7 @@ export function FileCard({ meta, itemId }: FileCardProps) {
         {getFileIcon(meta.file_type)}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{meta.file_name}</p>
-          <p className="text-[11px] text-muted-foreground/60">
+          <p className="text-ui-sm text-muted-foreground/60">
             {getFileExtLabel(meta.file_name)} · {formatFileSize(meta.file_size)}
           </p>
         </div>
@@ -101,7 +101,7 @@ export function FileCard({ meta, itemId }: FileCardProps) {
       {meta.extracted_text && (
         <button
           onClick={() => setShowText(!showText)}
-          className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors px-1"
+          className="flex items-center gap-1.5 text-ui-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors px-1"
         >
           {showText ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           {showText ? "원문 숨기기" : "추출된 텍스트 보기"}

@@ -48,7 +48,7 @@ export function LinkCard({
           )}
           <div className="flex items-center gap-1.5 mt-0.5">
             <Globe className="h-3 w-3 text-muted-foreground/50" />
-            <span className="text-[11px] text-muted-foreground/60">{domain}</span>
+            <span className="text-ui-sm text-muted-foreground/60">{domain}</span>
             <ExternalLink className="h-2.5 w-2.5 text-muted-foreground/30 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
@@ -59,7 +59,7 @@ export function LinkCard({
         <div className="px-1">
           <button
             onClick={() => setShowSnapshot(!showSnapshot)}
-            className="flex items-center gap-1 mt-1 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            className="flex items-center gap-1 mt-1 text-ui-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           >
             <FileText className="h-3 w-3" />
             원본 내용

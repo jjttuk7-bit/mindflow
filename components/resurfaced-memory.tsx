@@ -74,7 +74,7 @@ export function ResurfacedMemory() {
         <div className="flex items-center justify-center w-6 h-6 rounded-md bg-amber-accent/15">
           <Sparkles className="h-3.5 w-3.5 text-amber-accent" />
         </div>
-        <span className="text-[11px] tracking-[0.1em] uppercase font-semibold text-amber-accent">
+        <span className="text-ui-sm tracking-[0.1em] uppercase font-semibold text-amber-accent">
           {reason}
         </span>
       </div>
@@ -96,7 +96,7 @@ export function ResurfacedMemory() {
                 <Badge
                   key={tag.id}
                   variant="secondary"
-                  className="text-[9px] tracking-wide px-1.5 py-0 rounded font-medium bg-muted/50 text-muted-foreground/60 border-0"
+                  className="text-ui-2xs tracking-wide px-1.5 py-0 rounded font-medium bg-muted/50 text-muted-foreground/60 border-0"
                 >
                   {tag.name}
                 </Badge>
@@ -106,7 +106,7 @@ export function ResurfacedMemory() {
 
           {/* Related context */}
           {related_to && (
-            <p className="text-[11px] text-muted-foreground/40 italic">
+            <p className="text-ui-sm text-muted-foreground/40 italic">
               최근 메모와 연결: &ldquo;{related_to}...&rdquo;
             </p>
           )}

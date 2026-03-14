@@ -86,7 +86,7 @@ export function PWAInstallPrompt() {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   홈 화면에 추가하면 앱처럼 사용할 수 있어요
                 </p>
-                <p className="text-[11px] text-primary/70 mt-1">
+                <p className="text-ui-sm text-primary/70 mt-1">
                   설치하면 카톡 등에서 바로 DotLine으로 공유 가능!
                 </p>
               </div>
@@ -95,7 +95,7 @@ export function PWAInstallPrompt() {
                 <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   브라우저 메뉴 <span className="font-bold">⋮</span> → &quot;홈 화면에 추가&quot; 또는 &quot;앱 설치&quot;를 눌러주세요
                 </p>
-                <p className="text-[11px] text-primary/70 mt-1">
+                <p className="text-ui-sm text-primary/70 mt-1">
                   설치하면 카톡 등에서 바로 DotLine으로 공유 가능!
                 </p>
               </div>

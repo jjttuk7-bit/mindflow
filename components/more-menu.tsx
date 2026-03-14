@@ -42,7 +42,7 @@ export function MoreMenu() {
         <h2 className="font-display text-xl tracking-tight text-foreground">More</h2>
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-1">
-        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
+        <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-2 pb-2">
           Quick Access
         </p>
         <button
@@ -100,7 +100,7 @@ export function MoreMenu() {
           <span className="text-xs text-muted-foreground/50 tabular-nums">{trashedCount}</span>
         </button>
 
-        <p className="text-[10px] tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
+        <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-3 pt-6 pb-2">
           Features
         </p>
         <a href="/profile/ai" className="w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm hover:bg-accent transition-colors">
@@ -132,11 +132,11 @@ export function MoreMenu() {
         </div>
 
         <div className="flex items-center gap-3 px-4 pt-6 pb-4">
-          <a href="/terms" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <a href="/terms" className="text-ui-sm text-muted-foreground/40 hover:text-muted-foreground transition-colors">
             Terms
           </a>
           <span className="text-muted-foreground/20">|</span>
-          <a href="/privacy" className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <a href="/privacy" className="text-ui-sm text-muted-foreground/40 hover:text-muted-foreground transition-colors">
             Privacy Policy
           </a>
         </div>

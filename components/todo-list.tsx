@@ -196,7 +196,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                     className="inline-block w-2 h-2 rounded-full"
                     style={{ backgroundColor: getProjectColor(projectId) }}
                   />
-                  <span className="text-[10px] tracking-[0.15em] uppercase font-semibold text-muted-foreground/70">
+                  <span className="text-ui-xs tracking-[0.15em] uppercase font-semibold text-muted-foreground/70">
                     {getProjectName(projectId)}
                   </span>
                 </div>
@@ -254,10 +254,10 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                   {expandedTodo === todo.id && (
                     <div className="mt-2 ml-8 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
                       {loadingRelated === todo.id && (
-                        <p className="text-[11px] text-muted-foreground/40">관련 기록 찾는 중...</p>
+                        <p className="text-ui-sm text-muted-foreground/40">관련 기록 찾는 중...</p>
                       )}
                       {relatedItems[todo.id]?.length === 0 && loadingRelated !== todo.id && (
-                        <p className="text-[11px] text-muted-foreground/40">관련 기록이 없습니다</p>
+                        <p className="text-ui-sm text-muted-foreground/40">관련 기록이 없습니다</p>
                       )}
                       {relatedItems[todo.id]?.map((item) => (
                         <button
@@ -268,7 +268,7 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                           <span className="text-muted-foreground/50 shrink-0">
                             {relatedTypeIcons[item.type] || relatedTypeIcons.text}
                           </span>
-                          <span className="text-[11px] text-foreground/60 line-clamp-1 flex-1">
+                          <span className="text-ui-sm text-foreground/60 line-clamp-1 flex-1">
                             {item.content}
                           </span>
                         </button>

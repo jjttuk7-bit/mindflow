@@ -188,7 +188,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
         <>
           <div className="flex items-center gap-2 px-1 mb-1">
             <Pin className="h-3 w-3 text-primary/50 fill-primary/50" />
-            <span className="text-[10px] tracking-[0.15em] uppercase font-semibold text-primary/50">
+            <span className="text-ui-xs tracking-[0.15em] uppercase font-semibold text-primary/50">
               고정됨
             </span>
           </div>

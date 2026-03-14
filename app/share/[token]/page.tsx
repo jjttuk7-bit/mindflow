@@ -74,7 +74,7 @@ export default async function SharePage({
           <h1 className="font-display text-xl tracking-tight text-foreground">
             DotLine
           </h1>
-          <span className="text-[11px] text-muted-foreground/50">Shared thought</span>
+          <span className="text-ui-sm text-muted-foreground/50">Shared thought</span>
         </div>
       </header>
 
@@ -91,7 +91,7 @@ export default async function SharePage({
                   {item.summary}
                 </p>
               )}
-              <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
+              <p className="text-ui-base leading-relaxed whitespace-pre-wrap break-words text-foreground/90">
                 {item.content}
               </p>
 
@@ -108,12 +108,12 @@ export default async function SharePage({
                   <Badge
                     key={tag.id}
                     variant="secondary"
-                    className="text-[10px] tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0"
+                    className="text-ui-xs tracking-wide px-2 py-0.5 rounded-md font-medium bg-muted/70 text-muted-foreground border-0"
                   >
                     {tag.name}
                   </Badge>
                 ))}
-                <span className="text-[11px] text-muted-foreground/40 ml-auto">
+                <span className="text-ui-sm text-muted-foreground/40 ml-auto">
                   {date}
                 </span>
               </div>

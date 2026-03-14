@@ -35,10 +35,12 @@ import {
   Moon,
   Monitor,
   Smartphone,
+  Type,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
+import { useFontSize, FontSize } from "@/components/font-size-provider"
 
 const PRO_FEATURES = [
   "무제한 Telegram 캡처",
@@ -90,6 +92,7 @@ function SettingsContent() {
   const [pinAuthLoading, setPinAuthLoading] = useState(false)
 
   const { theme, setTheme } = useTheme()
+  const { fontSize, setFontSize } = useFontSize()
   const supabase = createClient()
 
   const fetchSettings = useCallback(async () => {
@@ -513,6 +516,47 @@ function SettingsContent() {
                   AMOLED 디스플레이에 최적화된 순수 검정 배경
                 </p>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Font Size Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Type className="h-5 w-5" />
+                글자 크기
+              </CardTitle>
+              <CardDescription>
+                앱 전체의 글자 크기를 조절합니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-2">
+                {([
+                  { value: "small" as FontSize, label: "작게", sample: "가나다 ABC" },
+                  { value: "normal" as FontSize, label: "보통", sample: "가나다 ABC" },
+                  { value: "large" as FontSize, label: "크게", sample: "가나다 ABC" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFontSize(opt.value)}
+                    className={`flex-1 rounded-lg border-2 p-3 text-center transition-colors ${
+                      fontSize === opt.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <span className={`block font-medium ${
+                      opt.value === "small" ? "text-[12px]" : opt.value === "large" ? "text-[16px]" : "text-[14px]"
+                    }`}>
+                      {opt.sample}
+                    </span>
+                    <span className="block text-ui-sm text-muted-foreground mt-1">
+                      {opt.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </CardContent>
           </Card>
 

@@ -65,8 +65,9 @@ export function PushPrompt() {
       toast.success("알림이 설정되었습니다")
       setShow(false)
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
       console.error("Push subscription failed:", err)
-      toast.error("알림 설정에 실패했습니다")
+      toast.error(`알림 설정 실패: ${msg}`, { duration: 10000 })
       setShow(false)
     } finally {
       setLoading(false)

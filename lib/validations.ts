@@ -24,6 +24,7 @@ export const todoCreateSchema = z.object({
   project_id: z.string().uuid().nullable().optional(),
   item_id: z.string().uuid().nullable().optional(),
   due_date: z.string().datetime().nullable().optional(),
+  source: z.enum(["manual", "chat"]).optional().default("manual"),
 })
 
 export const todoUpdateSchema = z.object({

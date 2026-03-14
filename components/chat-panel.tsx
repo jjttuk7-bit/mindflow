@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { useStore } from "@/lib/store"
 // Using native overflow scroll instead of Radix ScrollArea for reliable flex layout scrolling
 import { ChatSession, ChatMessage } from "@/lib/supabase/types"
+import { toast } from "sonner"
 import {
   X,
   Send,
@@ -41,7 +42,7 @@ function parseSuggestions(content: string) {
 }
 
 export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
-  const { chatOpen, setChatOpen } = useStore()
+  const { chatOpen, setChatOpen, removeTodo } = useStore()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -253,6 +254,21 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
                     : s
                 )
               )
+              // Show cancellable toast for AI-created todos
+              if (data.tool === "create_memo" && data.type === "tool_result" && data.todo_id) {
+                const todoId = data.todo_id as string
+                toast("AI가 할 일을 제안했어요", {
+                  duration: 5000,
+                  action: {
+                    label: "취소",
+                    onClick: async () => {
+                      await fetch(`/api/todos/${todoId}`, { method: "DELETE" })
+                      removeTodo(todoId)
+                      toast.success("제안이 취소되었습니다")
+                    },
+                  },
+                })
+              }
             } else if (data.type === "chunk") {
               fullText += data.text
               setStreamingText(fullText)

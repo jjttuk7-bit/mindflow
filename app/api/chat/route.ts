@@ -264,7 +264,7 @@ ${todoSection}${projectSection}${recentSection}`
               allSourceIds = [...allSourceIds, ...searchItems.map((i) => i.id)]
             }
 
-            send({ type: "tool_result", tool: toolName, summary: result.summary })
+            send({ type: "tool_result", tool: toolName, summary: result.summary, ...(toolName === "create_memo" && result.data && typeof result.data === "object" ? result.data : {}) })
 
             // Add tool result to messages for next LLM call
             messages.push({

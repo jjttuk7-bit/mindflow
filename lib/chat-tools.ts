@@ -274,9 +274,11 @@ async function executeCreateMemo(
   }
 
   if (type === "todo") {
-    const { error } = await supabase
+    const { data: newTodo, error } = await supabase
       .from("todos")
-      .insert({ content, user_id: userId })
+      .insert({ content, user_id: userId, source: "chat" })
+      .select("id")
+      .single()
 
     if (error) {
       return { tool: "create_memo", summary: "할 일 생성 실패", data: { created: false } }
@@ -286,7 +288,7 @@ async function executeCreateMemo(
     return {
       tool: "create_memo",
       summary: `할 일 생성 완료: "${content.slice(0, 30)}"`,
-      data: { created: true, type: "todo" },
+      data: { created: true, type: "todo", todo_id: newTodo?.id },
     }
   } else {
     const { error } = await supabase

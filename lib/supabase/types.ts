@@ -115,6 +115,7 @@ export interface Todo {
   content: string
   is_completed: boolean
   due_date?: string | null
+  source?: "manual" | "chat"
   created_at: string
   updated_at: string
 }

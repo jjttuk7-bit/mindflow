@@ -226,6 +226,11 @@ export function TodoList({ onMenuClick }: { onMenuClick?: () => void }) {
                     >
                       {todo.content}
                     </span>
+                    {todo.source === "chat" && (
+                      <span className="shrink-0 text-[10px] font-semibold leading-none px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                        AI
+                      </span>
+                    )}
                     {todo.item_id && (
                       <span className="text-muted-foreground/30 hover:text-primary transition-colors" title="Linked to an item">
                         <LinkIcon className="h-3.5 w-3.5" />

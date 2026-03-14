@@ -498,7 +498,7 @@ export function FeedCard({
           {item.context?.link_analysis && (
             <div className="flex items-start gap-2 rounded-lg bg-blue-500/5 border border-blue-500/10 px-3 py-2">
               <Sparkles className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-foreground/70 leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs text-foreground/70 leading-relaxed whitespace-pre-wrap break-words">
                 {item.context.link_analysis}
               </p>
             </div>
@@ -633,7 +633,7 @@ export function FeedCard({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 space-y-2.5">
+        <div className="flex-1 min-w-0 space-y-1.5 md:space-y-2.5">
           {renderContent()}
 
           {/* Tags + Meta */}
@@ -758,7 +758,7 @@ export function FeedCard({
                     className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted/40 text-ui-sm text-muted-foreground/70 hover:bg-muted/70 transition-colors cursor-default"
                   >
                     {typeConfig[r.type]?.icon}
-                    <span className="truncate max-w-[180px]">
+                    <span className="truncate max-w-[120px] sm:max-w-[180px]">
                       {r.summary || r.content}
                     </span>
                   </span>

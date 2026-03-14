@@ -194,7 +194,7 @@ export function AIPartner({
                       <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
                     </div>
                     {isDisabled && (
-                      <p className="text-[10px] text-muted-foreground/60">고객 선택 필요</p>
+                      <p className="text-ui-xs text-muted-foreground/60">고객 선택 필요</p>
                     )}
                   </button>
                 )

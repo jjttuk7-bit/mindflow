@@ -341,7 +341,7 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
                 <span className={`flex items-center gap-1 text-xs font-bold ${temp.color}`}>
                   <Flame className="h-3.5 w-3.5" />
                   {temp.label}
-                  <span className="text-[10px] opacity-70">{temp.score}</span>
+                  <span className="text-ui-xs opacity-70">{temp.score}</span>
                 </span>
               </div>
               {(customer.company || customer.role) && (
@@ -383,21 +383,21 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
           <div className="grid grid-cols-4 gap-3 mt-4 pt-4 border-t border-border/40">
             <div className="text-center">
               <p className="text-lg font-bold tabular-nums">{customer.activities.length}</p>
-              <p className="text-[10px] text-muted-foreground">활동</p>
+              <p className="text-ui-xs text-muted-foreground">활동</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold tabular-nums">{activeDeals.length}</p>
-              <p className="text-[10px] text-muted-foreground">진행 딜</p>
+              <p className="text-ui-xs text-muted-foreground">진행 딜</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold tabular-nums">{pendingFollowUps.length}</p>
-              <p className="text-[10px] text-muted-foreground">할 일</p>
+              <p className="text-ui-xs text-muted-foreground">할 일</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold tabular-nums">
                 {totalDealAmount > 0 ? formatAmount(totalDealAmount) : "-"}
               </p>
-              <p className="text-[10px] text-muted-foreground">성사 금액</p>
+              <p className="text-ui-xs text-muted-foreground">성사 금액</p>
             </div>
           </div>
 
@@ -433,7 +433,7 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
                 <Sparkles className="h-4 w-4 text-primary" />
                 AI 연락 추천
               </p>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+              <span className={`text-ui-xs px-2 py-0.5 rounded-full font-medium ${
                 aiTiming.relationship_health === "excellent" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300" :
                 aiTiming.relationship_health === "good" ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" :
                 aiTiming.relationship_health === "fair" ? "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" :
@@ -446,18 +446,18 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-[10px] text-muted-foreground">추천 연락일</p>
+                <p className="text-ui-xs text-muted-foreground">추천 연락일</p>
                 <p className="font-medium">{formatDate(aiTiming.recommended_contact_date)}</p>
               </div>
               <div>
-                <p className="text-[10px] text-muted-foreground">추천 방법</p>
+                <p className="text-ui-xs text-muted-foreground">추천 방법</p>
                 <p className="font-medium">{ACTIVITY_LABELS[aiTiming.recommended_method] || aiTiming.recommended_method}</p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">{aiTiming.reason}</p>
             {aiTiming.talking_points.length > 0 && (
               <div>
-                <p className="text-[10px] text-muted-foreground mb-1">대화 포인트</p>
+                <p className="text-ui-xs text-muted-foreground mb-1">대화 포인트</p>
                 <ul className="space-y-0.5">
                   {aiTiming.talking_points.map((tp, i) => (
                     <li key={i} className="text-xs flex items-start gap-1.5">
@@ -495,7 +495,7 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
             >
               {t.label}
               {t.count > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                <span className={`text-ui-xs px-1.5 py-0.5 rounded-full ${
                   tab === t.key ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                 }`}>
                   {t.count}
@@ -554,12 +554,12 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
                               {ACTIVITY_LABELS[activity.type]}
                             </span>
                             {activity.duration_min && (
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-ui-xs text-muted-foreground">
                                 {activity.duration_min}분
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-ui-xs text-muted-foreground">
                             {formatRelativeDate(activity.occurred_at)}
                           </span>
                         </div>
@@ -636,7 +636,7 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
                         {deal.amount > 0 ? `${formatAmount(deal.amount)}원` : "-"}
                       </p>
                       {deal.expected_close_date && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1 justify-end">
+                        <p className="text-ui-xs text-muted-foreground mt-0.5 flex items-center gap-1 justify-end">
                           <Calendar className="h-3 w-3" />
                           {formatDate(deal.expected_close_date)}
                         </p>
@@ -702,12 +702,12 @@ export function CustomerDetail({ customerId }: { customerId: string }) {
                           </p>
                         )}
                         <div className="flex items-center gap-2 mt-1.5">
-                          <span className={`text-[10px] ${PRIORITY_COLORS[followUp.priority]}`}>
+                          <span className={`text-ui-xs ${PRIORITY_COLORS[followUp.priority]}`}>
                             {followUp.priority === "urgent" ? "긴급" :
                              followUp.priority === "high" ? "높음" :
                              followUp.priority === "medium" ? "보통" : "낮음"}
                           </span>
-                          <span className={`text-[10px] flex items-center gap-1 ${
+                          <span className={`text-ui-xs flex items-center gap-1 ${
                             isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"
                           }`}>
                             <Calendar className="h-3 w-3" />

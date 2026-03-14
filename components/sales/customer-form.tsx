@@ -203,7 +203,7 @@ export function CustomerForm({
                   }`}
                 >
                   <span className="text-sm font-bold">{g.label}</span>
-                  <span className={`text-[10px] ${form.grade === g.value ? "opacity-80" : "opacity-50"}`}>
+                  <span className={`text-ui-xs ${form.grade === g.value ? "opacity-80" : "opacity-50"}`}>
                     {g.desc}
                   </span>
                 </button>

@@ -366,13 +366,13 @@ export function SalesDashboard() {
                       {(() => {
                         const temp = calcTempLabel(customer.grade, customer.last_activity_at, customer.activity_count || 0)
                         return (
-                          <span className={`flex items-center gap-0.5 text-[10px] font-bold ${temp.color}`}>
+                          <span className={`flex items-center gap-0.5 text-ui-xs font-bold ${temp.color}`}>
                             <Flame className="h-3 w-3" />
                             {temp.label}
                           </span>
                         )
                       })()}
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium flex-shrink-0">
+                      <span className="text-ui-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium flex-shrink-0">
                         {SOURCE_LABELS[customer.source] || customer.source}
                       </span>
                     </div>
@@ -388,14 +388,14 @@ export function SalesDashboard() {
                     {/* Last contact + counts */}
                     <div className="flex items-center gap-3 mt-1">
                       {customer.last_activity_at && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
+                        <span className="flex items-center gap-1 text-ui-xs text-muted-foreground/70">
                           <Clock className="h-2.5 w-2.5" />
                           {formatRelative(customer.last_activity_at)}
                           {customer.last_activity_type && ` · ${ACTIVITY_LABELS[customer.last_activity_type] || customer.last_activity_type}`}
                         </span>
                       )}
                       {(customer.pending_follow_ups > 0) && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-medium">
+                        <span className="text-ui-xs px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-medium">
                           할일 {customer.pending_follow_ups}
                         </span>
                       )}

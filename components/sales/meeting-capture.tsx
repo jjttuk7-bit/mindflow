@@ -340,7 +340,7 @@ export function MeetingCapture({
                   {extraction.key_topics.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap mt-2">
                       {extraction.key_topics.map((t, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        <span key={i} className="text-ui-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
                           {t}
                         </span>
                       ))}

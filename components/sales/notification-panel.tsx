@@ -151,7 +151,7 @@ export function NotificationPanel({
             <Bell className="h-4 w-4" />
             <h3 className="font-semibold text-sm">알림</h3>
             {alerts.filter(a => a.status === "unread").length > 0 && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500 text-white font-bold">
+              <span className="text-ui-xs px-1.5 py-0.5 rounded-full bg-red-500 text-white font-bold">
                 {alerts.filter(a => a.status === "unread").length}
               </span>
             )}
@@ -229,12 +229,12 @@ export function NotificationPanel({
                           {alert.message}
                         </p>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-[10px] text-muted-foreground/60">
+                          <span className="text-ui-xs text-muted-foreground/60">
                             {formatTime(alert.created_at)}
                           </span>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDismiss(alert.id) }}
-                            className="text-[10px] text-muted-foreground hover:text-foreground"
+                            className="text-ui-xs text-muted-foreground hover:text-foreground"
                           >
                             닫기
                           </button>
@@ -285,7 +285,7 @@ export function NotificationBadge({
     >
       <Bell className="h-4 w-4" />
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1">
+        <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-ui-xs font-bold px-1">
           {unreadCount > 9 ? "9+" : unreadCount}
         </span>
       )}

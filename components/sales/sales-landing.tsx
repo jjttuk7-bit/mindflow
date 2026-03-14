@@ -161,7 +161,7 @@ export function SalesLanding() {
             <h1 className="text-xl font-bold tracking-tight">
               DotLine <span className="text-primary">Sales</span>
             </h1>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">BETA</span>
+            <span className="text-ui-xs px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">BETA</span>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -265,7 +265,7 @@ export function SalesLanding() {
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <Icon className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="text-[10px] text-primary font-bold mb-1">STEP {item.step}</div>
+                  <div className="text-ui-xs text-primary font-bold mb-1">STEP {item.step}</div>
                   <h4 className="font-semibold text-sm mb-1">{item.title}</h4>
                   <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
@@ -294,7 +294,7 @@ export function SalesLanding() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{t.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{t.role}</p>
+                  <p className="text-ui-xs text-muted-foreground">{t.role}</p>
                 </div>
               </div>
             </div>

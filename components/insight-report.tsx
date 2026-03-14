@@ -210,7 +210,7 @@ function ProductivityScoreSection({ data }: { data: ProductivityScoreData }) {
               <p className="text-2xl font-display tabular-nums" style={{ color }}>
                 {data.score}
               </p>
-              <p className="text-[10px] text-muted-foreground">{data.label}</p>
+              <p className="text-ui-xs text-muted-foreground">{data.label}</p>
             </div>
           </div>
         </div>
@@ -275,7 +275,7 @@ function MoMComparisonSection({ data }: { data: MoMComparisonData }) {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {data.new_topics.map((t) => (
-                  <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] bg-sage/10 text-sage">
+                  <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-full text-ui-sm bg-sage/10 text-sage">
                     {t}
                   </span>
                 ))}
@@ -290,7 +290,7 @@ function MoMComparisonSection({ data }: { data: MoMComparisonData }) {
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {data.dropped_topics.map((t) => (
-                  <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] bg-dusty-rose/10 text-dusty-rose">
+                  <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-full text-ui-sm bg-dusty-rose/10 text-dusty-rose">
                     {t}
                   </span>
                 ))}
@@ -334,7 +334,7 @@ function WeeklyBreakdownSection({ data }: { data: WeeklyBreakdownData[] }) {
                   : "border-border/40 bg-muted/20"
               }`}
             >
-              <p className="text-[11px] text-muted-foreground mb-1">
+              <p className="text-ui-sm text-muted-foreground mb-1">
                 {formatShortDate(week.week_start)} - {formatShortDate(week.week_end)}
               </p>
               <p className={`text-2xl font-display tabular-nums mb-2 ${isTop ? "text-primary" : "text-foreground/70"}`}>
@@ -354,7 +354,7 @@ function WeeklyBreakdownSection({ data }: { data: WeeklyBreakdownData[] }) {
                 ))}
               </div>
               {week.top_projects.length > 0 && (
-                <p className="text-[10px] text-muted-foreground/60 mt-2 truncate">
+                <p className="text-ui-xs text-muted-foreground/60 mt-2 truncate">
                   {week.top_projects[0]}
                 </p>
               )}
@@ -498,7 +498,7 @@ function StatsSection({
           <p className="text-xs font-medium text-muted-foreground mb-3">일별 활동</p>
           <div className="grid grid-cols-7 gap-1">
             {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-              <div key={i} className="text-[10px] text-muted-foreground/50 text-center font-medium">
+              <div key={i} className="text-ui-xs text-muted-foreground/50 text-center font-medium">
                 {d}
               </div>
             ))}
@@ -574,21 +574,21 @@ function RemindersSection({ reminders }: { reminders: InsightReportData["reminde
           <p className="text-2xl font-display text-foreground tabular-nums">
             {reminders.unread_links}
           </p>
-          <p className="text-[11px] text-muted-foreground">Unread Links</p>
+          <p className="text-ui-sm text-muted-foreground">Unread Links</p>
         </div>
         <div className="rounded-lg bg-muted/40 p-3 text-center">
           <ListTodo className="h-4 w-4 mx-auto text-terracotta mb-1" />
           <p className="text-2xl font-display text-foreground tabular-nums">
             {reminders.overdue_todos}
           </p>
-          <p className="text-[11px] text-muted-foreground">Overdue TODOs</p>
+          <p className="text-ui-sm text-muted-foreground">Overdue TODOs</p>
         </div>
         <div className="rounded-lg bg-muted/40 p-3 text-center">
           <Pin className="h-4 w-4 mx-auto text-amber-accent mb-1" />
           <p className="text-2xl font-display text-foreground tabular-nums">
             {reminders.stale_pins}
           </p>
-          <p className="text-[11px] text-muted-foreground">Stale Pins</p>
+          <p className="text-ui-sm text-muted-foreground">Stale Pins</p>
         </div>
       </div>
 
@@ -732,7 +732,7 @@ function UtilizationSection({ data }: { data: NonNullable<WeeklyInsightData["uti
               <p className="text-2xl font-display tabular-nums" style={{ color }}>
                 {data.rate}%
               </p>
-              <p className="text-[10px] text-muted-foreground">활용률</p>
+              <p className="text-ui-xs text-muted-foreground">활용률</p>
             </div>
           </div>
         </div>
@@ -787,7 +787,7 @@ function KnowledgeHealthSection({ data }: { data: NonNullable<WeeklyInsightData[
               <p className="text-3xl font-display tabular-nums" style={{ color }}>
                 {data.score}
               </p>
-              <p className="text-[10px] text-muted-foreground">{data.grade}</p>
+              <p className="text-ui-xs text-muted-foreground">{data.grade}</p>
             </div>
           </div>
         </div>
@@ -799,8 +799,8 @@ function KnowledgeHealthSection({ data }: { data: NonNullable<WeeklyInsightData[
             return (
               <div key={key}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] text-muted-foreground">{info.label}</span>
-                  <span className="text-[11px] text-foreground/60 tabular-nums">{value}/{info.max}</span>
+                  <span className="text-ui-sm text-muted-foreground">{info.label}</span>
+                  <span className="text-ui-sm text-foreground/60 tabular-nums">{value}/{info.max}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                   <div

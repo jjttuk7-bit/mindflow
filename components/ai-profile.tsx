@@ -187,11 +187,11 @@ function TimePersonaCard({
         ))}
       </div>
       <div className="flex justify-between mt-1">
-        <span className="text-[10px] text-muted-foreground">0시</span>
-        <span className="text-[10px] text-muted-foreground">6시</span>
-        <span className="text-[10px] text-muted-foreground">12시</span>
-        <span className="text-[10px] text-muted-foreground">18시</span>
-        <span className="text-[10px] text-muted-foreground">23시</span>
+        <span className="text-ui-xs text-muted-foreground">0시</span>
+        <span className="text-ui-xs text-muted-foreground">6시</span>
+        <span className="text-ui-xs text-muted-foreground">12시</span>
+        <span className="text-ui-xs text-muted-foreground">18시</span>
+        <span className="text-ui-xs text-muted-foreground">23시</span>
       </div>
     </div>
   )
@@ -224,7 +224,7 @@ function DiversityScoreCard({ data }: { data: AIProfileData["diversity_score"] }
               <p className="text-2xl font-display tabular-nums" style={{ color }}>
                 {data.score}
               </p>
-              <p className="text-[10px] text-muted-foreground">{data.label}</p>
+              <p className="text-ui-xs text-muted-foreground">{data.label}</p>
             </div>
           </div>
         </div>
@@ -309,7 +309,7 @@ function ProfileHistorySection({ history }: { history: AIProfileSnapshot[] }) {
           const diff = latest.dimensions[key] - prev.dimensions[key]
           return (
             <div key={key} className="text-center">
-              <p className="text-[10px] text-muted-foreground">{dimensionLabels[key]?.label}</p>
+              <p className="text-ui-xs text-muted-foreground">{dimensionLabels[key]?.label}</p>
               <p className={`text-sm font-bold ${diff > 0 ? "text-sage" : diff < 0 ? "text-dusty-rose" : "text-muted-foreground"}`}>
                 {diff > 0 ? "+" : ""}{diff}
               </p>
@@ -329,7 +329,7 @@ function ProfileHistorySection({ history }: { history: AIProfileSnapshot[] }) {
               </p>
               <div className="flex flex-wrap gap-1">
                 {newTopics.map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded-full text-[11px] bg-sage/10 text-sage">{t}</span>
+                  <span key={t} className="px-2 py-0.5 rounded-full text-ui-sm bg-sage/10 text-sage">{t}</span>
                 ))}
               </div>
             </div>
@@ -342,7 +342,7 @@ function ProfileHistorySection({ history }: { history: AIProfileSnapshot[] }) {
               </p>
               <div className="flex flex-wrap gap-1">
                 {droppedTopics.map((t) => (
-                  <span key={t} className="px-2 py-0.5 rounded-full text-[11px] bg-dusty-rose/10 text-dusty-rose">{t}</span>
+                  <span key={t} className="px-2 py-0.5 rounded-full text-ui-sm bg-dusty-rose/10 text-dusty-rose">{t}</span>
                 ))}
               </div>
             </div>
@@ -669,7 +669,7 @@ export function AIProfile() {
                         style={{ height: `${Math.max(height, 4)}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{day}</span>
+                    <span className="text-ui-xs text-muted-foreground">{day}</span>
                   </div>
                 )
               })}

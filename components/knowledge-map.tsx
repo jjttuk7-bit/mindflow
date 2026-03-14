@@ -257,7 +257,7 @@ export function KnowledgeMap() {
       <div className="absolute top-4 left-4 z-10 flex gap-1.5">
         <button
           onClick={() => setFilter(null)}
-          className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+          className={`px-2.5 py-1 rounded-full text-ui-sm font-medium transition-colors ${
             !filter ? "bg-primary text-primary-foreground" : "bg-muted/80 text-muted-foreground hover:bg-muted"
           }`}
         >
@@ -267,7 +267,7 @@ export function KnowledgeMap() {
           <button
             key={type}
             onClick={() => setFilter(filter === type ? null : type)}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-ui-sm font-medium transition-colors ${
               filter === type ? "text-white" : "bg-muted/80 text-muted-foreground hover:bg-muted"
             }`}
             style={filter === type ? { backgroundColor: TYPE_COLORS[type] } : undefined}
@@ -282,7 +282,7 @@ export function KnowledgeMap() {
             placeholder="검색..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 pr-2 py-1 w-32 rounded-full text-[11px] bg-muted/80 text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-primary/30"
+            className="pl-7 pr-2 py-1 w-32 rounded-full text-ui-sm bg-muted/80 text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-primary/30"
           />
         </div>
       </div>
@@ -311,7 +311,7 @@ export function KnowledgeMap() {
 
       {/* Similarity threshold slider */}
       <div className="absolute bottom-12 left-4 z-10 flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground/50">유사도</span>
+        <span className="text-ui-xs text-muted-foreground/50">유사도</span>
         <input
           type="range"
           min={0.3}
@@ -321,11 +321,11 @@ export function KnowledgeMap() {
           onChange={(e) => setThreshold(parseFloat(e.target.value))}
           className="w-24 h-1 accent-primary"
         />
-        <span className="text-[10px] text-muted-foreground/50 tabular-nums">{threshold.toFixed(2)}</span>
+        <span className="text-ui-xs text-muted-foreground/50 tabular-nums">{threshold.toFixed(2)}</span>
       </div>
 
       {/* Stats */}
-      <div className="absolute bottom-4 left-4 z-10 text-[11px] text-muted-foreground/40 space-x-3">
+      <div className="absolute bottom-4 left-4 z-10 text-ui-sm text-muted-foreground/40 space-x-3">
         <span>{visibleNodes.length}개 노드</span>
         <span>{visibleEdges.length}개 연결</span>
       </div>
@@ -451,15 +451,15 @@ export function KnowledgeMap() {
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: TYPE_COLORS[selectedNode.type] }}
             />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/50">
+            <span className="text-ui-xs uppercase tracking-wider text-muted-foreground/50">
               {TYPE_LABELS[selectedNode.type]}
             </span>
-            <span className="text-[10px] text-muted-foreground/30 ml-auto">
+            <span className="text-ui-xs text-muted-foreground/30 ml-auto">
               {new Date(selectedNode.created_at).toLocaleDateString("ko-KR")}
             </span>
           </div>
 
-          <p className="text-[13px] text-foreground/80 leading-relaxed line-clamp-4 mb-2">
+          <p className="text-ui-sm text-foreground/80 leading-relaxed line-clamp-4 mb-2">
             {selectedNode.label}
           </p>
 
@@ -468,7 +468,7 @@ export function KnowledgeMap() {
               {selectedNode.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[9px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground/60"
+                  className="text-ui-2xs px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground/60"
                 >
                   {tag}
                 </span>
@@ -477,12 +477,12 @@ export function KnowledgeMap() {
           )}
 
           {selectedNode.project_id && (
-            <div className="mt-2 text-[10px] text-muted-foreground/40">
+            <div className="mt-2 text-ui-xs text-muted-foreground/40">
               프로젝트: {projects.find((p) => p.id === selectedNode.project_id)?.name || "..."}
             </div>
           )}
 
-          <div className="mt-2 text-[10px] text-muted-foreground/30">
+          <div className="mt-2 text-ui-xs text-muted-foreground/30">
             {connectedTo(selectedNode.id).size}개 연결
           </div>
 
@@ -497,7 +497,7 @@ export function KnowledgeMap() {
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 text-[10px] text-muted-foreground/40">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 text-ui-xs text-muted-foreground/40">
         <span className="flex items-center gap-1">
           <span className="w-6 h-0.5 bg-[#9B7DDB] rounded" /> AI 연결
         </span>

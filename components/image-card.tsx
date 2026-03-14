@@ -104,7 +104,7 @@ export function ImageCard({
         {/* Screenshot type badge + re-analyze button */}
         <div className="flex items-center gap-1.5">
           {screenshot && typeInfo && (
-            <span className={`inline-flex items-center gap-1 text-[10px] tracking-wide px-2 py-0.5 rounded-md font-semibold ${typeInfo.color}`}>
+            <span className={`inline-flex items-center gap-1 text-ui-xs tracking-wide px-2 py-0.5 rounded-md font-semibold ${typeInfo.color}`}>
               {typeInfo.label}
             </span>
           )}
@@ -113,7 +113,7 @@ export function ImageCard({
               onClick={handleReanalyze}
               disabled={reanalyzing}
               title="재분석"
-              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-all"
+              className="inline-flex items-center gap-1 text-ui-xs px-1.5 py-0.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-all"
             >
               <RefreshCw className={`h-3 w-3 ${reanalyzing ? "animate-spin" : ""}`} />
               {reanalyzing ? "분석 중..." : "재분석"}
@@ -136,7 +136,7 @@ export function ImageCard({
         </button>
 
         {caption && (
-          <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground/90 line-clamp-4">
+          <p className="text-ui-base leading-relaxed whitespace-pre-wrap break-words text-foreground/90 line-clamp-4">
             {caption}
           </p>
         )}
@@ -153,7 +153,7 @@ export function ImageCard({
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/10 rounded-md px-2 py-0.5 transition-colors truncate max-w-[240px]"
+                    className="inline-flex items-center gap-1 text-ui-sm text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/10 rounded-md px-2 py-0.5 transition-colors truncate max-w-[240px]"
                   >
                     <ExternalLink className="h-2.5 w-2.5 shrink-0" />
                     {url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40)}
@@ -166,7 +166,7 @@ export function ImageCard({
             {screenshot.todos.length > 0 && (
               <div className="space-y-0.5">
                 {screenshot.todos.map((todo, i) => (
-                  <div key={i} className="flex items-start gap-1.5 text-[11px] text-foreground/70">
+                  <div key={i} className="flex items-start gap-1.5 text-ui-sm text-foreground/70">
                     <CheckSquare className="h-3 w-3 mt-0.5 text-primary/50 shrink-0" />
                     <span>{todo}</span>
                   </div>
@@ -178,19 +178,19 @@ export function ImageCard({
             {(screenshot.dates.length > 0 || screenshot.people.length > 0 || screenshot.key_info.length > 0) && (
               <div className="flex flex-wrap gap-1">
                 {screenshot.dates.map((d, i) => (
-                  <span key={`d${i}`} className="inline-flex items-center gap-1 text-[10px] bg-amber-500/8 text-amber-700 dark:text-amber-400 rounded-md px-1.5 py-0.5">
+                  <span key={`d${i}`} className="inline-flex items-center gap-1 text-ui-xs bg-amber-500/8 text-amber-700 dark:text-amber-400 rounded-md px-1.5 py-0.5">
                     <Clock className="h-2.5 w-2.5" />
                     {d}
                   </span>
                 ))}
                 {screenshot.people.map((p, i) => (
-                  <span key={`p${i}`} className="inline-flex items-center gap-1 text-[10px] bg-violet-500/8 text-violet-700 dark:text-violet-400 rounded-md px-1.5 py-0.5">
+                  <span key={`p${i}`} className="inline-flex items-center gap-1 text-ui-xs bg-violet-500/8 text-violet-700 dark:text-violet-400 rounded-md px-1.5 py-0.5">
                     <User className="h-2.5 w-2.5" />
                     {p}
                   </span>
                 ))}
                 {screenshot.key_info.map((k, i) => (
-                  <span key={`k${i}`} className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/8 text-emerald-700 dark:text-emerald-400 rounded-md px-1.5 py-0.5">
+                  <span key={`k${i}`} className="inline-flex items-center gap-1 text-ui-xs bg-emerald-500/8 text-emerald-700 dark:text-emerald-400 rounded-md px-1.5 py-0.5">
                     <Info className="h-2.5 w-2.5" />
                     {k}
                   </span>

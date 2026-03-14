@@ -229,13 +229,13 @@ export function VoiceCard({ fileUrl, duration, transcript, itemId, onTranscriptU
         <button
           onClick={cycleSpeed}
           title="재생 속도"
-          className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-mono text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors tabular-nums"
+          className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-ui-xs font-mono text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors tabular-nums"
         >
           <Gauge className="h-3 w-3" />
           {speed}x
         </button>
 
-        <span className="text-[11px] font-mono text-muted-foreground/50 tabular-nums shrink-0">
+        <span className="text-ui-sm font-mono text-muted-foreground/50 tabular-nums shrink-0">
           {formatTime(isPlaying ? currentTime : duration)}
         </span>
       </div>
@@ -269,11 +269,11 @@ export function VoiceCard({ fileUrl, duration, transcript, itemId, onTranscriptU
                   <X className="h-3 w-3" />
                   취소
                 </button>
-                <span className="text-[10px] text-muted-foreground/40 ml-auto">Ctrl+Enter로 저장</span>
+                <span className="text-ui-xs text-muted-foreground/40 ml-auto">Ctrl+Enter로 저장</span>
               </div>
             </div>
           ) : (
-            <p className="text-[15px] leading-relaxed whitespace-pre-wrap text-foreground/90">
+            <p className="text-ui-base leading-relaxed whitespace-pre-wrap text-foreground/90">
               {transcript}
             </p>
           )}
@@ -288,7 +288,7 @@ export function VoiceCard({ fileUrl, duration, transcript, itemId, onTranscriptU
                 <>
                   <button
                     onClick={() => { setEditText(transcript || ""); setEditingTranscript(true) }}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-ui-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
                   >
                     <Pencil className="h-3 w-3" />
                     수정
@@ -296,7 +296,7 @@ export function VoiceCard({ fileUrl, duration, transcript, itemId, onTranscriptU
                   <button
                     onClick={handleRetranscribe}
                     disabled={retranscribing}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-ui-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
                   >
                     <RefreshCw className={`h-3 w-3 ${retranscribing ? "animate-spin" : ""}`} />
                     {retranscribing ? "전사 중..." : "재전사"}
@@ -324,7 +324,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-ui-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
     >
       {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
       {copied ? "복사됨" : "복사"}
@@ -349,7 +349,7 @@ function ShareButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-ui-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
     >
       <Share2 className="h-3 w-3" />
       공유
@@ -373,7 +373,7 @@ function DownloadButton({ text, duration }: { text: string; duration: number }) 
   return (
     <button
       onClick={handleDownload}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-ui-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 transition-colors"
     >
       <Download className="h-3 w-3" />
       다운로드

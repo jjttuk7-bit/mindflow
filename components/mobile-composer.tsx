@@ -536,7 +536,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
               </div>
             ) : previewUrl ? (
               <div className="relative">
-                <img src={previewUrl} alt="Preview" className="w-full max-h-64 object-contain rounded-xl bg-muted/30" />
+                <img src={previewUrl} alt="Preview" className="w-full max-h-48 md:max-h-64 object-contain rounded-xl bg-muted/30" />
                 <button
                   onClick={clearFile}
                   className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-black/50 text-white"

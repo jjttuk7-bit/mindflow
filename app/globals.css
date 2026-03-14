@@ -66,6 +66,12 @@
   --vh: 1vh;
   --keyboard-height: 0px;
   --radius: 0.75rem;
+  /* Typography scale */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
   --background: oklch(0.98 0.006 80);
   --foreground: oklch(0.22 0.025 55);
   --card: oklch(0.995 0.003 80);
@@ -197,6 +203,21 @@
   }
   .safe-area-top {
     padding-top: env(safe-area-inset-top);
+  }
+  .text-ui-2xs {
+    font-size: var(--text-2xs);
+  }
+  .text-ui-xs {
+    font-size: var(--text-xs);
+  }
+  .text-ui-sm {
+    font-size: var(--text-sm);
+  }
+  .text-ui-base {
+    font-size: var(--text-base);
+  }
+  .text-ui-lg {
+    font-size: var(--text-lg);
   }
 }
 

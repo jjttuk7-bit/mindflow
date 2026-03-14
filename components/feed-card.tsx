@@ -769,26 +769,26 @@ export function FeedCard({
         </div>
 
         {/* Action buttons */}
-        <div className={`shrink-0 flex flex-col gap-0.5 transition-all duration-200 ${
+        <div className={`shrink-0 flex flex-col gap-1 transition-all duration-200 ${
           hovered ? "opacity-100" : "opacity-0 md:opacity-0"
         } max-md:opacity-100`}>
           {showTrash ? (
             <>
               <button
                 onClick={() => onRestore?.(item.id)}
-                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
                 title="복원"
                 aria-label="복원"
               >
-                <Undo2 className="h-3 w-3" />
+                <Undo2 className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
                 title="영구 삭제"
                 aria-label="영구 삭제"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </>
           ) : (
@@ -796,16 +796,16 @@ export function FeedCard({
               {item.type !== "link" && !editing && (
                 <button
                   onClick={() => { setEditContent(item.content); setEditing(true) }}
-                  className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
+                  className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-primary hover:bg-primary/8 transition-all duration-200"
                   title="수정"
                   aria-label="Edit item"
                 >
-                  <Pencil className="h-3 w-3" />
+                  <Pencil className="h-4 w-4" />
                 </button>
               )}
               <button
                 onClick={handlePin}
-                className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                className={`h-9 w-9 flex items-center justify-center rounded-lg transition-all duration-200 ${
                   item.is_pinned
                     ? "text-primary bg-primary/8"
                     : "text-muted-foreground/40 hover:text-primary hover:bg-primary/8"
@@ -813,13 +813,13 @@ export function FeedCard({
                 title={item.is_pinned ? "고정 해제" : "고정"}
                 aria-label={item.is_pinned ? "Unpin item" : "Pin item"}
               >
-                <Pin className={`h-3 w-3 ${item.is_pinned ? "fill-primary" : ""}`} />
+                <Pin className={`h-4 w-4 ${item.is_pinned ? "fill-primary" : ""}`} />
               </button>
               <ShareButton item={item} />
               <DropdownMenu open={showProjectMenu} onOpenChange={setShowProjectMenu}>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`h-7 w-7 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                    className={`h-9 w-9 flex items-center justify-center rounded-lg transition-all duration-200 ${
                       item.project_id
                         ? "text-sage bg-sage/10"
                         : "text-muted-foreground/40 hover:text-sage hover:bg-sage/8"
@@ -827,7 +827,7 @@ export function FeedCard({
                     title="프로젝트 이동"
                     aria-label="Move to project"
                   >
-                    <FolderOpen className="h-3 w-3" />
+                    <FolderOpen className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44 !max-h-60">
@@ -865,23 +865,23 @@ export function FeedCard({
               </DropdownMenu>
               <button
                 onClick={handleArchive}
-                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"
+                className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-amber-accent hover:bg-amber-accent/8 transition-all duration-200"
                 title={item.is_archived ? "보관 해제" : "보관"}
                 aria-label={item.is_archived ? "Restore item" : "Archive item"}
               >
                 {item.is_archived ? (
-                  <ArchiveRestore className="h-3 w-3" />
+                  <ArchiveRestore className="h-4 w-4" />
                 ) : (
-                  <Archive className="h-3 w-3" />
+                  <Archive className="h-4 w-4" />
                 )}
               </button>
               <button
                 onClick={() => onDelete(item.id)}
-                className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
+                className="h-9 w-9 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/8 transition-all duration-200"
                 title="삭제"
                 aria-label="Delete item"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </>
           )}

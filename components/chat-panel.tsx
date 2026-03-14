@@ -21,6 +21,8 @@ import {
   Trash2,
 } from "lucide-react"
 import { ChatExportMenu } from "@/components/chat-export-menu"
+import { ChatSessionList } from "@/components/chat/chat-session-list"
+import { ChatInputBar } from "@/components/chat/chat-input-bar"
 
 interface ChatSource {
   id: string
@@ -521,93 +523,7 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
     )
   }
 
-  // Shared session list rendering
-  function renderSessionList() {
-    if (sessions.length === 0) return null
-    return (
-      <div className="border-b border-border/20">
-        <button
-          onClick={() => setSessionsExpanded(!sessionsExpanded)}
-          className="w-full flex items-center justify-between px-5 py-2.5 text-xs font-medium text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-        >
-          <span className="tracking-wide uppercase">
-            최근 대화 ({sessions.length})
-          </span>
-          <ChevronDown
-            className={`h-3.5 w-3.5 transition-transform duration-200 ${
-              sessionsExpanded ? "" : "-rotate-90"
-            }`}
-          />
-        </button>
-        {sessionsExpanded && (
-          <div className="px-3 pb-2 max-h-48 overflow-y-auto">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className={`group flex items-center gap-1 rounded-md transition-colors duration-150 ${
-                  currentSessionId === session.id
-                    ? "bg-primary/10"
-                    : "hover:bg-accent"
-                }`}
-              >
-                <button
-                  onClick={() => loadSession(session.id)}
-                  className={`flex-1 text-left px-3 py-2 text-sm min-w-0 ${
-                    currentSessionId === session.id
-                      ? "text-primary"
-                      : "text-foreground/70"
-                  }`}
-                >
-                  <p className="truncate">{session.title}</p>
-                  <p className="text-ui-xs text-muted-foreground/50 mt-0.5">
-                    {new Date(session.created_at).toLocaleDateString()}
-                  </p>
-                </button>
-                <button
-                  onClick={(e) => handleDeleteSession(session.id, e)}
-                  className="h-6 w-6 mr-2 flex items-center justify-center rounded text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-all md:opacity-0 md:group-hover:opacity-100 shrink-0"
-                  aria-label="대화 삭제"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Shared input bar rendering
-  function renderInputBar() {
-    return (
-      <footer className="px-4 py-3 border-t border-border/40">
-        <div className="flex items-center gap-2 bg-muted/50 border border-border/60 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary/30 focus-within:border-primary/30 transition-all">
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={fullScreen ? () => setTimeout(() => inputRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 300) : undefined}
-            placeholder="무엇이든 물어보세요..."
-            disabled={loading}
-            className="flex-1 bg-transparent text-[16px] md:text-sm py-1.5 focus:outline-none placeholder:text-muted-foreground/40 placeholder:italic disabled:opacity-50"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || loading}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-primary hover:bg-primary/10 transition-all duration-200 disabled:opacity-30 disabled:hover:bg-transparent"
-            aria-label="Send message"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-        <p className="text-ui-xs text-muted-foreground/30 text-center mt-2">
-          저장된 항목을 기반으로 AI가 답변합니다
-        </p>
-      </footer>
-    )
-  }
+  // Session list and input bar extracted to components
 
   const currentSession = sessions.find((s) => s.id === currentSessionId) ?? null
 
@@ -632,7 +548,14 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         </header>
 
-        {renderSessionList()}
+                <ChatSessionList
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          sessionsExpanded={sessionsExpanded}
+          onToggleExpanded={() => setSessionsExpanded(!sessionsExpanded)}
+          onLoadSession={loadSession}
+          onDeleteSession={handleDeleteSession}
+        />
 
         <div className="flex-1 min-h-0 overflow-y-auto" ref={scrollContainerRef}>
           <div className="px-4 py-4 space-y-4">
@@ -640,7 +563,15 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         </div>
 
-        {renderInputBar()}
+                <ChatInputBar
+          ref={inputRef}
+          input={input}
+          loading={loading}
+          fullScreen={fullScreen}
+          onInputChange={setInput}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+        />
       </div>
     )
   }
@@ -688,7 +619,14 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         </header>
 
-        {renderSessionList()}
+                <ChatSessionList
+          sessions={sessions}
+          currentSessionId={currentSessionId}
+          sessionsExpanded={sessionsExpanded}
+          onToggleExpanded={() => setSessionsExpanded(!sessionsExpanded)}
+          onLoadSession={loadSession}
+          onDeleteSession={handleDeleteSession}
+        />
 
         {/* Messages */}
         <div className="flex-1 min-h-0 overflow-y-auto" ref={scrollContainerRef}>
@@ -697,7 +635,15 @@ export function ChatPanel({ fullScreen }: { fullScreen?: boolean } = {}) {
           </div>
         </div>
 
-        {renderInputBar()}
+                <ChatInputBar
+          ref={inputRef}
+          input={input}
+          loading={loading}
+          fullScreen={fullScreen}
+          onInputChange={setInput}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+        />
       </div>
     </>
   )

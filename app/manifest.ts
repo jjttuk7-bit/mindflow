@@ -76,5 +76,10 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     },
     id: "/",
+    lang: "ko",
+    dir: "ltr",
+    launch_handler: {
+      client_mode: "navigate-existing",
+    },
   }
 }

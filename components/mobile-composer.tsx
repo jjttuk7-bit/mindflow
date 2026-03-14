@@ -476,7 +476,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
           <button
             key={btn.type}
             onClick={() => { setActiveType(btn.type); clearFile() }}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors border-b-2 ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-colors border-b-2 ${
               activeType === btn.type
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground/60"

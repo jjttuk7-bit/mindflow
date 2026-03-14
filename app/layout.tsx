@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { SWRegister } from "@/components/sw-register";
 import { PWAInstallPrompt } from "@/components/pwa-install";
+import { FontSizeProvider } from "@/components/font-size-provider";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -68,12 +69,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning data-font-size="normal">
       <body
         className={`${dmSans.variable} ${dmSerif.variable} font-[family-name:var(--font-body)] antialiased`}
       >
         <ThemeProvider>
-          {children}
+          <FontSizeProvider>
+            {children}
+          </FontSizeProvider>
           <Toaster position="top-center" richColors closeButton />
           <SWRegister />
           <PWAInstallPrompt />

@@ -41,6 +41,7 @@ import Link from "next/link"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { useFontSize, FontSize } from "@/components/font-size-provider"
+import { urlBase64ToUint8Array } from "@/lib/utils"
 
 const PRO_FEATURES = [
   "무제한 Telegram 캡처",
@@ -170,7 +171,7 @@ function SettingsContent() {
         }
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
         })
         const json = sub.toJSON()
         await fetch("/api/push/subscribe", {

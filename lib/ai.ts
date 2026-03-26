@@ -444,7 +444,7 @@ export async function describeImage(base64: string, mimeType: string): Promise<s
     messages: [{
       role: "user",
       content: [
-        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}`, detail: "low" } },
+        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}`, detail: "high" } },
         { type: "text", text: `이미지의 캡션을 생성하세요.
 
 최우선 규칙: 이미지에 텍스트(손글씨, 인쇄, 숫자 등)가 있으면 해석하지 말고 그대로 옮겨 적으세요.

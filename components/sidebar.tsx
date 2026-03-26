@@ -29,6 +29,7 @@ import {
   Pin,
   CalendarDays,
   MessageSquare,
+  Tag,
 } from "lucide-react"
 import { ExportMenu } from "@/components/export-menu"
 import { DotLineLogo } from "@/components/dotline-logo"
@@ -551,6 +552,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
             Insights
+          </a>
+          <a
+            href="/tags"
+            onClick={onClose}
+            className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
+          >
+            <Tag className="h-4 w-4 text-muted-foreground/50" />
+            Tags
           </a>
           <a
             href="/knowledge-map"

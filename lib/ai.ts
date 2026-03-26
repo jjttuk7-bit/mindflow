@@ -509,7 +509,7 @@ export async function analyzeScreenshot(base64: string, mimeType: string): Promi
     messages: [{
       role: "user",
       content: [
-        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}` } },
+        { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64}`, detail: "high" } },
         { type: "text", text: `이 이미지를 분석하세요. 아래 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "is_screenshot": true 또는 false (스크린샷/캡처 여부),

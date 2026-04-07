@@ -183,7 +183,7 @@
   }
 }
 
-/* Warm Editorial — custom utilities */
+/* Midori Journal — custom utilities */
 @layer utilities {
   .font-display {
     font-family: var(--font-display), Georgia, "Times New Roman", serif;

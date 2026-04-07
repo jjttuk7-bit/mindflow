@@ -142,36 +142,36 @@
 /* OLED Black mode — pure black for AMOLED screens */
 .black {
   --background: oklch(0 0 0);
-  --foreground: oklch(0.92 0.01 75);
-  --card: oklch(0.08 0.008 55);
-  --card-foreground: oklch(0.92 0.01 75);
-  --popover: oklch(0.08 0.008 55);
-  --popover-foreground: oklch(0.92 0.01 75);
-  --primary: oklch(0.78 0.12 72);
+  --foreground: oklch(0.852 0.022 148);
+  --card: oklch(0.072 0.012 155);
+  --card-foreground: oklch(0.852 0.022 148);
+  --popover: oklch(0.072 0.012 155);
+  --popover-foreground: oklch(0.852 0.022 148);
+  --primary: oklch(0.532 0.095 162);
   --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.14 0.01 55);
-  --secondary-foreground: oklch(0.90 0.01 75);
-  --muted: oklch(0.12 0.008 55);
-  --muted-foreground: oklch(0.65 0.015 65);
-  --accent: oklch(0.14 0.01 55);
-  --accent-foreground: oklch(0.90 0.01 75);
+  --secondary: oklch(0.130 0.015 155);
+  --secondary-foreground: oklch(0.852 0.022 148);
+  --muted: oklch(0.105 0.012 155);
+  --muted-foreground: oklch(0.545 0.028 155);
+  --accent: oklch(0.130 0.015 155);
+  --accent-foreground: oklch(0.852 0.022 148);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 6%);
   --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.78 0.12 72);
-  --chart-1: oklch(0.78 0.12 72);
-  --chart-2: oklch(0.70 0.04 155);
-  --chart-3: oklch(0.72 0.06 15);
-  --chart-4: oklch(0.62 0.14 40);
-  --chart-5: oklch(0.58 0.10 48);
-  --sidebar: oklch(0.04 0.005 55);
-  --sidebar-foreground: oklch(0.92 0.01 75);
-  --sidebar-primary: oklch(0.78 0.12 72);
+  --ring: oklch(0.532 0.095 162);
+  --chart-1: oklch(0.580 0.075 255);
+  --chart-2: oklch(0.532 0.095 162);
+  --chart-3: oklch(0.575 0.090 48);
+  --chart-4: oklch(0.570 0.070 65);
+  --chart-5: oklch(0.532 0.095 162);
+  --sidebar: oklch(0.040 0.008 155);
+  --sidebar-foreground: oklch(0.852 0.022 148);
+  --sidebar-primary: oklch(0.532 0.095 162);
   --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.14 0.01 55);
-  --sidebar-accent-foreground: oklch(0.90 0.01 75);
+  --sidebar-accent: oklch(0.130 0.015 155);
+  --sidebar-accent-foreground: oklch(0.852 0.022 148);
   --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.78 0.12 72);
+  --sidebar-ring: oklch(0.532 0.095 162);
 }
 
 @layer base {

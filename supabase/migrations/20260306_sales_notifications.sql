@@ -33,7 +33,11 @@ CREATE INDEX idx_notification_rules_active ON notification_rules(is_active) WHER
 ALTER TABLE notification_rules ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own notification_rules" ON notification_rules
   FOR ALL USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND (
+    customer_id IS NULL OR EXISTS (
+      SELECT 1 FROM customers WHERE customers.id = customer_id AND customers.user_id = auth.uid()
+    )
+  ));
 
 -- 2. Alerts (발생한 알림)
 CREATE TABLE IF NOT EXISTS sales_alerts (
@@ -58,4 +62,8 @@ CREATE INDEX idx_sales_alerts_created_at ON sales_alerts(created_at DESC);
 ALTER TABLE sales_alerts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own sales_alerts" ON sales_alerts
   FOR ALL USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND (
+    customer_id IS NULL OR EXISTS (
+      SELECT 1 FROM customers WHERE customers.id = customer_id AND customers.user_id = auth.uid()
+    )
+  ));

@@ -55,7 +55,9 @@ CREATE INDEX idx_deals_stage ON deals(stage);
 ALTER TABLE deals ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own deals" ON deals
   FOR ALL USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND EXISTS (
+    SELECT 1 FROM customers WHERE customers.id = customer_id AND customers.user_id = auth.uid()
+  ));
 
 -- 3. Activities (활동 기록 / Quick Capture)
 CREATE TABLE IF NOT EXISTS activities (
@@ -81,7 +83,11 @@ CREATE INDEX idx_activities_occurred_at ON activities(occurred_at DESC);
 ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own activities" ON activities
   FOR ALL USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND (
+    customer_id IS NULL OR EXISTS (
+      SELECT 1 FROM customers WHERE customers.id = customer_id AND customers.user_id = auth.uid()
+    )
+  ));
 
 -- 4. Follow-ups (팔로업 알림)
 CREATE TABLE IF NOT EXISTS follow_ups (
@@ -108,7 +114,9 @@ CREATE INDEX idx_follow_ups_status ON follow_ups(status);
 ALTER TABLE follow_ups ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own follow_ups" ON follow_ups
   FOR ALL USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (auth.uid() = user_id AND EXISTS (
+    SELECT 1 FROM customers WHERE customers.id = customer_id AND customers.user_id = auth.uid()
+  ));
 
 -- 5. Customer-Item links (기존 DotLine items와 고객 연결)
 CREATE TABLE IF NOT EXISTS customer_items (
@@ -121,6 +129,11 @@ ALTER TABLE customer_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage own customer items" ON customer_items
   FOR ALL USING (
     EXISTS (SELECT 1 FROM customers WHERE customers.id = customer_items.customer_id AND customers.user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM items WHERE items.id = customer_items.item_id AND items.user_id = auth.uid())
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM customers WHERE customers.id = customer_items.customer_id AND customers.user_id = auth.uid())
+    AND EXISTS (SELECT 1 FROM items WHERE items.id = customer_items.item_id AND items.user_id = auth.uid())
   );
 
 -- 6. Auto-update updated_at trigger

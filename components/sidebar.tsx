@@ -456,11 +456,11 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         {/* Tags */}
         <div className="px-4">
           <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Tags
+            태그
           </p>
           {tagCounts.length === 0 && (
             <p className="text-xs text-muted-foreground/50 px-2 italic">
-              Tags will appear here as AI organizes your notes
+              AI가 노트를 정리하면 태그가 표시됩니다
             </p>
           )}
           <div className="space-y-0.5">
@@ -533,10 +533,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <span className="flex items-center gap-2.5">
               <ListTodo className={`h-4 w-4 ${sidebarView === "todos" ? "text-primary" : "text-muted-foreground/50"}`} />
-              Todo
+              할 일
             </span>
             {pendingTodoCount > 0 && (
-              <span className={`text-ui-sm tabular-nums px-1.5 py-0.5 rounded-full ${
+              <span className={`text-ui-sm tabular-nums px-2 py-0.5 rounded-full min-w-[1.5rem] text-center flex-shrink-0 ${
                 sidebarView === "todos"
                   ? "bg-primary/20 text-primary"
                   : "bg-muted text-muted-foreground/60"
@@ -551,7 +551,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <BarChart3 className="h-4 w-4 text-muted-foreground/50" />
-            Insights
+            인사이트
           </a>
           <a
             href="/tags"
@@ -559,7 +559,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <Tag className="h-4 w-4 text-muted-foreground/50" />
-            Tags
+            태그
           </a>
           <a
             href="/knowledge-map"
@@ -567,7 +567,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <GitBranch className="h-4 w-4 text-muted-foreground/50" />
-            Knowledge Map
+            지식 맵
           </a>
           <a
             href="/profile/ai"
@@ -575,14 +575,14 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <DotLineLogo className="h-4 w-4 text-muted-foreground/50" />
-            AI Profile
+            AI 프로필
           </a>
           <button
             onClick={() => { setChatOpen(true); onClose() }}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-all duration-200"
           >
             <MessageSquare className="h-4 w-4 text-muted-foreground/50" />
-            AI Chat
+            AI 챗
           </button>
           <SidebarFeedbackButton onClose={onClose} />
           <button
@@ -601,7 +601,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           >
             <span className="flex items-center gap-2.5">
               <Archive className={`h-4 w-4 ${showArchived ? "text-primary" : "text-muted-foreground/50"}`} />
-              Archive
+              보관함
             </span>
             {archivedCount > 0 && (
               <span className={`text-ui-sm tabular-nums ${

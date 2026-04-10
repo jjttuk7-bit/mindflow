@@ -8,7 +8,7 @@ const tabs = [
   { id: "projects" as const, icon: FolderOpen, label: "Projects" },
   { id: "todos" as const, icon: ListTodo, label: "Todo" },
   { id: "chat" as const, icon: MessageSquare, label: "AI Chat" },
-  { id: "more" as const, icon: MoreHorizontal, label: "More" },
+  { id: "more" as const, icon: MoreHorizontal, label: "더보기" },
 ]
 
 export function BottomNav() {

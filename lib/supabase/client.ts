@@ -1,10 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
-type Client = ReturnType<typeof createBrowserClient>
+let _client: SupabaseClient | null = null
 
-let _client: Client | null = null
-
-export function createClient(): Client {
+export function createClient(): SupabaseClient {
   // During SSR (next build static generation), NEXT_PUBLIC_ vars are not
   // injected into the Turbopack SSR bundle. Return a safe stub so prerender
   // never calls createBrowserClient with undefined values.
@@ -19,7 +18,7 @@ export function createClient(): Client {
         signInWithOAuth: async () => ({ data: { provider: "", url: "" }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
       },
-    } as unknown as Client
+    } as unknown as SupabaseClient
   }
 
   if (!_client) {

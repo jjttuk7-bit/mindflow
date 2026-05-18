@@ -11,7 +11,7 @@ export function UserMenu() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then((res) => {
+    supabase.auth.getUser().then((res: { data: { user: { email?: string | null } | null } }) => {
       setEmail(res.data.user?.email ?? null)
     })
   }, [])

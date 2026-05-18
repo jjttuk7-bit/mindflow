@@ -254,7 +254,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   }
 
   return (
-    <aside className={`w-64 border-r border-border/60 bg-sidebar flex flex-col h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full pointer-events-none"} md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none md:pointer-events-auto`}>
+    <aside className={`w-64 border-r border-black/15 dark:border-white/20 bg-sidebar flex flex-col h-screen fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full pointer-events-none"} md:relative md:inset-auto md:z-auto md:translate-x-0 md:transition-none md:pointer-events-auto`}>
       {/* Brand - click to reset all filters and go to main feed */}
       <button
         onClick={() => {
@@ -277,7 +277,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </p>
       </button>
 
-      <div className="h-px bg-black/15 dark:bg-white/15 mx-4" />
+      <div className="h-px bg-black/15 dark:bg-white/25 mx-4" />
 
       <ScrollArea className="flex-1 py-5">
         {/* Projects */}
@@ -378,7 +378,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           )}
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/15 mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
 
         {/* Smart Folders */}
         <div className="px-4">
@@ -451,7 +451,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/15 mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
 
         {/* Tags */}
         <div className="px-4">
@@ -492,7 +492,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/15 mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
 
         {/* Type Filters */}
         <div className="px-4">
@@ -519,7 +519,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/15 mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
 
         {/* Navigation */}
         <div className="px-4 space-y-0.5">
@@ -635,7 +635,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       </ScrollArea>
 
       {/* Footer */}
-      <div className="px-4 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t border-border/40 space-y-3">
+      <div className="px-4 pt-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] border-t border-black/15 dark:border-white/20 space-y-3">
         <UserMenu />
         <div className="flex items-center gap-2 px-1">
           <a href="/terms" className="text-ui-xs text-muted-foreground/35 hover:text-muted-foreground transition-colors">이용약관</a>

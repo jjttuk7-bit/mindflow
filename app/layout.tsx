@@ -32,10 +32,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon-192", sizes: "192x192", type: "image/png" },
-      { url: "/icon", sizes: "512x512", type: "image/png" },
+      { url: "/icon-192.jpg", sizes: "192x192", type: "image/jpeg" },
+      { url: "/icon-512.jpg", sizes: "512x512", type: "image/jpeg" },
     ],
-    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+    // apple-icon은 app/apple-icon.jpg가 Next.js 메타데이터 시스템으로 자동 처리됨
   },
   openGraph: {
     type: "website",

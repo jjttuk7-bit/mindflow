@@ -1,4 +1,4 @@
-const CACHE_NAME = "dotline-v2"
+const CACHE_NAME = "dotline-v3"
 const STATIC_ASSETS = ["/", "/login"]
 
 self.addEventListener("install", (event) => {
@@ -89,7 +89,7 @@ self.addEventListener("push", (event) => {
   const title = data.title || "DotLine"
   const options = {
     body: data.body || "",
-    icon: "/icon-192",
+    icon: "/icon-192.jpg",
     badge: "/notification-badge",
     data: { url: data.url || "/" },
     tag: data.tag || "dotline",

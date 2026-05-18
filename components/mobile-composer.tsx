@@ -539,7 +539,7 @@ export function MobileComposer({ onSaved }: { onSaved?: () => void }) {
                 <img src={previewUrl} alt="Preview" className="w-full max-h-48 md:max-h-64 object-contain rounded-xl bg-muted/30" />
                 <button
                   onClick={clearFile}
-                  className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-black/50 text-white"
+                  className="absolute top-2 right-2 h-8 w-8 flex items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/15 backdrop-blur-sm"
                 >
                   <X className="h-4 w-4" />
                 </button>

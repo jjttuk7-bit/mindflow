@@ -106,7 +106,7 @@ export function ImageInput({
       {selectedFile && previewUrl && (
         <div className="relative">
           <img src={previewUrl} alt="Preview" className="w-full max-h-48 object-cover rounded-lg" />
-          <button onClick={onClearFile} className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
+          <button onClick={onClearFile} className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-full bg-black/60 text-white ring-1 ring-white/15 hover:bg-black/80 transition-colors backdrop-blur-sm">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>

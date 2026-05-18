@@ -17,11 +17,11 @@ type Customer = {
 }
 
 const GRADES = [
-  { value: "S", label: "S", desc: "최우선 고객", color: "bg-amber-500 text-white" },
-  { value: "A", label: "A", desc: "주요 고객", color: "bg-blue-500 text-white" },
-  { value: "B", label: "B", desc: "일반 고객", color: "bg-emerald-500 text-white" },
-  { value: "C", label: "C", desc: "잠재 고객", color: "bg-gray-400 text-white" },
-  { value: "D", label: "D", desc: "비활성", color: "bg-gray-300 text-gray-600" },
+  { value: "S", label: "S", desc: "최우선 고객", color: "bg-amber-500 text-white dark:bg-amber-600" },
+  { value: "A", label: "A", desc: "주요 고객", color: "bg-blue-500 text-white dark:bg-blue-600" },
+  { value: "B", label: "B", desc: "일반 고객", color: "bg-emerald-500 text-white dark:bg-emerald-600" },
+  { value: "C", label: "C", desc: "잠재 고객", color: "bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-50" },
+  { value: "D", label: "D", desc: "비활성", color: "bg-gray-300 text-gray-600 dark:bg-gray-700 dark:text-gray-300" },
 ]
 
 const SOURCES = [

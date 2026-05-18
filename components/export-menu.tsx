@@ -148,6 +148,7 @@ async function itemsToDocx(items: ReturnType<typeof useStore.getState>["items"])
 }
 
 async function itemsToPdf(items: ReturnType<typeof useStore.getState>["items"]): Promise<Blob> {
+  // PDF는 인쇄/공유용이므로 테마와 무관하게 라이트 톤 고정 (인쇄 시 잉크 절약 + 호환성)
   const html2pdf = (await import("html2pdf.js")).default
 
   const cardsHtml = items

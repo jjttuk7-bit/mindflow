@@ -66,11 +66,11 @@ type Customer = {
 }
 
 const GRADE_COLORS: Record<string, string> = {
-  S: "bg-amber-500 text-white",
-  A: "bg-blue-500 text-white",
-  B: "bg-emerald-500 text-white",
-  C: "bg-gray-400 text-white",
-  D: "bg-gray-300 text-gray-600",
+  S: "bg-amber-500 text-white dark:bg-amber-600",
+  A: "bg-blue-500 text-white dark:bg-blue-600",
+  B: "bg-emerald-500 text-white dark:bg-emerald-600",
+  C: "bg-gray-400 text-white dark:bg-gray-600 dark:text-gray-50",
+  D: "bg-gray-300 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
 }
 
 const ACTIVITY_ICONS: Record<string, typeof Phone> = {

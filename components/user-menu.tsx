@@ -11,10 +11,10 @@ export function UserMenu() {
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setEmail(user?.email ?? null)
+    supabase.auth.getUser().then((res) => {
+      setEmail(res.data.user?.email ?? null)
     })
-  }, [supabase.auth])
+  }, [])
 
   async function handleSignOut() {
     setLoading(true)

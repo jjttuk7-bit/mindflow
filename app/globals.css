@@ -106,72 +106,72 @@
 }
 
 .dark {
-  --background: oklch(0.120 0.020 155);
-  --foreground: oklch(0.852 0.022 148);
-  --card: oklch(0.168 0.020 152);
-  --card-foreground: oklch(0.852 0.022 148);
-  --popover: oklch(0.168 0.020 152);
-  --popover-foreground: oklch(0.852 0.022 148);
-  --primary: oklch(0.532 0.095 162);
-  --primary-foreground: oklch(0.120 0.020 155);
-  --secondary: oklch(0.220 0.022 152);
-  --secondary-foreground: oklch(0.852 0.022 148);
-  --muted: oklch(0.168 0.020 152);
-  --muted-foreground: oklch(0.545 0.028 155);
-  --accent: oklch(0.220 0.022 152);
-  --accent-foreground: oklch(0.852 0.022 148);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.532 0.095 162);
-  --chart-1: oklch(0.580 0.075 255);
-  --chart-2: oklch(0.532 0.095 162);
-  --chart-3: oklch(0.575 0.090 48);
-  --chart-4: oklch(0.570 0.070 65);
-  --chart-5: oklch(0.532 0.095 162);
-  --sidebar: oklch(0.140 0.018 155);
-  --sidebar-foreground: oklch(0.852 0.022 148);
-  --sidebar-primary: oklch(0.532 0.095 162);
-  --sidebar-primary-foreground: oklch(0.120 0.020 155);
-  --sidebar-accent: oklch(0.220 0.022 152);
-  --sidebar-accent-foreground: oklch(0.852 0.022 148);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.532 0.095 162);
+  --background: oklch(0.145 0.018 155);
+  --foreground: oklch(0.955 0.010 148);
+  --card: oklch(0.205 0.020 152);
+  --card-foreground: oklch(0.955 0.010 148);
+  --popover: oklch(0.205 0.020 152);
+  --popover-foreground: oklch(0.955 0.010 148);
+  --primary: oklch(0.720 0.115 162);
+  --primary-foreground: oklch(0.145 0.018 155);
+  --secondary: oklch(0.265 0.022 152);
+  --secondary-foreground: oklch(0.955 0.010 148);
+  --muted: oklch(0.205 0.020 152);
+  --muted-foreground: oklch(0.760 0.020 152);
+  --accent: oklch(0.265 0.022 152);
+  --accent-foreground: oklch(0.955 0.010 148);
+  --destructive: oklch(0.755 0.180 22.216);
+  --border: oklch(1 0 0 / 16%);
+  --input: oklch(1 0 0 / 22%);
+  --ring: oklch(0.720 0.115 162);
+  --chart-1: oklch(0.720 0.090 255);
+  --chart-2: oklch(0.720 0.115 162);
+  --chart-3: oklch(0.730 0.110 48);
+  --chart-4: oklch(0.715 0.085 65);
+  --chart-5: oklch(0.720 0.115 162);
+  --sidebar: oklch(0.170 0.016 155);
+  --sidebar-foreground: oklch(0.955 0.010 148);
+  --sidebar-primary: oklch(0.720 0.115 162);
+  --sidebar-primary-foreground: oklch(0.145 0.018 155);
+  --sidebar-accent: oklch(0.265 0.022 152);
+  --sidebar-accent-foreground: oklch(0.955 0.010 148);
+  --sidebar-border: oklch(1 0 0 / 14%);
+  --sidebar-ring: oklch(0.720 0.115 162);
 }
 
 /* OLED Black mode — pure black for AMOLED screens */
 .black {
   --background: oklch(0 0 0);
-  --foreground: oklch(0.852 0.022 148);
-  --card: oklch(0.072 0.012 155);
-  --card-foreground: oklch(0.852 0.022 148);
-  --popover: oklch(0.072 0.012 155);
-  --popover-foreground: oklch(0.852 0.022 148);
-  --primary: oklch(0.532 0.095 162);
+  --foreground: oklch(0.955 0.010 148);
+  --card: oklch(0.115 0.012 155);
+  --card-foreground: oklch(0.955 0.010 148);
+  --popover: oklch(0.115 0.012 155);
+  --popover-foreground: oklch(0.955 0.010 148);
+  --primary: oklch(0.720 0.115 162);
   --primary-foreground: oklch(0 0 0);
-  --secondary: oklch(0.130 0.015 155);
-  --secondary-foreground: oklch(0.852 0.022 148);
-  --muted: oklch(0.105 0.012 155);
-  --muted-foreground: oklch(0.545 0.028 155);
-  --accent: oklch(0.130 0.015 155);
-  --accent-foreground: oklch(0.852 0.022 148);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 6%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.532 0.095 162);
-  --chart-1: oklch(0.580 0.075 255);
-  --chart-2: oklch(0.532 0.095 162);
-  --chart-3: oklch(0.575 0.090 48);
-  --chart-4: oklch(0.570 0.070 65);
-  --chart-5: oklch(0.532 0.095 162);
-  --sidebar: oklch(0.040 0.008 155);
-  --sidebar-foreground: oklch(0.852 0.022 148);
-  --sidebar-primary: oklch(0.532 0.095 162);
+  --secondary: oklch(0.170 0.014 155);
+  --secondary-foreground: oklch(0.955 0.010 148);
+  --muted: oklch(0.140 0.012 155);
+  --muted-foreground: oklch(0.760 0.020 152);
+  --accent: oklch(0.170 0.014 155);
+  --accent-foreground: oklch(0.955 0.010 148);
+  --destructive: oklch(0.755 0.180 22.216);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 20%);
+  --ring: oklch(0.720 0.115 162);
+  --chart-1: oklch(0.720 0.090 255);
+  --chart-2: oklch(0.720 0.115 162);
+  --chart-3: oklch(0.730 0.110 48);
+  --chart-4: oklch(0.715 0.085 65);
+  --chart-5: oklch(0.720 0.115 162);
+  --sidebar: oklch(0.050 0.008 155);
+  --sidebar-foreground: oklch(0.955 0.010 148);
+  --sidebar-primary: oklch(0.720 0.115 162);
   --sidebar-primary-foreground: oklch(0 0 0);
-  --sidebar-accent: oklch(0.130 0.015 155);
-  --sidebar-accent-foreground: oklch(0.852 0.022 148);
-  --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.532 0.095 162);
+  --sidebar-accent: oklch(0.170 0.014 155);
+  --sidebar-accent-foreground: oklch(0.955 0.010 148);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.720 0.115 162);
 }
 
 @layer base {
@@ -244,27 +244,44 @@
     background: oklch(0.750 0.025 155);
   }
   .dark ::-webkit-scrollbar-thumb {
-    background: oklch(0.280 0.022 155);
+    background: oklch(0.380 0.025 155);
   }
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.360 0.025 155);
+    background: oklch(0.480 0.030 155);
   }
   .black ::-webkit-scrollbar-thumb {
-    background: oklch(0.180 0.015 155);
+    background: oklch(0.260 0.018 155);
   }
   .black ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.260 0.018 155);
+    background: oklch(0.360 0.022 155);
   }
 }
 
 /* Improve text contrast on mobile for readability */
 @media screen and (max-width: 767px) {
   .text-muted-foreground\/30 {
-    opacity: 0.5;
+    opacity: 0.6;
   }
   .text-muted-foreground\/40 {
-    opacity: 0.55;
+    opacity: 0.65;
   }
+  .text-muted-foreground\/50 {
+    opacity: 0.75;
+  }
+}
+
+/* Dark mode: boost low-opacity muted text for readability */
+.dark .text-muted-foreground\/30,
+.black .text-muted-foreground\/30 {
+  opacity: 0.55;
+}
+.dark .text-muted-foreground\/40,
+.black .text-muted-foreground\/40 {
+  opacity: 0.65;
+}
+.dark .text-muted-foreground\/50,
+.black .text-muted-foreground\/50 {
+  opacity: 0.75;
 }
 
 /* Subtle noise texture on body */

@@ -32,8 +32,6 @@ function SettingsContent() {
   const [loading, setLoading] = useState(true)
   const [billingBanner, setBillingBanner] = useState<"success" | "cancel" | null>(null)
 
-  const supabase = createClient()
-
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch("/api/settings")
@@ -48,13 +46,14 @@ function SettingsContent() {
 
   useEffect(() => {
     async function init() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setEmail(user?.email ?? null)
       await fetchSettings()
       setLoading(false)
     }
     init()
-  }, [supabase.auth, fetchSettings])
+  }, [fetchSettings])
 
   useEffect(() => {
     const billing = searchParams.get("billing")

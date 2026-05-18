@@ -69,6 +69,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning data-font-size="normal">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try {
+  var t = localStorage.getItem('theme') || 'system';
+  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (t === 'black') {
+    document.documentElement.classList.add('black');
+  } else if (t === 'dark' || (t === 'system' && prefersDark)) {
+    document.documentElement.classList.add('dark');
+  }
+} catch {}`,
+        }}
+      />
       <body
         className={`${dmSans.variable} ${dmSerif.variable} font-[family-name:var(--font-body)] antialiased`}
       >

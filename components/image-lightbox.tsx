@@ -44,28 +44,28 @@ export function ImageLightbox({
       <div className="absolute top-6 right-6 flex items-center gap-2">
         <button
           onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.max(z - 0.25, 0.5)) }}
-          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
           aria-label="Zoom out"
         >
           <ZoomOut className="h-4 w-4" />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.min(z + 0.25, 3)) }}
-          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
           aria-label="Zoom in"
         >
           <ZoomIn className="h-4 w-4" />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); setRotation((r) => (r + 90) % 360) }}
-          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
           aria-label="Rotate"
         >
           <RotateCw className="h-4 w-4" />
         </button>
         <button
           onClick={onClose}
-          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
           aria-label="Close"
         >
           <X className="h-5 w-5" />
@@ -73,7 +73,7 @@ export function ImageLightbox({
       </div>
 
       {/* Keyboard hints */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/30 text-ui-sm">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white/50 text-ui-sm">
         <span>R 회전</span>
         <span>+/- 확대/축소</span>
         <span>ESC 닫기</span>

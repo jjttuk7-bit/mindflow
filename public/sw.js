@@ -1,4 +1,4 @@
-const CACHE_NAME = "dotline-v2"
+const CACHE_NAME = "dotline-v3"
 const STATIC_ASSETS = ["/", "/login"]
 
 self.addEventListener("install", (event) => {

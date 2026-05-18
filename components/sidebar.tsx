@@ -277,7 +277,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </p>
       </button>
 
-      <div className="h-px bg-black/15 dark:bg-white/25 mx-4" />
+      <div className="h-px bg-black/20 dark:bg-white/30 mx-4" />
 
       <ScrollArea className="flex-1 py-5">
         {/* Projects */}
@@ -378,7 +378,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           )}
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
+        <div className="h-px bg-black/20 dark:bg-white/30 mx-6 my-5" />
 
         {/* Smart Folders */}
         <div className="px-4">
@@ -451,7 +451,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
+        <div className="h-px bg-black/20 dark:bg-white/30 mx-6 my-5" />
 
         {/* Tags */}
         <div className="px-4">
@@ -492,7 +492,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
+        <div className="h-px bg-black/20 dark:bg-white/30 mx-6 my-5" />
 
         {/* Type Filters */}
         <div className="px-4">
@@ -519,7 +519,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-black/15 dark:bg-white/25 mx-6 my-5" />
+        <div className="h-px bg-black/20 dark:bg-white/30 mx-6 my-5" />
 
         {/* Navigation */}
         <div className="px-4 space-y-0.5">

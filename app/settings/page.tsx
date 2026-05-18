@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { UserSettings } from "@/lib/supabase/types"
@@ -40,7 +40,7 @@ const PRO_FEATURES = [
   "Priority support",
 ]
 
-export default function SettingsPage() {
+function SettingsContent() {
   const searchParams = useSearchParams()
   const [email, setEmail] = useState<string | null>(null)
   const [settings, setSettings] = useState<UserSettings | null>(null)
@@ -513,5 +513,17 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    }>
+      <SettingsContent />
+    </Suspense>
   )
 }

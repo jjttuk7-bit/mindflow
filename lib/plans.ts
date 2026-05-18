@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server"
 
 export const PLAN_LIMITS = {
   free: {
-    telegram_captures_per_month: 30,
     semantic_search_per_day: 5,
     projects: 3,
     smart_folders: 2,
@@ -11,10 +10,8 @@ export const PLAN_LIMITS = {
     todo_auto_extract: false,
     ai_project_classification: false,
     insight_ai_analysis: false,
-    telegram_notifications: false,
   },
   pro: {
-    telegram_captures_per_month: Infinity,
     semantic_search_per_day: Infinity,
     projects: Infinity,
     smart_folders: Infinity,
@@ -23,7 +20,6 @@ export const PLAN_LIMITS = {
     todo_auto_extract: true,
     ai_project_classification: true,
     insight_ai_analysis: true,
-    telegram_notifications: true,
   },
 } as const
 

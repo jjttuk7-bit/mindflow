@@ -53,7 +53,7 @@ export interface ItemContext {
   topic_cluster?: string
 }
 
-export type ItemSource = "web" | "telegram" | "api"
+export type ItemSource = "web" | "api"
 
 export interface Project {
   id: string
@@ -136,8 +136,6 @@ export interface UserSettings {
   plan: "free" | "pro"
   stripe_customer_id?: string | null
   stripe_subscription_id?: string | null
-  telegram_chat_id?: string | null
-  telegram_linked_at?: string | null
   preferences: Record<string, unknown>
   created_at: string
   updated_at: string

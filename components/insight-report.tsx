@@ -35,7 +35,6 @@ const TYPE_COLORS: Record<string, string> = {
 
 const SOURCE_COLORS: Record<string, string> = {
   web: "var(--chart-1)",
-  telegram: "var(--chart-2)",
   api: "var(--chart-4)",
 }
 

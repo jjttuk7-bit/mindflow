@@ -33,8 +33,6 @@ export async function PATCH(req: NextRequest) {
   // Build allowed update fields
   const allowed: Record<string, unknown> = {}
   if (updates.preferences !== undefined) allowed.preferences = updates.preferences
-  if (updates.telegram_chat_id !== undefined) allowed.telegram_chat_id = updates.telegram_chat_id
-  if (updates.telegram_linked_at !== undefined) allowed.telegram_linked_at = updates.telegram_linked_at
 
   const { data, error } = await supabase
     .from("user_settings")

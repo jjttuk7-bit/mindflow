@@ -12,12 +12,15 @@ import "./globals.css";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
+  display: "swap",
 });
 
 const dmSerif = DM_Serif_Display({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

@@ -61,7 +61,7 @@ export function MainFeed({ onRefetch, onMenuClick, mobile, loading, loadMore, lo
               <Composer onSaved={onRefetch} />
             </div>
           </div>
-          <div className="h-px bg-foreground/15 ml-[max(1rem,env(safe-area-inset-left))] mr-[max(1rem,env(safe-area-inset-right))] md:mx-8" />
+          <div className="h-px bg-black/15 dark:bg-white/15 ml-[max(1rem,env(safe-area-inset-left))] mr-[max(1rem,env(safe-area-inset-right))] md:mx-8" />
         </>
       )}
 

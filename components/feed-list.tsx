@@ -199,7 +199,7 @@ export function FeedList({ loadMore, loadingMore, hasMore }: { loadMore?: () => 
               <FeedCard item={item} onDelete={handleDelete} onUpdate={handleUpdate} onRestore={handleRestore} showTrash={showTrash} />
             </SwipeableCard>
           ))}
-          <div className="h-px bg-foreground/10 my-2" />
+          <div className="h-px bg-black/10 dark:bg-white/10 my-2" />
         </>
       )}
 

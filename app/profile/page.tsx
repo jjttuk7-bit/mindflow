@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { FileText, Link, Image, Mic, Sparkles } from "lucide-react"

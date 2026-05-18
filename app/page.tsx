@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { Sidebar } from "@/components/sidebar"
 import { MainFeed } from "@/components/main-feed"
 import { SearchDialog } from "@/components/search-dialog"

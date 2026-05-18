@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState, useCallback } from "react"
 import { InsightReport } from "@/components/insight-report"
 import { InsightReportData } from "@/lib/supabase/types"

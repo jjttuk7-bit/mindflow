@@ -42,11 +42,11 @@ const filters: {
   icon: React.ReactNode
   color: string
 }[] = [
-  { label: "All", value: "all", icon: <Layers className="h-4 w-4" />, color: "text-warm-600" },
-  { label: "Ideas", value: "text", icon: <FileText className="h-4 w-4" />, color: "text-terracotta" },
-  { label: "Links", value: "link", icon: <Link className="h-4 w-4" />, color: "text-sage" },
-  { label: "Images", value: "image", icon: <Image className="h-4 w-4" />, color: "text-dusty-rose" },
-  { label: "Voice", value: "voice", icon: <Mic className="h-4 w-4" />, color: "text-amber-accent" },
+  { label: "전체", value: "all", icon: <Layers className="h-4 w-4" />, color: "text-warm-600" },
+  { label: "아이디어", value: "text", icon: <FileText className="h-4 w-4" />, color: "text-terracotta" },
+  { label: "링크", value: "link", icon: <Link className="h-4 w-4" />, color: "text-sage" },
+  { label: "이미지", value: "image", icon: <Image className="h-4 w-4" />, color: "text-dusty-rose" },
+  { label: "음성", value: "voice", icon: <Mic className="h-4 w-4" />, color: "text-amber-accent" },
 ]
 
 function TagItem({
@@ -277,7 +277,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </p>
       </button>
 
-      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
+      <div className="h-px bg-black/15 dark:bg-white/20 mx-4" />
 
       <ScrollArea className="flex-1 py-5">
         {/* Projects */}
@@ -288,7 +288,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
               className="flex items-center gap-1 text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70"
             >
               <ChevronDown className={`h-3 w-3 transition-transform ${projectsExpanded ? "" : "-rotate-90"}`} />
-              Projects
+              프로젝트
             </button>
             <button
               onClick={() => setCreatingProject(true)}
@@ -344,7 +344,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                   className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all duration-200"
                 >
                   <ChevronDown className={`h-3 w-3 transition-transform ${projectsShowAll ? "rotate-180" : ""}`} />
-                  {projectsShowAll ? "접기" : `+${projects.length - PROJECT_DISPLAY_LIMIT} more`}
+                  {projectsShowAll ? "접기" : `+${projects.length - PROJECT_DISPLAY_LIMIT}개 더`}
                 </button>
               )}
               {creatingProject && (
@@ -378,7 +378,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           )}
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/20 mx-6 my-5" />
 
         {/* Smart Folders */}
         <div className="px-4">
@@ -408,7 +408,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             >
               <span className="flex items-center gap-2.5">
                 <CalendarDays className={`h-4 w-4 ${smartFolder === "this-week" ? "text-primary" : "text-muted-foreground/50"}`} />
-                This Week
+                이번 주
               </span>
               <span className={`text-ui-sm tabular-nums ${
                 smartFolder === "this-week" ? "text-primary/70" : "text-muted-foreground/50"
@@ -438,7 +438,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             >
               <span className="flex items-center gap-2.5">
                 <Pin className={`h-4 w-4 ${smartFolder === "pinned" ? "text-primary" : "text-muted-foreground/50"}`} />
-                Pinned
+                고정됨
               </span>
               {pinnedCount > 0 && (
                 <span className={`text-ui-sm tabular-nums ${
@@ -451,7 +451,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/20 mx-6 my-5" />
 
         {/* Tags */}
         <div className="px-4">
@@ -486,18 +486,18 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
                 className="w-full flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-accent transition-all duration-200"
               >
                 <ChevronDown className={`h-3 w-3 transition-transform ${tagsExpanded ? "rotate-180" : ""}`} />
-                {tagsExpanded ? "Show less" : `+${tagCounts.length - TAG_DISPLAY_LIMIT} more`}
+                {tagsExpanded ? "접기" : `+${tagCounts.length - TAG_DISPLAY_LIMIT}개 더`}
               </button>
             )}
           </div>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/20 mx-6 my-5" />
 
         {/* Type Filters */}
         <div className="px-4">
           <p className="text-ui-xs tracking-[0.2em] uppercase font-semibold text-muted-foreground/70 px-2 mb-3">
-            Types
+            유형
           </p>
           <div className="space-y-0.5">
             {filters.map((f) => (
@@ -519,7 +519,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent mx-6 my-5" />
+        <div className="h-px bg-black/15 dark:bg-white/20 mx-6 my-5" />
 
         {/* Navigation */}
         <div className="px-4 space-y-0.5">

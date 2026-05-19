@@ -22,13 +22,13 @@ const dmSerif = DM_Serif_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "DotLine — 기록은 내가, 정리는 AI가",
-    template: "%s | DotLine",
+    default: "Dott — 기록은 내가, 정리는 AI가",
+    template: "%s | Dott",
   },
   description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
-  applicationName: "DotLine",
+  applicationName: "Dott",
   keywords: ["AI", "지식 관리", "노트", "메모", "태깅", "knowledge management", "productivity"],
-  authors: [{ name: "DotLine" }],
+  authors: [{ name: "Dott" }],
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -40,19 +40,19 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "DotLine",
-    title: "DotLine — 기록은 내가, 정리는 AI가",
+    siteName: "Dott",
+    title: "Dott — 기록은 내가, 정리는 AI가",
     description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DotLine — 기록은 내가, 정리는 AI가",
+    title: "Dott — 기록은 내가, 정리는 AI가",
     description: "아이디어, 링크, 이미지, 음성 메모를 한곳에 담고 AI가 자동으로 정리합니다.",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "DotLine",
+    title: "Dott",
   },
 };
 

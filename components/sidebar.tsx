@@ -270,7 +270,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         className="px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-5 text-left hover:opacity-80 transition-opacity"
       >
         <h1 className="font-display text-2xl tracking-tight text-foreground">
-          DotLine
+          Dott
         </h1>
         <p className="text-ui-sm tracking-[0.15em] uppercase text-muted-foreground mt-1 font-medium">
           Personal Knowledge Hub

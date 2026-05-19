@@ -70,7 +70,7 @@ export function LoginForm() {
         <div className="text-center mb-8">
           <a href="/" className="inline-block">
             <h1 className="font-display text-4xl tracking-tight text-foreground hover:text-primary transition-colors cursor-pointer">
-              DotLine
+              Dott
             </h1>
           </a>
           <p className="text-sm text-muted-foreground mt-2">

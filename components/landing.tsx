@@ -50,7 +50,7 @@ function Navbar() {
           <DotLineLogo className="w-6 h-6 text-primary" />
           <div>
             <span className="font-display text-xl tracking-tight text-foreground leading-none">
-              DotLine
+              Dott
             </span>
             <p className="text-ui-2xs tracking-widest text-muted-foreground/50 leading-none mt-0.5">
               Connecting dots, Drawing lines.
@@ -345,7 +345,7 @@ function StreakSection() {
               매일 기록하는 습관
             </h2>
             <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
-              매일 DotLine에 접속하면 연속 사용일이 카운트됩니다.
+              매일 Dott에 접속하면 연속 사용일이 카운트됩니다.
               스마트 인사말과 데일리 브리핑이 꾸준한 기록 습관을 응원합니다.
             </p>
             <div className="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
@@ -508,7 +508,7 @@ function CTA() {
             href="/login"
             className="inline-flex items-center gap-2 text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 px-10 py-4 rounded-xl shadow-sm"
           >
-            나만의 DotLine 시작하기
+            나만의 Dott 시작하기
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -523,7 +523,7 @@ function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <DotLineLogo className="w-4 h-4" />
-          <span className="text-sm">&copy; 2026 DotLine</span>
+          <span className="text-sm">&copy; 2026 Dott</span>
         </div>
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <Link href="/terms" className="hover:text-foreground">이용약관</Link>
